@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target"              : "ES2017",
+    "rootDir"             : "docs/src",
+    "outDir"              : "docs/distrib",
+    "sourceMap"           : true,
+    "extendedDiagnostics" : true
+  },
+
+  "include": [
+      "docs/src/**/*"
+  ],
+}

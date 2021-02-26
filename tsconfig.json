@@ -8,6 +8,6 @@
   },
 
   "include": [
-      "docs/src/**/*"
+      "docs/src/**/**/*"
   ],
 }

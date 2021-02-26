@@ -1,0 +1,304 @@
+/*
+  style.css
+
+  Author: Alex Badia
+  Description: This is the main style sheet for index.html.
+*/
+
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: inherit; 
+}
+
+html {
+  background-color: rgba(33, 33, 33, 1);
+}
+
+#body {
+  /* Removed margins to get an "IDE" feel */
+  margin: 0;
+
+  /* Make scroll bar not collide with navbar */
+  overflow: hidden;
+
+  /* Inheirts rgba(33, 33, 33, 1) background-color */
+  background-color: inherit;
+}
+
+
+/* Navigation Bar, I prefer to say "App Bar" */
+
+/* Logo and Title */
+
+/* Note: Logo is from shuttershock and is for free commercial use */
+#nightingale_logo {
+  /* Positioning */
+  display: inline;
+  position: relative;
+  bottom: 2.5%;
+
+  /* Sizing */
+  height: 4.5rem;
+}
+
+#title {
+  /* Positioning */
+  display: inline;
+  position: relative;
+  bottom: -7%;
+
+  /* Fonts and colors */
+  font-size: 24px;
+  color: rgb(255, 102, 122, .725);
+}
+
+/* Compile button */
+#compile-button {color: rgb(34, 139, 34);}
+#compile-button:hover {color: rgb(45, 185, 45);}
+
+
+/* 
+  Grid Layout Definition
+
+  Well, Bootstrap grid layouts suck. They're rigid and they spam "!important".
+*/
+
+#main {
+  /* Positioning, sizing, margins, etc. */
+  position: relative;
+  height: 93vh;
+  width: 100%;
+  background-color: inherit;
+
+  /* 
+    Avoiding Navigation Bar
+
+    Bootstrap Docs say Navigation Bar height is 5rem by default
+  */
+  margin-top: 5rem;
+
+  /* Put scroll bar here, so it doesn't collide with Bootstrap Navigation Bar */
+  overflow-y: scroll;
+
+  /* Grid Stuff */
+  display: grid;
+
+  /* Two side divs with two divs stacked on top of each other */
+  grid-template-areas: 
+    "side_bar nav code_editor"
+    "side_bar nav console";
+
+  /* 
+    Side bar size is 4% of screen width, 
+    Side navigation starts closed but can be opened using jQuery,
+    The two stacked divs column size is 80% 
+  */
+  grid-template-columns: 4fr 0fr 100fr;
+
+  /* 
+    Top div to bottom div ratio. 
+  
+    BECAREFUL changing this! This will effect how far you can change the size of each box.
+    If the ratio is off, you may accidently see the background when dragging to resize one of the divs.
+  */
+  grid-template-rows: 1fr 9fr;
+}
+
+/* 
+  Grid Layout Components
+
+  CSS styling elements going left to right, top to bottom.
+ */
+
+ /* Side Bar */
+#sidebar {
+  background-color: rgba(60, 60, 60, 1);
+
+  /* Grid Stuff */
+  grid-area: side_bar;
+  resize: none;
+}
+
+/* Side Bar Links */
+#sidebar__link {
+  font-size: 2.25rem;
+  color:rgba(51, 51, 51, 1);
+  text-decoration: none;
+}
+
+#sidebar__link:hover, #side-bar-link:visited, #side-bar-link:active {
+  font-size: 2.25rem;
+  color:white;
+  text-decoration: none;
+}
+
+#side-nav {
+  /* Sizing, overflow, colors, etc. */
+  height: 100%;
+  width: 100%;
+  overflow: scroll;
+  background-color: inherit;
+
+  /* Grid Stuff */
+  grid-area: nav;
+  /* Resizing done with jQuery resize: horizantal; */
+}
+
+#code-editor {
+  /* Sizing, overflow, colors, etc. */
+  width: 100%; 
+  height: 65vh;
+  max-height: 80vh;
+
+  /* Grid Stuff */
+  grid-area: code_editor;
+  overflow: hidden;
+  /* Resizing done with jQuery resize: vertical; */
+}
+
+#console {
+  background-color: rgba(24, 24, 24, 1);
+
+  /* North Border */
+  border-top: solid .1rem rgba(64, 64, 64, 1);
+
+  /* Grid Stuff */
+  grid-area: console;
+}
+
+/* Footer for Error and Warning Counts */
+
+#footer {
+  /* Sizing */
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 3vh;
+
+  /* Should be on top of everything */
+  z-index: 250;
+
+  /* Color */
+  background-color: rgb(255, 102, 122, .725);
+  /* background-color: rgb(158, 26, 26, 1); */
+}
+
+/* Scroll Bar */
+
+/* width */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  border-radius: 10px;
+}
+ 
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: rgba(187, 187, 187, .3);
+  border-radius: 10px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(187, 187, 187, .4);
+  border-radius: 10px;
+}
+
+
+/*
+  Bootstrap overrirdes
+
+  Pro tip: use th inspector to try and find out what properties are being set to what 
+  classes. Ideally try to add id's to override styling since id's have higher priority than classes. Try not to use !important.
+*/
+
+/* Navigation Bar Overrides */
+
+/* Title positioning overrides */
+.navbar>.container, .navbar>.container-fluid {
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  -ms-flex-align: center;
+  align-items: center;
+  -ms-flex-pack: justify;
+
+  /* 
+    Left justify the title
+
+    Originally center justified
+  */
+  justify-content: start !important;
+}
+
+/* Override borders and padding */
+.navbar-nav > li > a {
+  padding-top:5px !important; 
+  padding-bottom:5px !important;
+  margin-bottom: none;
+}
+
+/* Overriding height */
+.navbar {min-height:40px !important; max-height:50px}
+.navbar-fixed-top .navbar-collapse, .navbar-fixed-bottom .navbar-collapse {max-height: 50px;}
+
+/* Overriding Tab bar menu for output console */
+
+/* Tab size and border Overrides*/
+#bootstrap-override-nav-tabs {
+  font-size: 1rem;
+  border: none;
+}
+
+/* Tab Positions Overrides */
+.navbar-brand {
+  float: left;
+  height: 50px;
+  padding: 15px 15px;
+  font-size: 18px;
+  line-height: 20px;
+  margin-top: -2.7%;
+}
+
+/* Tab Focus effect Overrides*/
+#bootstrap-override-nav-tabs>li.active>a, #bootstrap-override-nav-tabs>li.active>a:focus {
+  font-size: 1rem;
+  color: white;
+  cursor: default;
+  background-color: transparent;
+  border: none;
+  text-decoration: underline;
+  text-underline-position: below;
+  text-underline-offset: 45%;
+}
+
+/* Anchor inactive behavior Overrides */
+.output-anchor {
+  font-size: 1rem;
+  color: rgba(61, 61, 61, 1);
+  text-decoration: none;
+}
+
+/* Anchor hover behavior overrides */
+.nav>li>a:hover, .nav>li>a:focus {
+  font-size: 1rem;
+  color: white;
+  cursor: default;
+  background-color: transparent !important;
+  border: none;
+}
+
+/* Footer Overrides */
+
+/* Text styling overrides */
+.p-2{
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 100;
+  color: white;
+}

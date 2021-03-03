@@ -26,19 +26,19 @@ module NightingaleCompiler {
          * Lexer will generate tokens to be passed to the parser. 
          * Compiliation will stop if there are any syntatical errors to report.
          */
-        public static lexer: Lexer;
+        public static lexer: NightingaleCompiler.Lexer;
 
         /**
          * Parser...
          */
-        public static parser: Parser;
+        public static parser: NightingaleCompiler.Parser;
 
         /**
          * Creates a compiler instance.
          */
         public static init(): void {
-            this.lexer = new Lexer();
-            this.parser = new Parser();
+            this.lexer = new NightingaleCompiler.Lexer();
+            this.parser = new  NightingaleCompiler.Lexer();
         }// init
 
         // TODO: Implement more stages
@@ -53,7 +53,13 @@ module NightingaleCompiler {
             console.log("Compiling");
 
             let trimmedSourceCode = rawSourceCode.trim();
-            console.log(`Trimmed User Source Code: ${trimmedSourceCode}`);
+            // console.log(`Trimmed User Source Code: ${trimmedSourceCode}`);
+            // console.log(`Source Code as String Literal: ${JSON.stringify(trimmedSourceCode)}`);
+
+            // Lex Phase
+            console.log(/^[\{]$/.test(trimmedSourceCode));
+            // console.log(RegExp("=$ | {$ | }$ | \\($ | \\)$ | !$ | \"$ | \\+$ | /\\*$ | \\*/$ | \s$").test(trimmedSourceCode));
+            this.lexer.main(trimmedSourceCode);
         }// compilerControllerBtnCompile_click
     }// class
 }// module

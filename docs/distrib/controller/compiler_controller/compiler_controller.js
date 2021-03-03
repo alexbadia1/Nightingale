@@ -24,7 +24,7 @@ var NightingaleCompiler;
          */
         static init() {
             this.lexer = new NightingaleCompiler.Lexer();
-            this.parser = new NightingaleCompiler.Parser();
+            this.parser = new NightingaleCompiler.Lexer();
         } // init
         // TODO: Implement more stages
         /**
@@ -36,7 +36,12 @@ var NightingaleCompiler;
             this.init();
             console.log("Compiling");
             let trimmedSourceCode = rawSourceCode.trim();
-            console.log(`Trimmed User Source Code: ${trimmedSourceCode}`);
+            // console.log(`Trimmed User Source Code: ${trimmedSourceCode}`);
+            // console.log(`Source Code as String Literal: ${JSON.stringify(trimmedSourceCode)}`);
+            // Lex Phase
+            console.log(/^[\{]$/.test(trimmedSourceCode));
+            // console.log(RegExp("=$ | {$ | }$ | \\($ | \\)$ | !$ | \"$ | \\+$ | /\\*$ | \\*/$ | \s$").test(trimmedSourceCode));
+            this.lexer.main(trimmedSourceCode);
         } // compilerControllerBtnCompile_click
     } // class
     NightingaleCompiler.CompilerController = CompilerController;

@@ -10,11 +10,6 @@
 module NightingaleCompiler {
     export class Lexer {
         constructor(
-
-            // /* */ for block comment.
-            private _tStartBlockComment: RegExp = new RegExp('/\\*$'),
-            private _tEndBlockComment: RegExp = new RegExp('\\*/$'),
-
             /**
              * Output Arrays
              * 
@@ -88,6 +83,10 @@ module NightingaleCompiler {
                  * 3. Symbols
                  */
 
+                // Comments
+                new NightingaleCompiler.LexicalToken("START_BLOCK_COMMENT", /^(\/\*)$/, null, -1, -1),
+                new NightingaleCompiler.LexicalToken("END_BLOCK_COMMENT", /^(\*\/)$/, null, -1, -1),
+
                 // Quotation
                 new NightingaleCompiler.LexicalToken("STRING_EXPRESSION_BOUNDARY", /^(")$/, null, -1, -1),
 
@@ -108,7 +107,7 @@ module NightingaleCompiler {
                 new NightingaleCompiler.LexicalToken("SYMBOL_ASSIGNMENT_OP", /^[=]$/, null, -1, -1),
 
                 // Digits
-                new NightingaleCompiler.LexicalToken("DIGIT", /^[0-9]]$/, null, -1, -1),
+                new NightingaleCompiler.LexicalToken("DIGIT", /^[0-9]$/, null, -1, -1),
 
                 // Whitespace
                 new NightingaleCompiler.LexicalToken("SPACE_SINGLE", new RegExp("^ $"), null, -1, -1),
@@ -123,8 +122,8 @@ module NightingaleCompiler {
 
             let lastPosition: number = 0;
             let currentPosition: number = 0;
-            LoopThroughSourceCodeWhileLoop: while (lastPosition < sourceCode.length) {
-
+            LoopThroughSourceCodeWhileLoop: while (lastPosition <= sourceCode.length && currentPosition <= sourceCode.length) {
+                // console.log(`Current position: ${currentPosition}`);
                 // In comment
                 if (this.isInComment) { }// if
 
@@ -141,7 +140,7 @@ module NightingaleCompiler {
 
                     // Symbols, whitespace (if present and outside of quotes) and the EOP 
                     // meta-symbol mean that we can stop moving ahead and see what we’ve got so far.
-                    if (/=$|\{$|\}$|\($|\)$|\!$|\"$|\+$|\/\*$|\\*\/$|\s$|\$$/.test(currentChunk) && currentChunk.length > 1) {
+                    if (/=$|\{$|\}$|\($|\)$|\"$|\+$|\/\*$|\\*\/$|\s$|\$$/.test(currentChunk) && currentChunk.length > 1) {
 
                         // Emit the longest token.
                         console.log(`Stream-Token: ${this.tempToken.name}, Ancestor: ${this.tempToken.ancestor}, Line-Position: ${this.tempToken.linePosition}`);
@@ -154,6 +153,7 @@ module NightingaleCompiler {
 
                         // Skip the Check Tokens From Token Pool Loop
                         continue LoopThroughSourceCodeWhileLoop;
+
                     }// if
 
                     // Test current substring of source code against tokens in the token pool
@@ -256,7 +256,7 @@ module NightingaleCompiler {
                                 if (longerSymbolFound) {
 
                                     // Mover last position after the longer symbol.
-                                    lastPosition = peekPosition + 1;
+                                    lastPosition = peekPosition;
 
                                     // Reset the current position to new starting point.
                                     currentPosition = lastPosition;
@@ -272,7 +272,7 @@ module NightingaleCompiler {
                                 }// else
 
                                 // Emit token to stream.
-                                console.log(`Strean-Token: ${this.tempToken.name}, Ancestor: ${this.tempToken.ancestor}, Line-Position: ${this.tempToken.linePosition}`);
+                                console.log(`Stream-Token: ${this.tempToken.name}, Ancestor: ${this.tempToken.ancestor}, Line-Position: ${this.tempToken.linePosition}`);
 
                                 continue LoopThroughSourceCodeWhileLoop;
                             }// else-if
@@ -300,13 +300,48 @@ module NightingaleCompiler {
                         }// if 
                     }// for
 
-                    // If loop completes without finding a match move to the next character.
+                    /**
+                     * Characters that are not matched are illegal.
+                     * 
+                     * Some tokens have sets that overlap with illegal characters.
+                     *  - BOOLEAN NOT EQUALS OPERATION (!=).
+                     *  - START BLOCK COMMENT (/ *).
+                     *  - END BLOCK COMMENT (* /).
+                     * 
+                     * Still print out all illegal characters...
+                     */
                     if (!matchFound) {
+
+                        // Check for Boolean Operation Not Equals
+                        if (/(^!$|^\*$|^\/$)/.test(currentChunk)) {
+                            let nextPosition: number = currentPosition + 1;
+                            let peekingChunk: string = sourceCode.substring(lastPosition, nextPosition);
+
+                            // Loop through pool of tokens to see if the longer substring matches any of definitions.
+                            for (let index: number = 0; index < tokenPool.length; ++index) {
+
+                                // Longer symbol has a token match!
+                                if (tokenPool[index].definition.test(peekingChunk)) {
+
+                                    // Replace the current symbol token with the new longer token.
+                                    this.tempToken = tokenPool[index].copyWith(peekingChunk, this.lineNumber, nextPosition);
+
+                                    // Emit token
+                                    console.log(`Stream-Token: ${this.tempToken.name}, Ancestor: ${this.tempToken.ancestor}, Line-Position: ${this.tempToken.linePosition}`);
+
+                                    // Update position to be after the peeked position 
+                                    // So currentPosition
+                                    lastPosition = nextPosition;
+                                    currentPosition = lastPosition;
+
+                                    continue LoopThroughSourceCodeWhileLoop;
+                                }// if
+                            }// for
+                        }// if
                         currentPosition++;
                     }// 
                 }// else
             }// while
-
         }// main
     }// class
 }// module

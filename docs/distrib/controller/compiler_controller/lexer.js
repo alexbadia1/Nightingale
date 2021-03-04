@@ -9,8 +9,6 @@ var NightingaleCompiler;
 (function (NightingaleCompiler) {
     class Lexer {
         constructor(
-        // /* */ for block comment.
-        _tStartBlockComment = new RegExp('/\\*$'), _tEndBlockComment = new RegExp('\\*/$'), 
         /**
          * Output Arrays
          *
@@ -28,8 +26,6 @@ var NightingaleCompiler;
         isInString = false, startStringExpressionLine = 0, startStringExpressionPosition = 0, 
         // Detects if current position is in a string
         isInComment = false) {
-            this._tStartBlockComment = _tStartBlockComment;
-            this._tEndBlockComment = _tEndBlockComment;
             this.tokenStream = tokenStream;
             this.tempToken = tempToken;
             this.lineNumber = lineNumber;
@@ -80,6 +76,9 @@ var NightingaleCompiler;
                 /**
                  * 3. Symbols
                  */
+                // Comments
+                new NightingaleCompiler.LexicalToken("START_BLOCK_COMMENT", /^(\/\*)$/, null, -1, -1),
+                new NightingaleCompiler.LexicalToken("END_BLOCK_COMMENT", /^(\*\/)$/, null, -1, -1),
                 // Quotation
                 new NightingaleCompiler.LexicalToken("STRING_EXPRESSION_BOUNDARY", /^(")$/, null, -1, -1),
                 // Open/Close blocks
@@ -95,7 +94,7 @@ var NightingaleCompiler;
                 // Assignments
                 new NightingaleCompiler.LexicalToken("SYMBOL_ASSIGNMENT_OP", /^[=]$/, null, -1, -1),
                 // Digits
-                new NightingaleCompiler.LexicalToken("DIGIT", /^[0-9]]$/, null, -1, -1),
+                new NightingaleCompiler.LexicalToken("DIGIT", /^[0-9]$/, null, -1, -1),
                 // Whitespace
                 new NightingaleCompiler.LexicalToken("SPACE_SINGLE", new RegExp("^ $"), null, -1, -1),
                 new NightingaleCompiler.LexicalToken("SPACE_TAB", new RegExp("^\t$"), null, -1, -1),
@@ -106,7 +105,8 @@ var NightingaleCompiler;
             ];
             let lastPosition = 0;
             let currentPosition = 0;
-            LoopThroughSourceCodeWhileLoop: while (lastPosition < sourceCode.length) {
+            LoopThroughSourceCodeWhileLoop: while (lastPosition <= sourceCode.length && currentPosition <= sourceCode.length) {
+                // console.log(`Current position: ${currentPosition}`);
                 // In comment
                 if (this.isInComment) { } // if
                 // In string
@@ -119,7 +119,7 @@ var NightingaleCompiler;
                     let currentChunk = sourceCode.substring(lastPosition, currentPosition);
                     // Symbols, whitespace (if present and outside of quotes) and the EOP 
                     // meta-symbol mean that we can stop moving ahead and see what we’ve got so far.
-                    if (/=$|\{$|\}$|\($|\)$|\!$|\"$|\+$|\/\*$|\\*\/$|\s$|\$$/.test(currentChunk) && currentChunk.length > 1) {
+                    if (/=$|\{$|\}$|\($|\)$|\"$|\+$|\/\*$|\\*\/$|\s$|\$$/.test(currentChunk) && currentChunk.length > 1) {
                         // Emit the longest token.
                         console.log(`Stream-Token: ${this.tempToken.name}, Ancestor: ${this.tempToken.ancestor}, Line-Position: ${this.tempToken.linePosition}`);
                         // Move the starting position after the string value that created the token.
@@ -210,7 +210,7 @@ var NightingaleCompiler;
                                 // Longer symbol found
                                 if (longerSymbolFound) {
                                     // Mover last position after the longer symbol.
-                                    lastPosition = peekPosition + 1;
+                                    lastPosition = peekPosition;
                                     // Reset the current position to new starting point.
                                     currentPosition = lastPosition;
                                 } // if
@@ -222,7 +222,7 @@ var NightingaleCompiler;
                                     currentPosition = lastPosition;
                                 } // else
                                 // Emit token to stream.
-                                console.log(`Strean-Token: ${this.tempToken.name}, Ancestor: ${this.tempToken.ancestor}, Line-Position: ${this.tempToken.linePosition}`);
+                                console.log(`Stream-Token: ${this.tempToken.name}, Ancestor: ${this.tempToken.ancestor}, Line-Position: ${this.tempToken.linePosition}`);
                                 continue LoopThroughSourceCodeWhileLoop;
                             } // else-if
                             else if (currentToken.name.includes("END_OF_PROGRAM")) {
@@ -243,8 +243,37 @@ var NightingaleCompiler;
                             } // else
                         } // if 
                     } // for
-                    // If loop completes without finding a match move to the next character.
+                    /**
+                     * Characters that are not matched are illegal.
+                     *
+                     * Some tokens have sets that overlap with illegal characters.
+                     *  - BOOLEAN NOT EQUALS OPERATION (!=).
+                     *  - START BLOCK COMMENT (/ *).
+                     *  - END BLOCK COMMENT (* /).
+                     *
+                     * Still print out all illegal characters...
+                     */
                     if (!matchFound) {
+                        // Check for Boolean Operation Not Equals
+                        if (/(^!$|^\*$|^\/$)/.test(currentChunk)) {
+                            let nextPosition = currentPosition + 1;
+                            let peekingChunk = sourceCode.substring(lastPosition, nextPosition);
+                            // Loop through pool of tokens to see if the longer substring matches any of definitions.
+                            for (let index = 0; index < tokenPool.length; ++index) {
+                                // Longer symbol has a token match!
+                                if (tokenPool[index].definition.test(peekingChunk)) {
+                                    // Replace the current symbol token with the new longer token.
+                                    this.tempToken = tokenPool[index].copyWith(peekingChunk, this.lineNumber, nextPosition);
+                                    // Emit token
+                                    console.log(`Stream-Token: ${this.tempToken.name}, Ancestor: ${this.tempToken.ancestor}, Line-Position: ${this.tempToken.linePosition}`);
+                                    // Update position to be after the peeked position 
+                                    // So currentPosition
+                                    lastPosition = nextPosition;
+                                    currentPosition = lastPosition;
+                                    continue LoopThroughSourceCodeWhileLoop;
+                                } // if
+                            } // for
+                        } // if
                         currentPosition++;
                     } // 
                 } // else

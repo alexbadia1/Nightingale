@@ -58,6 +58,12 @@ module NightingaleCompiler {
 
             // Lex Phase
             this.lexer.main(trimmedSourceCode);
+
+            /**
+             * 
+             */
+            let debugConsole: DebugConsoleModel = new DebugConsoleModel(this.lexer.tokenStream);
+            let stacktraceConsole: StacktraceConsoleModel = new StacktraceConsoleModel(this.lexer.stacktraceStack);
         }// compilerControllerBtnCompile_click
     }// class
 }// module

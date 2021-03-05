@@ -12,7 +12,7 @@ var NightingaleCompiler;
         // Name of the token.
         name, 
         // Regular expression that qualifies what can generate this token.
-        definition, 
+        definition = null, 
         // The value that generated this token.
         ancestor = null, 
         // Location of the value that generated this token.

@@ -13,7 +13,7 @@ module NightingaleCompiler {
             public name: string,
 
             // Regular expression that qualifies what can generate this token.
-            public definition: RegExp,
+            public definition: RegExp = null,
 
             // The value that generated this token.
             public ancestor: string = null,

@@ -9,7 +9,8 @@
 // TODO: Implement a verbose mode for lexer
 // TODO: Implement a debug mode for lexer
 // TODO: Implement reading multiple programs at once
-// TODO: Add warnings such as missing EOP ($)
+// TODO: Add warnings such as missing EOP ($), if number of open braces don't match closed braces
+// TODO: Issue Errors: such as invalid tokens and an *extra quotation mark*.
 var NightingaleCompiler;
 (function (NightingaleCompiler) {
     class Lexer {
@@ -214,7 +215,7 @@ var NightingaleCompiler;
                     let matchFound = false;
                     // Symbols, whitespace (if present and outside of quotes) and the EOP 
                     // meta-symbol mean that we can stop moving ahead and see what we’ve got so far.
-                    if (/=$|\{$|\}$|\($|\)$|\"$|\+$|\/\*$|\\*\/$|\s$|\$$/.test(currentChunk) && currentChunk.length > 1) {
+                    if (/=$|\{$|\}$|\($|\)$|\"$|\+$|\/\*$|\*\/$|\s$|\$$/.test(currentChunk) && currentChunk.length > 1) {
                         /*
                          * Tokens were found in the substring.
                          *
@@ -246,8 +247,8 @@ var NightingaleCompiler;
                             // Generate an invalid token for the first character in the invalid sub string.
                             let invalidToken = new NightingaleCompiler.LexicalToken(INVALID_TOKEN, null, currentChunk[0], this.lineNumber, lastPosition);
                             // Emit invalid token
-                            this.tokenStream.push(this.tempToken);
-                            this.stacktraceStack.push(this.tempToken);
+                            this.tokenStream.push(invalidToken);
+                            this.stacktraceStack.push(invalidToken);
                             console.log(`Stream-Token: ${invalidToken.name}, Ancestor: ${invalidToken.ancestor}, Line-Position: ${invalidToken.linePosition}`);
                             // Move last position up one line position
                             lastPosition++;
@@ -417,6 +418,7 @@ var NightingaleCompiler;
                      *  - END BLOCK COMMENT (* /), overlaps with illegal character (*).
                      */
                     if (!matchFound) {
+                        console.log("Match not found!");
                         /**
                          * Check for the 3 illegal characters: ! or / or *
                          *
@@ -429,6 +431,8 @@ var NightingaleCompiler;
                          *      - / is illegal, but if folowed by an *, becomes a legal Start Comment Symbol.
                          */
                         if (/(^!$|^\*$|^\/$)/.test(currentChunk)) {
+                            // Infinite loop protection
+                            let foundMatchByPeekingAheadOfInvalidString = false;
                             /**
                              * Peek ahead one position.
                              *
@@ -448,6 +452,7 @@ var NightingaleCompiler;
                             for (let index = 0; index < tokenPool.length; ++index) {
                                 // New substring matches a token!
                                 if (tokenPool[index].definition.test(peekingChunk)) {
+                                    foundMatchByPeekingAheadOfInvalidString = true;
                                     // Generate a new token.
                                     this.tempToken = tokenPool[index].copyWith(peekingChunk, this.lineNumber, nextPosition);
                                     // Special Case: token match was a START_BLOCK_COMMENT
@@ -462,6 +467,16 @@ var NightingaleCompiler;
                                         // End Block Comment Symbol found without a matching Start Block Comment Symbol.
                                         if (!this.isInComment) {
                                             // Throw error
+                                            // Generate an invalid token for the first character in the invalid sub string.
+                                            let invalidToken = new NightingaleCompiler.LexicalToken(INVALID_TOKEN, null, currentChunk, this.lineNumber, currentPosition);
+                                            // Emit invalid token
+                                            this.tokenStream.push(this.tempToken);
+                                            this.stacktraceStack.push(this.tempToken);
+                                            console.log(`Stream-Token: ${invalidToken.name}, Ancestor: ${invalidToken.ancestor}, Line-Position: ${invalidToken.linePosition}`);
+                                            // Update position
+                                            lastPosition = currentPosition;
+                                            currentPosition = lastPosition + 1;
+                                            this.tempToken = null;
                                             continue LoopThroughSourceCodeWhileLoop;
                                         } // if: mismatch error
                                         // End Block Comment Symbol has matching Start Block Comment Symbol.
@@ -482,6 +497,9 @@ var NightingaleCompiler;
                                     continue LoopThroughSourceCodeWhileLoop;
                                 } // if: token match
                             } // for: validate against token pool
+                            if (!foundMatchByPeekingAheadOfInvalidString) {
+                                currentPosition++;
+                            } // if
                         } // if: illegal character is: ! or / or *
                         // Not a special illegal character.
                         else {

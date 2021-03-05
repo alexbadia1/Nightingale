@@ -37,13 +37,19 @@
     <script src="plugins/codemirror-5.59.3/mode/javascript/javascript.js"></script>
 
     <!-- Compiler -->
+    <script type="text/javascript" src="../../distrib//global.js"></script>
     <script type="text/javascript" src="../../distrib/controller/compiler_controller/compiler_controller.js"></script>
     <script type="text/javascript" src="../../distrib/controller/compiler_controller/lexer.js"></script>
     <script type="text/javascript" src="../../distrib/controller/compiler_controller/parser.js"></script>
+
+    <!-- Models -->
     <script type="text/javascript" src="../../distrib/model/lexical_token_model.js"></script>
+    <script type="text/javascript" src="../../distrib/model/debug_console_model.js"></script>
+    <script type="text/javascript" src="../../distrib/model/stacktrace_console_model.js"></script>
 
 
     <!-- Automatic Tests -->
+    <script type="text/javascript" src="../../tests/default_tests.js"></script>
     <!-- <script type="text/javascript" src="http://alanclasses.github.io/TSOS/test/glados-ip4.js"></script> -->
 </head>
 
@@ -107,23 +113,34 @@
         </div>
 
         <!-- Draggable Output Console -->
-        <div id="console">
+        <div id="console" style="overflow: hidden;">
             <ul id='bootstrap-override-nav-tabs' class="nav nav-tabs">
-                <li class=" console__tab-problems active"><a class='output-anchor' data-toggle="tab"
-                        href="#problems">PROBLEMS</a></li>
+                <li class=" console__tab-verbose active"><a class='output-anchor' data-toggle="tab" href="#verbose">Verbose</a></li>
+                <li class=" console__tab-debug"><a class='output-anchor' data-toggle="tab" href="#debug_console">Debug</a></li>
+                <li class=" console__tab-stacktrace"><a class='output-anchor' data-toggle="tab" href="#stacktrace_console">Stacktrace</a></li>
                 <li class=" console__tab-cst"><a class='output-anchor' data-toggle="tab" href="#cst">CST</a></li>
                 <li class=" console__tab-ast"><a class='output-anchor' data-toggle="tab" href="#ast">AST</a></li>
-                <li class=" console__tab-terminal"><a class='output-anchor' data-toggle="tab"
-                        href="#terminal">TERMINAL</a></li>
+                <li class=" console__tab-terminal"><a class='output-anchor' data-toggle="tab" href="#terminal">TERMINAL</a></li>
             </ul>
             <!--<ul ul id='bootstrap-override-nav-tabs' class="nav nav-tabs"> -->
 
-            <div class="tab-content">
+            <div class="tab-content" style = "height: 100%; width: 100%; overflow: scroll;">
 
-                <div id="problems" class="tab-content_tab-problems tab-pane fade in active">
-                    <p>Problems goes here.</p>
+                <div id="verbose" class="tab-content_tab-verbose tab-pane fade in active">
+                    <p>Verbose Console</p>
                 </div>
-                <!--<dive id = "problems"> -->
+
+                <div id="debug_console" class="tab-content_tab-debug tab-pane fade">
+                    <div id = "debug_console_list" class = "list-group">
+                        <!-- List of Emmitted Tokens -->
+                    </div>
+                </div>
+
+                <div id="stacktrace_console" class="tab-content_tab-stacktrace tab-pane fade">
+                    <div id = "stacktrace_console_list" class = "list-group">
+                        <!-- List of Emmitted Tokens -->
+                    </div>
+                </div>
 
                 <div id="cst" class=" tab-content_tab-cst tab-pane fade">
                     <p>CST goes here.</p>
@@ -178,7 +195,7 @@
 
         // Attributes
         {
-            value: "function myScript(){return 100;}\n",
+            value: LONG_TEST_CASE,
 
             // Perhaps, don't let reader edit code while compiling
             readOnly: false,

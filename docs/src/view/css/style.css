@@ -302,3 +302,8 @@ html {
   font-weight: 100;
   color: white;
 }
+
+/* Badge Override */
+.list-group-item>.badge {
+  float: left !important;
+}

@@ -39,9 +39,12 @@ var NightingaleCompiler;
             // console.log(`Trimmed User Source Code: ${trimmedSourceCode}`);
             // console.log(`Source Code as String Literal: ${JSON.stringify(trimmedSourceCode)}`);
             // Lex Phase
-            console.log(/^[\{]$/.test(trimmedSourceCode));
-            // console.log(RegExp("=$ | {$ | }$ | \\($ | \\)$ | !$ | \"$ | \\+$ | /\\*$ | \\*/$ | \s$").test(trimmedSourceCode));
             this.lexer.main(trimmedSourceCode);
+            /**
+             *
+             */
+            let debugConsole = new NightingaleCompiler.DebugConsoleModel(this.lexer.tokenStream);
+            let stacktraceConsole = new NightingaleCompiler.StacktraceConsoleModel(this.lexer.stacktraceStack);
         } // compilerControllerBtnCompile_click
     } // class
     NightingaleCompiler.CompilerController = CompilerController;

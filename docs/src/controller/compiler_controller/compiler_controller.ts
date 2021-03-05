@@ -57,9 +57,13 @@ module NightingaleCompiler {
             // console.log(`Source Code as String Literal: ${JSON.stringify(trimmedSourceCode)}`);
 
             // Lex Phase
-            console.log(/^[\{]$/.test(trimmedSourceCode));
-            // console.log(RegExp("=$ | {$ | }$ | \\($ | \\)$ | !$ | \"$ | \\+$ | /\\*$ | \\*/$ | \s$").test(trimmedSourceCode));
             this.lexer.main(trimmedSourceCode);
+
+            /**
+             * 
+             */
+            let debugConsole: DebugConsoleModel = new DebugConsoleModel(this.lexer.tokenStream);
+            let stacktraceConsole: StacktraceConsoleModel = new StacktraceConsoleModel(this.lexer.stacktraceStack);
         }// compilerControllerBtnCompile_click
     }// class
 }// module

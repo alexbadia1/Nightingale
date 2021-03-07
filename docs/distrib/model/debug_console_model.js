@@ -30,14 +30,14 @@ var NightingaleCompiler;
                     listItem.className = `token_${i} list-group-item list-group-item-action list-group-item-danger`;
                     listItem.innerHTML =
                         `<span class="badge badge-primary badge-pill">${this.EmmitedTokens[i].name}</span>`
-                            + `Ancestor: ${this.EmmitedTokens[i].ancestor} (${this.EmmitedTokens[i].lineNumber}:${this.EmmitedTokens[i].linePosition})`;
+                            + `Lexeme: ${this.EmmitedTokens[i].lexeme} (${this.EmmitedTokens[i].lineNumber}:${this.EmmitedTokens[i].linePosition})`;
                 } // if
                 // VALID Tokens are GREEN
                 else {
                     listItem.className = `token_${i} list-group-item list-group-item-action list-group-item-success`;
                     listItem.innerHTML =
                         `<span class="badge badge-primary badge-pill">${this.EmmitedTokens[i].name}</span>`
-                            + `Ancestor: ${this.EmmitedTokens[i].ancestor} (${this.EmmitedTokens[i].lineNumber}:${this.EmmitedTokens[i].linePosition})`;
+                            + `Lexeme: ${this.EmmitedTokens[i].lexeme} (${this.EmmitedTokens[i].lineNumber}:${this.EmmitedTokens[i].linePosition})`;
                 } // if
                 debugConsoleList.appendChild(listItem);
             } // for: add new children

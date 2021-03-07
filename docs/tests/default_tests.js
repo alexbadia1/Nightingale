@@ -30,3 +30,8 @@
     + "\t}\n"
     + "}\n"
     + "$";
+
+const ALANS_PROJECT_ONE_TEST = 
+   "{}$\n" + "{{{{{{}}}}}}$\n" 
+   + "{{{{{{}}} /* comments are ignored */}}}}$\n" 
+   +  "{/*comments are still ignored */ int @}$\n";

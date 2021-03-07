@@ -43,7 +43,7 @@ module NightingaleCompiler {
                         listItem.className = `token_${i} list-group-item list-group-item-action list-group-item-secondary`;
                         listItem.innerHTML =
                             `<span class="badge badge-primary badge-pill">${this.stacktrace[i].name}</span>`
-                            + `Ancestor: ${this.stacktrace[i].ancestor} (${this.stacktrace[i].lineNumber}:${this.stacktrace[i].linePosition})`;
+                            + `Lexeme: ${this.stacktrace[i].lexeme} (${this.stacktrace[i].lineNumber}:${this.stacktrace[i].linePosition})`;
                     }// if
 
                     // VALID Tokens are GREEN
@@ -51,7 +51,7 @@ module NightingaleCompiler {
                         listItem.className = `token_${i} list-group-item list-group-item-action list-group-item-success`;
                         listItem.innerHTML =
                             `<span class="badge badge-primary badge-pill">${this.stacktrace[i].name}</span>`
-                            + `Ancestor |${this.stacktrace[i].ancestor}| (${this.stacktrace[i].lineNumber}:${this.stacktrace[i].linePosition})`;
+                            + `Lexeme |${this.stacktrace[i].lexeme}| (${this.stacktrace[i].lineNumber}:${this.stacktrace[i].linePosition})`;
                     }// else
 
                 }//if: lexical token

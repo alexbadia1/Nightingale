@@ -7,6 +7,11 @@
    ------------ */
 const APP_NAME = "NightingaleCompiler";
 const APP_VERSION = "0.01";
+const CODE_EDITOR_TAB_LENGTH = 4;
+const LEXER = "LEXER";
+const ERROR = "ERROR";
+const WARNING = "WARNING";
+const INFO = "INFO";
 /**
  * 1. Keywords
  *

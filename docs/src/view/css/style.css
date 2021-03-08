@@ -178,6 +178,7 @@ html {
   /* North Border */
   border-top: solid .1rem rgba(64, 64, 64, 1);
 
+  font-size: 1rem !important;
   /* Grid Stuff */
   grid-area: console;
 }

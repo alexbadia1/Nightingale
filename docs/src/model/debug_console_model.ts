@@ -34,7 +34,7 @@ module NightingaleCompiler {
                 if (this.EmmitedTokens[i].name.includes(INVALID_TOKEN)) {
                     listItem.className = `token_${i} list-group-item list-group-item-action list-group-item-danger`;
                     listItem.innerHTML =
-                        `<span class="badge badge-primary badge-pill">${this.EmmitedTokens[i].name}</span>`
+                        `<span class="badge badge-primary badge-pill" style = "font-size: 1rem;">${this.EmmitedTokens[i].name}</span>`
                         + `Lexeme: ${this.EmmitedTokens[i].lexeme} (${this.EmmitedTokens[i].lineNumber}:${this.EmmitedTokens[i].linePosition})`;
                 }// if
 
@@ -44,13 +44,13 @@ module NightingaleCompiler {
                     if (this.EmmitedTokens[i].lexeme == "EOL" || this.EmmitedTokens[i].lexeme == "$") {
                         listItem.className = `token_${i} list-group-item list-group-item-action list-group-item-warning`;
                         listItem.innerHTML =
-                            `<span class="badge badge-primary badge-pill">${this.EmmitedTokens[i].name}</span>`
+                            `<span class="badge badge-primary badge-pill" style = "font-size: 1rem;">${this.EmmitedTokens[i].name}</span>`
                             + `Lexeme: ${this.EmmitedTokens[i].lexeme} (${this.EmmitedTokens[i].lineNumber})`;
                     }// if
                     else {
                         listItem.className = `token_${i} list-group-item list-group-item-action list-group-item-warning`;
                         listItem.innerHTML =
-                            `<span class="badge badge-primary badge-pill">${this.EmmitedTokens[i].name}</span>`
+                            `<span class="badge badge-primary badge-pill" style = "font-size: 1rem;">${this.EmmitedTokens[i].name}</span>`
                             + `Lexeme: ${this.EmmitedTokens[i].lexeme} (${this.EmmitedTokens[i].lineNumber}:${this.EmmitedTokens[i].linePosition})`;
                     }// else
                 }// else if
@@ -59,7 +59,7 @@ module NightingaleCompiler {
                 else if (this.EmmitedTokens[i].name.includes(MISSING_TOKEN)) {
                     listItem.className = `token_${i} list-group-item list-group-item-action list-group-item-info`;
                         listItem.innerHTML =
-                            `<span class="badge badge-primary badge-pill">${this.EmmitedTokens[i].name}</span>`
+                            `<span class="badge badge-primary badge-pill" style = "font-size: 1rem;">${this.EmmitedTokens[i].name}</span>`
                             + `Lexeme: ${this.EmmitedTokens[i].lexeme} (${this.EmmitedTokens[i].lineNumber})`;
                 }// if
                 
@@ -67,7 +67,7 @@ module NightingaleCompiler {
                 else {
                     listItem.className = `token_${i} list-group-item list-group-item-action list-group-item-success`;
                     listItem.innerHTML =
-                        `<span class="badge badge-primary badge-pill">${this.EmmitedTokens[i].name}</span>`
+                        `<span class="badge badge-primary badge-pill" style = "font-size: 1rem;">${this.EmmitedTokens[i].name}</span>`
                         + `Lexeme: ${this.EmmitedTokens[i].lexeme} (${this.EmmitedTokens[i].lineNumber}:${this.EmmitedTokens[i].linePosition})`;
                 }// if
 

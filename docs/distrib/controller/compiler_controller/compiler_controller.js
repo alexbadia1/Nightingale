@@ -38,14 +38,11 @@ var NightingaleCompiler;
             let trimmedSourceCode = rawSourceCode.trim();
             // Lex Phase
             let lexer_modified_source_code = this.lexer.main(trimmedSourceCode);
+            // Output Lex information
+            let output_console_model = new NightingaleCompiler.OutputConsoleModel(this.lexer.output);
             let debug_console_model = new NightingaleCompiler.DebugConsoleModel(this.lexer.debug_token_stream);
             let stacktrace_console_model = new NightingaleCompiler.StacktraceConsoleModel(this.lexer.stacktrace_stack);
-            document.getElementById("output_console").innerHTML = this.lexer.output.toString();
-            // TODO: Make a footer model and move UI stuff out of the controller
-            //   Probably want to use a set method or something
-            let footer_model;
-            document.getElementById("footer-warnings").innerHTML = this.lexer.warnings_stream.length.toString();
-            document.getElementById("footer-errors").innerHTML = this.lexer.errors_stream.length.toString();
+            let footer_model = new NightingaleCompiler.FooterModel(this.lexer.errors_stream.length, this.lexer.warnings_stream.length);
         } // compilerControllerBtnCompile_click
     } // class
     NightingaleCompiler.CompilerController = CompilerController;

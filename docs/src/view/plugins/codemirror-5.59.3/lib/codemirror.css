@@ -4,6 +4,7 @@
   /* Set height, width, borders, and global font properties here */
   position: relative;
   font-family: monospace;
+  font-size: 1.2rem;
   /* with right gutter: width: 77.5%; */
   color: white;
   direction: ltr;

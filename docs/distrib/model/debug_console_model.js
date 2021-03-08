@@ -32,6 +32,29 @@ var NightingaleCompiler;
                         `<span class="badge badge-primary badge-pill">${this.EmmitedTokens[i].name}</span>`
                             + `Lexeme: ${this.EmmitedTokens[i].lexeme} (${this.EmmitedTokens[i].lineNumber}:${this.EmmitedTokens[i].linePosition})`;
                 } // if
+                // Warnings severley mess up positioning so only report the line number
+                else if (this.EmmitedTokens[i].name.includes(WARNING_TOKEN)) {
+                    // Don't show position number for being in strings
+                    if (this.EmmitedTokens[i].lexeme == "EOL" || this.EmmitedTokens[i].lexeme == "$") {
+                        listItem.className = `token_${i} list-group-item list-group-item-action list-group-item-warning`;
+                        listItem.innerHTML =
+                            `<span class="badge badge-primary badge-pill">${this.EmmitedTokens[i].name}</span>`
+                                + `Lexeme: ${this.EmmitedTokens[i].lexeme} (${this.EmmitedTokens[i].lineNumber})`;
+                    } // if
+                    else {
+                        listItem.className = `token_${i} list-group-item list-group-item-action list-group-item-warning`;
+                        listItem.innerHTML =
+                            `<span class="badge badge-primary badge-pill">${this.EmmitedTokens[i].name}</span>`
+                                + `Lexeme: ${this.EmmitedTokens[i].lexeme} (${this.EmmitedTokens[i].lineNumber}:${this.EmmitedTokens[i].linePosition})`;
+                    } // else
+                } // else if
+                // Missing token
+                else if (this.EmmitedTokens[i].name.includes(MISSING_TOKEN)) {
+                    listItem.className = `token_${i} list-group-item list-group-item-action list-group-item-info`;
+                    listItem.innerHTML =
+                        `<span class="badge badge-primary badge-pill">${this.EmmitedTokens[i].name}</span>`
+                            + `Lexeme: ${this.EmmitedTokens[i].lexeme} (${this.EmmitedTokens[i].lineNumber})`;
+                } // if
                 // VALID Tokens are GREEN
                 else {
                     listItem.className = `token_${i} list-group-item list-group-item-action list-group-item-success`;

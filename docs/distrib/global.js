@@ -60,4 +60,6 @@ const END_OF_PROGRAM = "END_OF_PROGRAM";
 const CHARACTER = "CHARACTER";
 // Invalid Token
 const INVALID_TOKEN = "INVALID_TOKEN";
+const WARNING_TOKEN = "WARNING_TOKEN";
+const MISSING_TOKEN = "MISSING_TOKEN";
 //# sourceMappingURL=global.js.map

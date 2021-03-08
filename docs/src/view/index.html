@@ -44,13 +44,14 @@
 
     <!-- Models -->
     <script type="text/javascript" src="../../distrib/model/lexical_token_model.js"></script>
+    <script type="text/javascript" src="../../distrib/model/output_console._model.js"></script>
+    <script type="text/javascript" src="../../distrib/model/output_console_message_model.js"></script>
     <script type="text/javascript" src="../../distrib/model/debug_console_model.js"></script>
     <script type="text/javascript" src="../../distrib/model/stacktrace_console_model.js"></script>
+    <script type="text/javascript" src="../../distrib/model/footer_model.js"></script>
 
-
-    <!-- Automatic Tests -->
+    <!-- Tests -->
     <script type="text/javascript" src="../../tests/default_tests.js"></script>
-    <!-- <script type="text/javascript" src="http://alanclasses.github.io/TSOS/test/glados-ip4.js"></script> -->
 </head>
 
 <body id='body'>
@@ -145,7 +146,7 @@
             <div class="tab-content" style="height: 100%; width: 100%; overflow: scroll;">
 
                 <div id="output_console" class="tab-content_tab-verbose tab-pane fade in active">
-                    <p>Verbose Console</p>
+                    <!-- Output Console Model Here -->
                 </div>
 
                 <div id="debug_console" class="tab-content_tab-debug tab-pane fade">
@@ -184,20 +185,20 @@
 
 <!-- Footer -->
 <div id="footer">
-    <div class="d-flex p-2" style="position: relative; top: -35%;">
-        <div class="p-2" style="width: 3%"></div>
-        <div class="p-2">Errors: <span id = "footer-errors">0</span></div>
+    <div class="d-flex p-2" style="position: relative; top: -25%;">
+        <div class="p-2" style="width: 3%;"></div>
+        <div class="p-2" style = "font-size: 1rem;">Errors: <span id = "footer-errors">0</span></div>
         <div class="p-2" style="width: .5%"></div>
-        <div class="p-2">Warnings: <span id = "footer-warnings">0</span></div>
+        <div class="p-2" style = "font-size: 1rem;">Warnings: <span id = "footer-warnings">0</span></div>
         <div class="p-2" style="width: .5%"></div>
 
         <div class="p-2 flex-grow-1"></div>
 
-        <div class="p-2">Line: #, Column: #</div>
+        <div class="p-2" style = "font-size: 1rem;">Line: #, Column: #</div>
         <div class="p-2" style="width: .5%"></div>
-        <div class="p-2">Encoding: UTF-8 </div>
+        <div class="p-2" style = "font-size: 1rem;">Encoding: UTF-8 </div>
         <div class="p-2" style="width: .5%"></div>
-        <div class="p-2">Mode: Alans Language</div>
+        <div class="p-2" style = "font-size: 1rem;">Mode: Alans Language</div>
         <div class="p-2" style="width: 5%"></div>
     </div><!-- <div id="footer"> -->
 </div><!-- <div class="d-flex p-2"> -->
@@ -271,7 +272,7 @@
         // $("#sidebar__link").css({ "color": "white" });
 
         // Open Navigiator
-        $('#side-nav').width(screen.width * .15);
+        $('#side-nav').width(screen.width * .1125);
     });
 
 </script>

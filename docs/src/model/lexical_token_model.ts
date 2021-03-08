@@ -16,7 +16,7 @@ module NightingaleCompiler {
             public definition: RegExp = null,
 
             // The value that generated this token.
-            public ancestor: string = null,
+            public lexeme: string = null,
 
             // Location of the value that generated this token.
             // Values cannot span multiple lines since line-wrap is disabled.
@@ -27,10 +27,10 @@ module NightingaleCompiler {
         ) {}// constructor
 
         public copyWith(
-            newAncestor: string = this.ancestor,
+            newLexeme: string = this.lexeme,
             newLineNumber: number= this.lineNumber, 
             newLineStartPosition: number = this.linePosition) {
-            return new LexicalToken(this.name, this.definition, newAncestor, newLineNumber, newLineStartPosition);
+            return new LexicalToken(this.name, this.definition, newLexeme, newLineNumber, newLineStartPosition);
         }
     }// class
 }// module

@@ -14,7 +14,7 @@ var NightingaleCompiler;
         // Regular expression that qualifies what can generate this token.
         definition = null, 
         // The value that generated this token.
-        ancestor = null, 
+        lexeme = null, 
         // Location of the value that generated this token.
         // Values cannot span multiple lines since line-wrap is disabled.
         lineNumber = -1, 
@@ -22,12 +22,12 @@ var NightingaleCompiler;
         linePosition = -1) {
             this.name = name;
             this.definition = definition;
-            this.ancestor = ancestor;
+            this.lexeme = lexeme;
             this.lineNumber = lineNumber;
             this.linePosition = linePosition;
         } // constructor
-        copyWith(newAncestor = this.ancestor, newLineNumber = this.lineNumber, newLineStartPosition = this.linePosition) {
-            return new LexicalToken(this.name, this.definition, newAncestor, newLineNumber, newLineStartPosition);
+        copyWith(newLexeme = this.lexeme, newLineNumber = this.lineNumber, newLineStartPosition = this.linePosition) {
+            return new LexicalToken(this.name, this.definition, newLexeme, newLineNumber, newLineStartPosition);
         }
     } // class
     NightingaleCompiler.LexicalToken = LexicalToken;

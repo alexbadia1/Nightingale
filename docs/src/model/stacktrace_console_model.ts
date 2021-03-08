@@ -43,7 +43,22 @@ module NightingaleCompiler {
                         listItem.className = `token_${i} list-group-item list-group-item-action list-group-item-secondary`;
                         listItem.innerHTML =
                             `<span class="badge badge-primary badge-pill">${this.stacktrace[i].name}</span>`
-                            + `Ancestor: ${this.stacktrace[i].ancestor} (${this.stacktrace[i].lineNumber}:${this.stacktrace[i].linePosition})`;
+                            + `Lexeme: ${this.stacktrace[i].lexeme} (${this.stacktrace[i].lineNumber}:${this.stacktrace[i].linePosition})`;
+                    }// if
+
+                    else if (this.stacktrace[i].name.includes(WARNING_TOKEN)) {
+                        listItem.className = `token_${i} list-group-item list-group-item-action list-group-item-warning`;
+                        listItem.innerHTML =
+                            `<span class="badge badge-primary badge-pill">${this.stacktrace[i].name}</span>`
+                            + `Lexeme: ${this.stacktrace[i].lexeme} (${this.stacktrace[i].lineNumber}:${this.stacktrace[i].linePosition})`;
+                    }// else if
+
+                    // Missing token
+                    else if (this.stacktrace[i].name.includes(MISSING_TOKEN)) {
+                        listItem.className = `token_${i} list-group-item list-group-item-action list-group-item-info`;
+                        listItem.innerHTML =
+                            `<span class="badge badge-primary badge-pill">${this.stacktrace[i].name}</span>`
+                            + `Lexeme: ${this.stacktrace[i].lexeme} (${this.stacktrace[i].lineNumber})`;
                     }// if
 
                     // VALID Tokens are GREEN
@@ -51,7 +66,7 @@ module NightingaleCompiler {
                         listItem.className = `token_${i} list-group-item list-group-item-action list-group-item-success`;
                         listItem.innerHTML =
                             `<span class="badge badge-primary badge-pill">${this.stacktrace[i].name}</span>`
-                            + `Ancestor |${this.stacktrace[i].ancestor}| (${this.stacktrace[i].lineNumber}:${this.stacktrace[i].linePosition})`;
+                            + `Lexeme |${this.stacktrace[i].lexeme}| (${this.stacktrace[i].lineNumber}:${this.stacktrace[i].linePosition})`;
                     }// else
 
                 }//if: lexical token
@@ -59,7 +74,7 @@ module NightingaleCompiler {
                 // Substring of source code
                 else {
                     listItem.className = `substring${i} list-group-item list-group-item-action list-group-item-secondary`;
-                    listItem.innerHTML =`Chunk: |${this.stacktrace[i]}|`;
+                    listItem.innerHTML = `Chunk: |${this.stacktrace[i]}|`;
                 }// else: Substring of source code
 
                 stacktraceConsoleList.appendChild(listItem);

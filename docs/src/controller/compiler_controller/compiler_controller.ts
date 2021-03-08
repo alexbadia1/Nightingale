@@ -53,17 +53,20 @@ module NightingaleCompiler {
             console.log("Compiling");
 
             let trimmedSourceCode = rawSourceCode.trim();
-            // console.log(`Trimmed User Source Code: ${trimmedSourceCode}`);
-            // console.log(`Source Code as String Literal: ${JSON.stringify(trimmedSourceCode)}`);
 
             // Lex Phase
-            this.lexer.main(trimmedSourceCode);
+            let lexer_modified_source_code: string = this.lexer.main(trimmedSourceCode);
 
-            /**
-             * 
-             */
-            let debugConsole: DebugConsoleModel = new DebugConsoleModel(this.lexer.tokenStream);
-            let stacktraceConsole: StacktraceConsoleModel = new StacktraceConsoleModel(this.lexer.stacktraceStack);
+            let debug_console_model: DebugConsoleModel = new DebugConsoleModel(this.lexer.debug_token_stream);
+            let stacktrace_console_model: StacktraceConsoleModel = new StacktraceConsoleModel(this.lexer.stacktrace_stack);
+
+            document.getElementById("output_console").innerHTML = this.lexer.output.toString();
+
+            // TODO: Make a footer model and move UI stuff out of the controller
+            //   Probably want to use a set method or something
+            let footer_model;
+            document.getElementById("footer-warnings").innerHTML = this.lexer.warnings_stream.length.toString();
+            document.getElementById("footer-errors").innerHTML = this.lexer.errors_stream.length.toString();
         }// compilerControllerBtnCompile_click
     }// class
 }// module

@@ -76,7 +76,8 @@
                 style="position: absolute; left: 0; width: 85%;">
                 <ul class="nav navbar-nav navbar-right" style="margin-right: 0; margin-top: -.5%;">
                     <li role="presentation">
-                        <a id="compile-button" onclick="NightingaleCompiler.CompilerController.compilerControllerBtnCompile_click(myCodeMirror.getValue());">
+                        <a id="compile-button"
+                            onclick="NightingaleCompiler.CompilerController.compilerControllerBtnCompile_click(myCodeMirror.getValue());">
                             <svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" fill="currentColor"
                                 class="bi bi-play-fill" viewBox="0 0 16 16">
                                 <path
@@ -104,7 +105,20 @@
 
         <!-- lists all test files -->
         <div id="side-nav">
-            Tests
+            <div class="d-flex flex-column mt-3">
+                <div class="d-flex justify-content-around">
+                    <!-- As you can see my creativity for test naming ran out quick... -->
+                    <ul>
+                        <li><a id="sidebar__link--tests" onclick="myCodeMirror.setValue(LONG_TEST_CASE)">long_test_case.gle</a></li>
+                        <li><a id="sidebar__link--tests" onclick="myCodeMirror.setValue(ALANS_PROJECT_ONE_TEST)">project_one_test.gle</a></li>
+                        <li><a id="sidebar__link--tests" onclick="myCodeMirror.setValue(RANDOM_BOOL_OPS_TEST)">random_bool_ops.gle</a></li>
+                        <li><a id="sidebar__link--tests" onclick="myCodeMirror.setValue(BROKEN_STRINGS)">broken_strings.gle</a></li>
+                        <li><a id="sidebar__link--tests" onclick="myCodeMirror.setValue(BROKEN_COMMENTS)">broken_comments.gle</a></li>
+                        <li><a id="sidebar__link--tests" onclick="myCodeMirror.setValue(SYMBOL_SALAD)">symbol_salad.gle</a></li>
+                        <li><a id="sidebar__link--tests" onclick="myCodeMirror.setValue(LETTER_SOUP)">letter_soup.gle</a></li>
+                    </ul>
+                </div>
+            </div>
         </div>
         <!--<div id="side-nav"> -->
 
@@ -115,29 +129,33 @@
         <!-- Draggable Output Console -->
         <div id="console" style="overflow: hidden;">
             <ul id='bootstrap-override-nav-tabs' class="nav nav-tabs">
-                <li class=" console__tab-verbose active"><a class='output-anchor' data-toggle="tab" href="#verbose">Verbose</a></li>
-                <li class=" console__tab-debug"><a class='output-anchor' data-toggle="tab" href="#debug_console">Debug</a></li>
-                <li class=" console__tab-stacktrace"><a class='output-anchor' data-toggle="tab" href="#stacktrace_console">Stacktrace</a></li>
+                <li class=" console__tab-verbose active"><a class='output-anchor' data-toggle="tab"
+                        href="#output_console">OUTPUT</a></li>
+                <li class=" console__tab-debug"><a class='output-anchor' data-toggle="tab"
+                        href="#debug_console">DEBUG</a></li>
+                <li class=" console__tab-stacktrace"><a class='output-anchor' data-toggle="tab"
+                        href="#stacktrace_console">STACKTRACE</a></li>
                 <li class=" console__tab-cst"><a class='output-anchor' data-toggle="tab" href="#cst">CST</a></li>
                 <li class=" console__tab-ast"><a class='output-anchor' data-toggle="tab" href="#ast">AST</a></li>
-                <li class=" console__tab-terminal"><a class='output-anchor' data-toggle="tab" href="#terminal">TERMINAL</a></li>
+                <li class=" console__tab-terminal"><a class='output-anchor' data-toggle="tab"
+                        href="#terminal">TERMINAL</a></li>
             </ul>
             <!--<ul ul id='bootstrap-override-nav-tabs' class="nav nav-tabs"> -->
 
-            <div class="tab-content" style = "height: 100%; width: 100%; overflow: scroll;">
+            <div class="tab-content" style="height: 100%; width: 100%; overflow: scroll;">
 
-                <div id="verbose" class="tab-content_tab-verbose tab-pane fade in active">
+                <div id="output_console" class="tab-content_tab-verbose tab-pane fade in active">
                     <p>Verbose Console</p>
                 </div>
 
                 <div id="debug_console" class="tab-content_tab-debug tab-pane fade">
-                    <div id = "debug_console_list" class = "list-group">
+                    <div id="debug_console_list" class="list-group">
                         <!-- List of Emmitted Tokens -->
                     </div>
                 </div>
 
                 <div id="stacktrace_console" class="tab-content_tab-stacktrace tab-pane fade">
-                    <div id = "stacktrace_console_list" class = "list-group">
+                    <div id="stacktrace_console_list" class="list-group">
                         <!-- List of Emmitted Tokens -->
                     </div>
                 </div>
@@ -168,9 +186,9 @@
 <div id="footer">
     <div class="d-flex p-2" style="position: relative; top: -35%;">
         <div class="p-2" style="width: 3%"></div>
-        <div class="p-2">Errors: 0 </div>
+        <div class="p-2">Errors: <span id = "footer-errors">0</span></div>
         <div class="p-2" style="width: .5%"></div>
-        <div class="p-2">Warnings: 0</div>
+        <div class="p-2">Warnings: <span id = "footer-warnings">0</span></div>
         <div class="p-2" style="width: .5%"></div>
 
         <div class="p-2 flex-grow-1"></div>

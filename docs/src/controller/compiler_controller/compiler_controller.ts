@@ -58,6 +58,7 @@ module NightingaleCompiler {
             let lexer_modified_source_code: string = this.lexer.main(trimmedSourceCode);
 
             // Output Lex information
+            console.log(this.lexer.token_stream);
             let output_console_model: OutputConsoleModel = new OutputConsoleModel(this.lexer.output);
             let debug_console_model: DebugConsoleModel = new DebugConsoleModel(this.lexer.debug_token_stream);
             let stacktrace_console_model: StacktraceConsoleModel = new StacktraceConsoleModel(this.lexer.stacktrace_stack);

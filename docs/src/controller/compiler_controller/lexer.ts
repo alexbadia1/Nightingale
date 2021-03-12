@@ -14,18 +14,18 @@ module NightingaleCompiler {
              * An array that must be filled with Lexical 
              * Tokens and passed to the Parser in synchronous manner.
              */
-            public token_stream: Array<LexicalToken> = [],
+            public token_stream: Array<Array<LexicalToken>> = [[]],
+
+                        /*
+            * An array of only Lexical Token types: invalid, valid, warning.
+            */
+            public debug_token_stream: Array<Array<LexicalToken>> = [[]],
 
             /**
              * An array of errors, warnings, tokens, lexemes and other debug info.
              * Shows trace of the greedy algorithm used to generate tokens.
              */
             public stacktrace_stack: Array<any> = [],
-
-            /*
-            * An array of only Lexical Token types: invalid, valid, warning.
-            */
-            public debug_token_stream: Array<LexicalToken> = [],
 
             /**
              * An array of errors, warnings, compilation info.
@@ -351,7 +351,15 @@ module NightingaleCompiler {
                 this.isInString = false;
 
                 // Generate an invalid token for the first character in the invalid sub string.
-                this.emit_token_to_stream(new LexicalToken("END_STRING_EXPRESSION", null, new_current_potential_lexeme, this._code_editor_line_number, this._code_editor_line_position + 1));
+                this.emit_token_to_stream(
+                    new LexicalToken(
+                        STRING_EXPRESSION_BOUNDARY, 
+                        null, 
+                        new_current_potential_lexeme, 
+                        this._code_editor_line_number, 
+                        this._code_editor_line_position + 1
+                    )// Lexical Token
+                );// emit_token_to_stream
 
                 // Calculate the new location in code editor
                 this._code_editor_line_position += new_current_potential_lexeme.length;
@@ -681,6 +689,8 @@ module NightingaleCompiler {
              */
             if (this._last_position != source_code.length) {
                 this.program_number++;
+                this.token_stream.push(new Array<LexicalToken>());
+                this.debug_token_stream.push(new Array<LexicalToken>());
                 this.output.push(new OutputConsoleMessage(LEXER, INFO, `Lexing program ${this.program_number}...`));
                 this.missingEndOfProgram = true;
             }// if
@@ -762,13 +772,30 @@ module NightingaleCompiler {
             }// else-if
 
             else {
-                this.token_stream.push(newToken);
+                // Only emit tokens space and tab tokens in string
+                if (this.isInString && (newToken.name == SPACE_SINGLE || newToken.name == SPACE_TAB)) {
+                    this.token_stream[this.program_number - 1].push(newToken);
+                }// if
+
+                // 
+                else if (
+                    newToken.name != START_BLOCK_COMMENT 
+                    && newToken.name != END_BLOCK_COMMENT 
+                    && newToken.name != SPACE_END_OF_LINE 
+                    && newToken.name != SPACE_TAB
+                    && newToken.name != SPACE_SINGLE
+                ) {
+                    this.token_stream[this.program_number - 1].push(newToken);
+                }// else if
+                else {
+                    // Don't emit comment tokens.
+                    // Don't emit space tokens that aren't in strings
+                }// else
             }// else
 
-            // Tokens for debugging
-            this.debug_token_stream.push(newToken);
+            this.debug_token_stream[this.program_number - 1].push(newToken);
             this.stacktrace_stack.push(newToken);
-            console.log(`[${newToken.name}] Lexeme: ${newToken.lexeme}, Line-Position: ${newToken.linePosition}`);
+            //console.log(`[${newToken.name}] Lexeme: ${newToken.lexeme}, Line-Position: ${newToken.linePosition}`);
         }// emit_token_to_stream
 
 

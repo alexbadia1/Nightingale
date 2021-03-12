@@ -19,13 +19,6 @@
 var NightingaleCompiler;
 (function (NightingaleCompiler) {
     class CompilerController {
-        /**
-         * Creates a compiler instance.
-         */
-        static init() {
-            this.lexer = new NightingaleCompiler.Lexer();
-            this.parser = new NightingaleCompiler.Lexer();
-        } // init
         // TODO: Implement more stages
         /**
          * Compile Button
@@ -33,7 +26,7 @@ var NightingaleCompiler;
          */
         static compilerControllerBtnCompile_click(rawSourceCode) {
             // Create a compiler instance
-            this.init();
+            this.lexer = new NightingaleCompiler.Lexer();
             console.log("Compiling");
             let trimmedSourceCode = rawSourceCode.trim();
             // Lex Phase
@@ -44,6 +37,8 @@ var NightingaleCompiler;
             let debug_console_model = new NightingaleCompiler.DebugConsoleModel(this.lexer.debug_token_stream);
             let stacktrace_console_model = new NightingaleCompiler.StacktraceConsoleModel(this.lexer.stacktrace_stack);
             let footer_model = new NightingaleCompiler.FooterModel(this.lexer.errors_stream.length, this.lexer.warnings_stream.length);
+            console.log(this.lexer.invalid_programs);
+            this.parser = new NightingaleCompiler.Parser(this.lexer.token_stream);
         } // compilerControllerBtnCompile_click
     } // class
     NightingaleCompiler.CompilerController = CompilerController;

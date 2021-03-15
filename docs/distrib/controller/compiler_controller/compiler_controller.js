@@ -38,7 +38,13 @@ var NightingaleCompiler;
             let stacktrace_console_model = new NightingaleCompiler.StacktraceConsoleModel(this.lexer.stacktrace_stack);
             let footer_model = new NightingaleCompiler.FooterModel(this.lexer.errors_stream.length, this.lexer.warnings_stream.length);
             console.log(this.lexer.invalid_programs);
-            this.parser = new NightingaleCompiler.Parser(this.lexer.token_stream);
+            this.parser = new NightingaleCompiler.Parser(this.lexer.token_stream, this.lexer.invalid_programs);
+            try {
+                this.parser.parse_program();
+            } // try
+            catch (e) {
+                console.log(e);
+            } // catch
         } // compilerControllerBtnCompile_click
     } // class
     NightingaleCompiler.CompilerController = CompilerController;

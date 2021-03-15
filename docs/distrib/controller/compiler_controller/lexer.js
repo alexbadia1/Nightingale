@@ -566,6 +566,7 @@ var NightingaleCompiler;
                 this.program_number++;
                 this.token_stream.push(new Array());
                 this.debug_token_stream.push(new Array());
+                this.output.push(new NightingaleCompiler.OutputConsoleMessage(LEXER, INFO, `Lexer finished lexing program ${this.program_number + 1}.`));
                 this.output.push(new NightingaleCompiler.OutputConsoleMessage(LEXER, INFO, `Lexing program ${this.program_number + 1}...`));
                 this.missingEndOfProgram = true;
                 // Reset flags

@@ -33,14 +33,6 @@ module NightingaleCompiler {
          */
         public static parser: NightingaleCompiler.Parser;
 
-        /**
-         * Creates a compiler instance.
-         */
-        public static init(): void {
-            this.lexer = new NightingaleCompiler.Lexer();
-            this.parser = new  NightingaleCompiler.Lexer();
-        }// init
-
         // TODO: Implement more stages
 
         /**
@@ -49,7 +41,7 @@ module NightingaleCompiler {
          */
         public static compilerControllerBtnCompile_click(rawSourceCode: string) {
             // Create a compiler instance
-            this.init();
+            this.lexer = new NightingaleCompiler.Lexer();
             console.log("Compiling");
 
             let trimmedSourceCode = rawSourceCode.trim();
@@ -63,6 +55,9 @@ module NightingaleCompiler {
             let debug_console_model: DebugConsoleModel = new DebugConsoleModel(this.lexer.debug_token_stream);
             let stacktrace_console_model: StacktraceConsoleModel = new StacktraceConsoleModel(this.lexer.stacktrace_stack);
             let footer_model: FooterModel = new FooterModel(this.lexer.errors_stream.length, this.lexer.warnings_stream.length);
+
+            console.log(this.lexer.invalid_programs);
+            this.parser = new  NightingaleCompiler.Parser(this.lexer.token_stream);
         }// compilerControllerBtnCompile_click
     }// class
 }// module

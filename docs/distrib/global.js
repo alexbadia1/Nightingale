@@ -9,6 +9,7 @@ const APP_NAME = "NightingaleCompiler";
 const APP_VERSION = "0.01";
 const CODE_EDITOR_TAB_LENGTH = 4;
 const LEXER = "LEXER";
+const PARSER = "PARSER";
 const ERROR = "ERROR";
 const WARNING = "WARNING";
 const INFO = "INFO";
@@ -67,4 +68,9 @@ const CHARACTER = "CHARACTER";
 const INVALID_TOKEN = "INVALID_TOKEN";
 const WARNING_TOKEN = "WARNING_TOKEN";
 const MISSING_TOKEN = "MISSING_TOKEN";
+/**
+ * Abstract Syntax Tree Types of Nodes
+ */
+const BRANCH = "BRANCH";
+const LEAF = "LEAF";
 //# sourceMappingURL=global.js.map

@@ -22,34 +22,36 @@ var NightingaleCompiler;
             while (output_console.firstChild) {
                 output_console.removeChild(output_console.firstChild);
             } // while: remove all children
-            // Add new children
-            for (let i = 0; i < this.output.length; ++i) {
-                let listItem = document.createElement("li");
-                listItem.className = `token_${i}`;
-                listItem.style.listStyle = "none";
-                listItem.style.fontSize = "1rem";
-                listItem.style.marginLeft = "15px";
-                listItem.style.color = "white";
-                if (this.output[i].type == INFO) {
-                    listItem.innerHTML =
-                        `${this.output[i].source} `
-                            + `<span  style = "color: white;">${this.output[i].type}</span>`
-                            + ` - ${this.output[i].message}`;
-                } // if
-                else if (this.output[i].type == WARNING) {
-                    listItem.innerHTML =
-                        `${this.output[i].source} `
-                            + `<span  style = "color: yellow;">${this.output[i].type}</span>`
-                            + ` - ${this.output[i].message}`;
-                } // else-if
-                else if (this.output[i].type == ERROR) {
-                    listItem.innerHTML =
-                        `${this.output[i].source} `
-                            + `<span  style = "color: red;">${this.output[i].type}</span>`
-                            + ` - ${this.output[i].message}`;
-                } // else-if
-                output_console.appendChild(listItem);
-            } // for: add new children
+            for (let a_single_programs_output of this.output) {
+                // Add new children
+                for (let i = 0; i < a_single_programs_output.length; ++i) {
+                    let listItem = document.createElement("li");
+                    listItem.className = `token_${i}`;
+                    listItem.style.listStyle = "none";
+                    listItem.style.fontSize = "1rem";
+                    listItem.style.marginLeft = "15px";
+                    listItem.style.color = "white";
+                    if (a_single_programs_output[i].type == INFO) {
+                        listItem.innerHTML =
+                            `${a_single_programs_output[i].source} `
+                                + `<span  style = "color: white;">${a_single_programs_output[i].type}</span>`
+                                + ` - ${a_single_programs_output[i].message}`;
+                    } // if
+                    else if (a_single_programs_output[i].type == WARNING) {
+                        listItem.innerHTML =
+                            `${a_single_programs_output[i].source} `
+                                + `<span  style = "color: yellow;">${a_single_programs_output[i].type}</span>`
+                                + ` - ${a_single_programs_output[i].message}`;
+                    } // else-if
+                    else if (a_single_programs_output[i].type == ERROR) {
+                        listItem.innerHTML =
+                            `${a_single_programs_output[i].source} `
+                                + `<span  style = "color: red;">${a_single_programs_output[i].type}</span>`
+                                + ` - ${a_single_programs_output[i].message}`;
+                    } // else-if
+                    output_console.appendChild(listItem);
+                } // for: add new children
+            } // for: each program
             let bottomMargin = document.createElement("div");
             // Avoids the bottom banner from overlapping over the list.
             // Double check the stylesheet to make sure the height is slightly larger than the ".footer" height

@@ -3,6 +3,6 @@
  *
  * Author: Alex Badia
  *
- * The logical model of an Abstract Syntax Tree.
+ * The logical model of a Abstract Syntax Tree.
  */ 
 //# sourceMappingURL=abstract_syntax_tree_model.js.map

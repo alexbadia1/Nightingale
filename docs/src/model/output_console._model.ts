@@ -13,7 +13,7 @@
  module NightingaleCompiler {
     export class OutputConsoleModel {
         constructor(
-            public output: Array<OutputConsoleMessage>,
+            public output: Array<Array<OutputConsoleMessage>>,
         ) {
             this.show_output();
         }// constuctor
@@ -26,39 +26,41 @@
                 output_console.removeChild(output_console.firstChild);
             }// while: remove all children
 
-            // Add new children
-            for (let i: number = 0; i < this.output.length; ++i) {
-                let listItem: HTMLLIElement = document.createElement("li");
-                listItem.className = `token_${i}`;
-                listItem.style.listStyle = "none";
-                listItem.style.fontSize = "1rem";
-                listItem.style.marginLeft = "15px";
-                listItem.style.color = "white";
+            for (let a_single_programs_output of this.output) {
 
-                if (this.output[i].type == INFO) {
-                    listItem.innerHTML =
-                        `${this.output[i].source} `
-                        + `<span  style = "color: white;">${this.output[i].type}</span>`
-                        + ` - ${this.output[i].message}`;
-                }// if
+                // Add new children
+                for (let i: number = 0; i < a_single_programs_output.length; ++i) {
+                    let listItem: HTMLLIElement = document.createElement("li");
+                    listItem.className = `token_${i}`;
+                    listItem.style.listStyle = "none";
+                    listItem.style.fontSize = "1rem";
+                    listItem.style.marginLeft = "15px";
+                    listItem.style.color = "white";
 
-                else if (this.output[i].type == WARNING) {
-                    listItem.innerHTML =
-                        `${this.output[i].source} `
-                        + `<span  style = "color: yellow;">${this.output[i].type}</span>`
-                        + ` - ${this.output[i].message}`;
-                }// else-if
+                    if (a_single_programs_output[i].type == INFO) {
+                        listItem.innerHTML =
+                            `${a_single_programs_output[i].source} `
+                            + `<span  style = "color: white;">${a_single_programs_output[i].type}</span>`
+                            + ` - ${a_single_programs_output[i].message}`;
+                    }// if
 
-                else if (this.output[i].type == ERROR) {
-                    listItem.innerHTML =
-                        `${this.output[i].source} `
-                        + `<span  style = "color: red;">${this.output[i].type}</span>`
-                        + ` - ${this.output[i].message}`;
-                }// else-if
+                    else if (a_single_programs_output[i].type == WARNING) {
+                        listItem.innerHTML =
+                            `${a_single_programs_output[i].source} `
+                            + `<span  style = "color: yellow;">${a_single_programs_output[i].type}</span>`
+                            + ` - ${a_single_programs_output[i].message}`;
+                    }// else-if
 
-                output_console.appendChild(listItem);
-            }// for: add new children
+                    else if (a_single_programs_output[i].type == ERROR) {
+                        listItem.innerHTML =
+                            `${a_single_programs_output[i].source} `
+                            + `<span  style = "color: red;">${a_single_programs_output[i].type}</span>`
+                            + ` - ${a_single_programs_output[i].message}`;
+                    }// else-if
 
+                    output_console.appendChild(listItem);
+                }// for: add new children
+            }// for: each program
 
             let bottomMargin: HTMLDivElement = document.createElement("div");
 

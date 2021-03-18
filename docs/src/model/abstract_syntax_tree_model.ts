@@ -3,5 +3,5 @@
  * 
  * Author: Alex Badia
  * 
- * The logical model of an Abstract Syntax Tree.
+ * The logical model of a Abstract Syntax Tree.
  */

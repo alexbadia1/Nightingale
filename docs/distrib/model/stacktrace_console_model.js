@@ -28,46 +28,48 @@ var NightingaleCompiler;
             while (stacktraceConsoleList.firstChild) {
                 stacktraceConsoleList.removeChild(stacktraceConsoleList.firstChild);
             } // while: remove all children
-            // Add new children
-            for (let i = 0; i < this.stacktrace.length; ++i) {
-                let listItem = document.createElement("a");
-                // Lexical Token
-                if (typeof this.stacktrace[i] == "object") {
-                    // INVALID Tokens are RED
-                    if (this.stacktrace[i].name.includes(INVALID_TOKEN)) {
-                        listItem.className = `token_${i} list-group-item list-group-item-action list-group-item-secondary`;
-                        listItem.innerHTML =
-                            `<span class="badge badge-primary badge-pill" style = "font-size: 1rem;">${this.stacktrace[i].name}</span>`
-                                + `Lexeme: ${this.stacktrace[i].lexeme} (${this.stacktrace[i].lineNumber}:${this.stacktrace[i].linePosition})`;
-                    } // if
-                    else if (this.stacktrace[i].name.includes(WARNING_TOKEN)) {
-                        listItem.className = `token_${i} list-group-item list-group-item-action list-group-item-warning`;
-                        listItem.innerHTML =
-                            `<span class="badge badge-primary badge-pill" style = "font-size: 1rem;">${this.stacktrace[i].name}</span>`
-                                + `Lexeme: ${this.stacktrace[i].lexeme} (${this.stacktrace[i].lineNumber}:${this.stacktrace[i].linePosition})`;
-                    } // else if
-                    // Missing token
-                    else if (this.stacktrace[i].name.includes(MISSING_TOKEN)) {
-                        listItem.className = `token_${i} list-group-item list-group-item-action list-group-item-info`;
-                        listItem.innerHTML =
-                            `<span class="badge badge-primary badge-pill" style = "font-size: 1rem;">${this.stacktrace[i].name}</span>`
-                                + `Lexeme: ${this.stacktrace[i].lexeme} (${this.stacktrace[i].lineNumber})`;
-                    } // if
-                    // VALID Tokens are GREEN
+            for (let a_single_program_stacktrace of this.stacktrace) {
+                // Add new children
+                for (let i = 0; i < a_single_program_stacktrace.length; ++i) {
+                    let listItem = document.createElement("a");
+                    // Lexical Token
+                    if (typeof a_single_program_stacktrace[i] == "object") {
+                        // INVALID Tokens are RED
+                        if (a_single_program_stacktrace[i].name.includes(INVALID_TOKEN)) {
+                            listItem.className = `token_${i} list-group-item list-group-item-action list-group-item-secondary`;
+                            listItem.innerHTML =
+                                `<span class="badge badge-primary badge-pill" style = "font-size: 1rem;">${a_single_program_stacktrace[i].name}</span>`
+                                    + `Lexeme: ${a_single_program_stacktrace[i].lexeme} (${a_single_program_stacktrace[i].lineNumber}:${a_single_program_stacktrace[i].linePosition})`;
+                        } // if
+                        else if (a_single_program_stacktrace[i].name.includes(WARNING_TOKEN)) {
+                            listItem.className = `token_${i} list-group-item list-group-item-action list-group-item-warning`;
+                            listItem.innerHTML =
+                                `<span class="badge badge-primary badge-pill" style = "font-size: 1rem;">${a_single_program_stacktrace[i].name}</span>`
+                                    + `Lexeme: ${a_single_program_stacktrace[i].lexeme} (${a_single_program_stacktrace[i].lineNumber}:${a_single_program_stacktrace[i].linePosition})`;
+                        } // else if
+                        // Missing token
+                        else if (a_single_program_stacktrace[i].name.includes(MISSING_TOKEN)) {
+                            listItem.className = `token_${i} list-group-item list-group-item-action list-group-item-info`;
+                            listItem.innerHTML =
+                                `<span class="badge badge-primary badge-pill" style = "font-size: 1rem;">${a_single_program_stacktrace[i].name}</span>`
+                                    + `Lexeme: ${a_single_program_stacktrace[i].lexeme} (${a_single_program_stacktrace[i].lineNumber})`;
+                        } // if
+                        // VALID Tokens are GREEN
+                        else {
+                            listItem.className = `token_${i} list-group-item list-group-item-action list-group-item-success`;
+                            listItem.innerHTML =
+                                `<span class="badge badge-primary badge-pill" style = "font-size: 1rem;">${a_single_program_stacktrace[i].name}</span>`
+                                    + `Lexeme |${a_single_program_stacktrace[i].lexeme}| (${a_single_program_stacktrace[i].lineNumber}:${a_single_program_stacktrace[i].linePosition})`;
+                        } // else
+                    } //if: lexical token
+                    // Substring of source code
                     else {
-                        listItem.className = `token_${i} list-group-item list-group-item-action list-group-item-success`;
-                        listItem.innerHTML =
-                            `<span class="badge badge-primary badge-pill" style = "font-size: 1rem;">${this.stacktrace[i].name}</span>`
-                                + `Lexeme |${this.stacktrace[i].lexeme}| (${this.stacktrace[i].lineNumber}:${this.stacktrace[i].linePosition})`;
-                    } // else
-                } //if: lexical token
-                // Substring of source code
-                else {
-                    listItem.className = `substring${i} list-group-item list-group-item-action list-group-item-secondary`;
-                    listItem.innerHTML = `Chunk: |${this.stacktrace[i]}|`;
-                } // else: Substring of source code
-                stacktraceConsoleList.appendChild(listItem);
-            } // for: add new children
+                        listItem.className = `substring${i} list-group-item list-group-item-action list-group-item-secondary`;
+                        listItem.innerHTML = `Chunk: |${a_single_program_stacktrace[i]}|`;
+                    } // else: Substring of source code
+                    stacktraceConsoleList.appendChild(listItem);
+                } // for: add new children
+            } // for: each program
             let bottomMargin = document.createElement("div");
             // Avoids the bottom banner from overlapping over the list.
             // Double check the stylesheet to make sure the height is slightly larger than the ".footer" height

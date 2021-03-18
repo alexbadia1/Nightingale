@@ -40,6 +40,33 @@ module NightingaleCompiler {
          * @param {string} rawSourceCode - The raw source code from Code Mirror.
          */
         public static compilerControllerBtnCompile_click(rawSourceCode: string) {
+
+            var t = new NightingaleCompiler.AbstractSyntaxTree();
+            t.add_node("Root", BRANCH);
+            t.add_node("Expr", BRANCH);
+            t.add_node("Term", BRANCH);
+            t.add_node("Factor", BRANCH);
+            t.add_node("a", LEAF);
+            t.root_node();
+            t.root_node();
+            t.root_node();
+            // t.root_node();  // Un-comment this to test guards against moving "up" past the root of the tree.
+
+            t.add_node("Op", BRANCH);
+            t.add_node("+", LEAF);
+            t.root_node();
+
+            t.add_node("Term", BRANCH);
+            t.add_node("Factor", BRANCH);
+            t.add_node("2", LEAF);
+            t.root_node();
+            t.root_node();
+
+            console.log(t.toString());
+
+            document.getElementById("cst").innerHTML = t.toString();
+
+
             // Create a compiler instance
             this.lexer = new NightingaleCompiler.Lexer();
             console.log("Compiling");
@@ -64,6 +91,8 @@ module NightingaleCompiler {
              catch (e) {
                 console.log(e);
              }// catch
+
+             
         }// compilerControllerBtnCompile_click
     }// class
 }// module

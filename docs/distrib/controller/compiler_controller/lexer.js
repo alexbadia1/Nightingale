@@ -27,11 +27,11 @@ var NightingaleCompiler;
          * An array of errors, warnings, tokens, lexemes and other debug info.
          * Shows trace of the greedy algorithm used to generate tokens.
          */
-        stacktrace_stack = [], 
+        stacktrace_stack = [[]], 
         /**
          * An array of errors, warnings, compilation info.
          */
-        output = [], 
+        output = [[]], 
         /**
          * Stores all warning tokens
          */
@@ -172,13 +172,13 @@ var NightingaleCompiler;
          */
         main(new_source_code) {
             // Assume this is the first program
-            this.output.push(new NightingaleCompiler.OutputConsoleMessage(LEXER, INFO, `Lexing program ${this.program_number + 1}...`));
+            this.output[this.program_number].push(new NightingaleCompiler.OutputConsoleMessage(LEXER, INFO, `Lexing program ${this.program_number + 1}...`));
             // The current substring of the source code that will be tested against tokens.
             var current_potential_lexeme = "???";
             while (this._last_position <= new_source_code.length && this._current_position <= new_source_code.length) {
                 // Generate a new substring and stacktrace it
                 current_potential_lexeme = new_source_code.substring(this._last_position, this._current_position);
-                this.stacktrace_stack.push(current_potential_lexeme);
+                this.stacktrace_stack[this.program_number].push(current_potential_lexeme);
                 // Already inside a comment
                 if (this.isInComment) {
                     // Skip reading the next line in comment if an END_BLOCK_COMMENT Token is found
@@ -254,8 +254,8 @@ var NightingaleCompiler;
             // Fixing errors is even more dangerous that fixing warnings... so don't.
             this.post_check_for_errors();
             // Lex metadata
-            this.output.push(new NightingaleCompiler.OutputConsoleMessage(LEXER, INFO, `Lexer completed with ${this.warnings_stream.length} warnings.`));
-            this.output.push(new NightingaleCompiler.OutputConsoleMessage(LEXER, INFO, `Lexer completed with ${this.errors_stream.length} errors.`));
+            this.output[this.program_number].push(new NightingaleCompiler.OutputConsoleMessage(LEXER, INFO, `Lexer completed with ${this.warnings_stream.length} warnings.`));
+            this.output[this.program_number].push(new NightingaleCompiler.OutputConsoleMessage(LEXER, INFO, `Lexer completed with ${this.errors_stream.length} errors.`));
             // This is the fixed source code
             return new_source_code;
         } // function: main
@@ -566,8 +566,10 @@ var NightingaleCompiler;
                 this.program_number++;
                 this.token_stream.push(new Array());
                 this.debug_token_stream.push(new Array());
-                this.output.push(new NightingaleCompiler.OutputConsoleMessage(LEXER, INFO, `Lexer finished lexing program ${this.program_number + 1}.`));
-                this.output.push(new NightingaleCompiler.OutputConsoleMessage(LEXER, INFO, `Lexing program ${this.program_number + 1}...`));
+                this.output.push(new Array());
+                this.stacktrace_stack.push(new Array());
+                this.output[this.program_number].push(new NightingaleCompiler.OutputConsoleMessage(LEXER, INFO, `Lexer finished lexing program ${this.program_number + 1}.`));
+                this.output[this.program_number].push(new NightingaleCompiler.OutputConsoleMessage(LEXER, INFO, `Lexing program ${this.program_number + 1}...`));
                 this.missingEndOfProgram = true;
                 // Reset flags
                 this.isInComment = false;
@@ -589,7 +591,7 @@ var NightingaleCompiler;
         post_check_for_warnings(newnew_source_code) {
             // Missing EOP, add it
             if (this.missingEndOfProgram) {
-                this.output.push(new NightingaleCompiler.OutputConsoleMessage(LEXER, WARNING, `Missing EOP. Try adding $ to line ${this._code_editor_line_number}`));
+                this.output[this.program_number].push(new NightingaleCompiler.OutputConsoleMessage(LEXER, WARNING, `Missing EOP. Try adding $ to line ${this._code_editor_line_number}`));
                 this.emit_token_to_stream(new NightingaleCompiler.LexicalToken(MISSING_TOKEN, null, "$", this._code_editor_line_number, -1));
                 return newnew_source_code += "$";
             } // if
@@ -600,11 +602,11 @@ var NightingaleCompiler;
         post_check_for_errors() {
             // Missing close string expression?
             if (this.isInComment) {
-                this.output.push(new NightingaleCompiler.OutputConsoleMessage(LEXER, WARNING, `Missing End End Comment. Try adding */ to line ${this._code_editor_line_number}`));
+                this.output[this.program_number].push(new NightingaleCompiler.OutputConsoleMessage(LEXER, WARNING, `Missing End End Comment. Try adding */ to line ${this._code_editor_line_number}`));
                 this.emit_token_to_stream(new NightingaleCompiler.LexicalToken(MISSING_TOKEN, null, "*/", this._code_editor_line_number, -1));
             } // if
             if (this.isInString) {
-                this.output.push(new NightingaleCompiler.OutputConsoleMessage(LEXER, WARNING, `Missing End String Boundary Expression. Try adding \" to line ${this._code_editor_line_number}`));
+                this.output[this.program_number].push(new NightingaleCompiler.OutputConsoleMessage(LEXER, WARNING, `Missing End String Boundary Expression. Try adding \" to line ${this._code_editor_line_number}`));
                 this.emit_token_to_stream(new NightingaleCompiler.LexicalToken(MISSING_TOKEN, null, "\"", this._code_editor_line_number, -1));
             } // if
         } // post_check_for_errors
@@ -638,7 +640,7 @@ var NightingaleCompiler;
                 if (!this.invalid_programs.includes(this.program_number)) {
                     this.invalid_programs.push(this.program_number);
                 } // if
-                this.output.push(new NightingaleCompiler.OutputConsoleMessage(LEXER, ERROR, `${this._code_editor_line_number}:${this._code_editor_line_position} Unrecognized Token: ${newToken.lexeme}`));
+                this.output[this.program_number].push(new NightingaleCompiler.OutputConsoleMessage(LEXER, ERROR, `${this._code_editor_line_number}:${this._code_editor_line_position} Unrecognized Token: ${newToken.lexeme}`));
                 this.errors_stream.push(newToken);
             } // else-if
             else if (newToken.name == MISSING_TOKEN) {
@@ -663,7 +665,7 @@ var NightingaleCompiler;
                 } // else
             } // else
             this.debug_token_stream[this.program_number].push(newToken);
-            this.stacktrace_stack.push(newToken);
+            this.stacktrace_stack[this.program_number].push(newToken);
             //console.log(`[${newToken.name}] Lexeme: ${newToken.lexeme}, Line-Position: ${newToken.linePosition}`);
         } // emit_token_to_stream
         /**

@@ -86,3 +86,10 @@ const CHARACTER = "CHARACTER";
 const INVALID_TOKEN = "INVALID_TOKEN";
 const WARNING_TOKEN = "WARNING_TOKEN";
 const MISSING_TOKEN = "MISSING_TOKEN";
+
+/**
+ * Abstract Syntax Tree Types of Nodes
+ */
+
+const BRANCH = "BRANCH";
+const LEAF = "LEAF";

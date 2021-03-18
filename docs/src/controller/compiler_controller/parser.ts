@@ -35,7 +35,11 @@ module NightingaleCompiler {
              */
             private _current_token: LexicalToken = null,
 
+            private _current_cst: ConcreteSyntaxTree = new ConcreteSyntaxTree(),
+
             public output: Array<OutputConsoleMessage> = [],
+            public concrete_syntax_trees: Array<ConcreteSyntaxTree> = [],
+
         ){
             // Get first token
             this._current_token = this._token_stream[this._current_program_number][this._current_token_index];
@@ -43,25 +47,33 @@ module NightingaleCompiler {
 
         public parse_program(): void {
             console.log(`Parsing Program ${this._current_program_number}...`);
+            this._current_cst.add_node("Program", BRANCH);
             this.parse_block();
-            this.match_token(END_OF_PROGRAM);
-
-            if (this._current_program_number < this._token_stream.length && this._current_token_index < this._token_stream[this._current_program_number].length) {
+            this.match_token([END_OF_PROGRAM]);
+            this._current_cst.climb_one_level();
+            if (
+                this._current_program_number < this._token_stream.length // There are more programs to parse
+                && this._current_token_index < this._token_stream[this._current_program_number].length // There are tokens in the program to parse
+            ) {
                 this.parse_program();
             }// if
         }// parse_program
 
         private parse_block(): void {
-            this.match_token(SYMBOL_OPEN_BLOCK);
+            this._current_cst.add_node("Block", BRANCH);
+            this.match_token([SYMBOL_OPEN_BLOCK]);
             this.parse_statement_list();
-            this.match_token(SYMBOL_CLOSE_BLOCK);
+            this.match_token([SYMBOL_CLOSE_BLOCK]);
+            this._current_cst.climb_one_level();
         }// parse_block
 
         private parse_statement_list(): void {
             if (this.current_token_is_statement()) {
-                console.log(`Parse Statement List: ${this._current_token.name} -> true`);
+                this._current_cst.add_node("Statement List", BRANCH);
+                //console.log(`Parse Statement List: ${this._current_token.name} -> true`);
                 this.parse_statement();
                 this.parse_statement_list();
+                this._current_cst.climb_one_level();
             }// if
 
             else {
@@ -70,6 +82,7 @@ module NightingaleCompiler {
         }// parse_statement_list
 
         private parse_statement(): void {
+            this._current_cst.add_node("Statement", BRANCH);
             switch(this._current_token.name) {
                 case KEYWORD_PRINT:
                     this.parse_print_statement();
@@ -108,39 +121,52 @@ module NightingaleCompiler {
                 default: 
                     throw Error(`Fatal Error: Parse Statement --> token [${this._current_token.name}] has no matching non-terminal or terminal!`);
             }// switch
+
+            this._current_cst.climb_one_level();
         }// parse_statement
 
         private parse_print_statement(): void {
-            this.match_token(KEYWORD_PRINT);
-            this.match_token(SYMBOL_OPEN_ARGUMENT);
+            this._current_cst.add_node("Print Statement", BRANCH);
+            this.match_token([KEYWORD_PRINT]);
+            this.match_token([SYMBOL_OPEN_ARGUMENT]);
             this.parse_expression();
-            this.match_token(SYMBOL_CLOSE_ARGUMENT);
+            this.match_token([SYMBOL_CLOSE_ARGUMENT]);
+            this._current_cst.climb_one_level();
         }// parse_print_statement
 
         private parse_assignment_statement(): void {
+            this._current_cst.add_node("Assignment Statement", BRANCH);
             this.parse_identifier();
-            this.match_token(SYMBOL_ASSIGNMENT_OP);
+            this.match_token([SYMBOL_ASSIGNMENT_OP]);
             this.parse_expression();
+            this._current_cst.climb_one_level();
         }// parse_assignment_statement
 
         private parse_variable_declaration(): void {
+            this._current_cst.add_node("Variable Declaration", BRANCH);
             this.parse_type();
             this.parse_identifier();
+            this._current_cst.climb_one_level();
         }// parse_variable_declaration
 
         private parse_while_statement(): void {
-            this.match_token(KEYWORD_WHILE);
+            this._current_cst.add_node("While Statement", BRANCH);
+            this.match_token([KEYWORD_WHILE]);
             this.parse_boolean_expression();
             this.parse_block();
+            this._current_cst.climb_one_level();
         }// parse_while_statement
 
         private parse_if_statement(): void {
-            this.match_token(KEYWORD_IF);
+            this._current_cst.add_node("If Statement", BRANCH);
+            this.match_token([KEYWORD_IF]);
             this.parse_boolean_expression();
             this.parse_block();
+            this._current_cst.climb_one_level();
         }// parse_if_statement
 
         private parse_expression(): void {
+            this._current_cst.add_node("Expression", BRANCH);
             switch (this._current_token.name){
                 // Int expressions must start with a DIGIT
                 case DIGIT:
@@ -164,35 +190,42 @@ module NightingaleCompiler {
                 default:
                     throw Error("Fatal Error: Parse Expression --> token has no matching non-terminal or terminal!");
             }// switch
+            this._current_cst.climb_one_level();
         }//parse_expression
 
         private parse_int_expression(): void {
+            this._current_cst.add_node("Int Expression", BRANCH);
             this.parse_digit();
 
             if (this._current_token.name == SYMBOL_INT_OP) {
                 this.parse_int_operation();
                 this.parse_expression();
             }// if
+            this._current_cst.climb_one_level();
         }//parse_int_expression
 
         private parse_string_expression(): void {
-            this.match_token(STRING_EXPRESSION_BOUNDARY);
+            this._current_cst.add_node("String Expression", BRANCH);
+            this.match_token([STRING_EXPRESSION_BOUNDARY]);
             this.parse_character_list();
-            this.match_token(STRING_EXPRESSION_BOUNDARY);
+            this.match_token([STRING_EXPRESSION_BOUNDARY]);
+            this._current_cst.climb_one_level();
         }//parse_string_expression
 
         private parse_boolean_expression(): void {
+            this._current_cst.add_node("Boolean Expression", BRANCH);
             if (this._current_token.name == SYMBOL_OPEN_ARGUMENT) {
-                this.match_token(SYMBOL_OPEN_ARGUMENT);
+                this.match_token([SYMBOL_OPEN_ARGUMENT]);
                 this.parse_expression();
                 this.parse_boolean_operation();
                 this.parse_expression();
-                this.match_token(SYMBOL_CLOSE_ARGUMENT);
+                this.match_token([SYMBOL_CLOSE_ARGUMENT]);
             }// if
 
             else {
                 this.parse_boolean_value();
             }// else
+            this._current_cst.climb_one_level();
         }//parse_boolean_expression
 
         private parse_identifier(): void {
@@ -206,18 +239,24 @@ module NightingaleCompiler {
              * so skipping to matching the token instead...
              */
 
-            this.match_token(IDENTIFIER);
+            this._current_cst.add_node("Identifier", BRANCH);
+            this.match_token([IDENTIFIER]);
+            this._current_cst.climb_one_level();
         }// parse_identifier
 
         private parse_character_list(): void {
             if (this._current_token.name == CHARACTER) {
+                this._current_cst.add_node("Character List", BRANCH);
                 this.parse_character();
                 this.parse_character_list();
+                this._current_cst.climb_one_level();
             }// if
 
             else if (this._current_token.name == SPACE_SINGLE || this._current_token.name == SPACE_TAB) {
+                this._current_cst.add_node("Character List", BRANCH);
                 this.parse_space();
                 this.parse_character_list();
+                this._current_cst.climb_one_level();
             }// if
 
             else {
@@ -226,56 +265,75 @@ module NightingaleCompiler {
         }// parse_character_list
 
         private parse_type():void {
-            if (this._current_token.name == KEYWORD_INT) {this.match_token(KEYWORD_INT);}// if
-            else if (this._current_token.name == KEYWORD_STRING) {this.match_token(KEYWORD_STRING);}// else-if
-            else if (this._current_token.name == KEYWORD_BOOLEAN) {this.match_token(KEYWORD_BOOLEAN);}// else-if
-            else {throw Error(`Fatal Error: Parse Type --> token [${this._current_token.name}] is not type int | string | boolean!`);}// else
+            this._current_cst.add_node("Type", BRANCH);
+            this.match_token([KEYWORD_INT, KEYWORD_STRING, KEYWORD_BOOLEAN]);
+            this._current_cst.climb_one_level();
+            // throw Error(`Fatal Error: Parse Type --> token [${this._current_token.name}] is not type int | string | boolean!`);
         }// parse_type
 
         private parse_character(): void {
-            this.match_token(CHARACTER);
+            this._current_cst.add_node("Character", BRANCH);
+            this.match_token([CHARACTER]);
+            this._current_cst.climb_one_level();
         }// parse_character
 
         private parse_space(): void {
-            if (this._current_token.name == SPACE_SINGLE) {this.match_token(SPACE_SINGLE);}// if
-            else if (this._current_token.name == SPACE_TAB) {this.match_token(SPACE_TAB);}// else-if
-            else {throw Error(`Fatal Error: Parse Space --> token [${this._current_token.name}] is not a space or tab character!`);}// else
+            this._current_cst.add_node("Space", BRANCH);
+            this.match_token([SPACE_SINGLE, SPACE_TAB]);
+            this._current_cst.climb_one_level();
+            // throw Error(`Fatal Error: Parse Space --> token [${this._current_token.name}] is not a space or tab character!`);
         }// parse_space
 
         private parse_digit(): void {
-            this.match_token(DIGIT);
+            this._current_cst.add_node("Digit", BRANCH);
+            this.match_token([DIGIT]);
+            this._current_cst.climb_one_level();
         }// parse_digit
 
         private parse_boolean_operation(): void {
-            if (this._current_token.name == SYMBOL_BOOL_OP_EQUALS) {this.match_token(SYMBOL_BOOL_OP_EQUALS);}// if
-            else if (this._current_token.name == SYMBOL_BOOL_OP_NOT_EQUALS) {this.match_token(SYMBOL_BOOL_OP_NOT_EQUALS);}// else-if
-            else {throw Error(`Fatal Error: Parse Boolean Operation --> token ${this._current_token.name} is not a SYMBOL_BOOL_OP_EQUALS or SYMBOL_BOOL_OP_NOT_EQUALS!`);}
+            this._current_cst.add_node("Boolean Operation", BRANCH);
+            this.match_token([SYMBOL_BOOL_OP_EQUALS, SYMBOL_BOOL_OP_NOT_EQUALS]);
+            this._current_cst.climb_one_level();
+            // throw Error(`Fatal Error: Parse Boolean Operation --> token ${this._current_token.name} is not a SYMBOL_BOOL_OP_EQUALS or SYMBOL_BOOL_OP_NOT_EQUALS!`);
         }// parse_boolean_operation
 
         private parse_boolean_value(): void {
-            if (this._current_token.name == KEYWORD_TRUE) {this.match_token(KEYWORD_TRUE);}// if
-            else if (this._current_token.name == KEYWORD_FALSE) {this.match_token(KEYWORD_FALSE);}// else-if
-            else {throw Error(`Fatal Error: Parse Boolean Value --> token ${this._current_token.name} is not a true | false`);}
+            this._current_cst.add_node("Boolean Value", BRANCH);
+            this.match_token([KEYWORD_TRUE, KEYWORD_FALSE]);
+            this._current_cst.climb_one_level();
+            // throw Error(`Fatal Error: Parse Boolean Value --> token ${this._current_token.name} is not a true | false`);
         }// parse_boolean_operation
 
         private parse_int_operation(): void {
             if (this._current_token.name == SYMBOL_INT_OP) {
-                this.match_token(SYMBOL_INT_OP);
+                this._current_cst.add_node("Int Operation", BRANCH);
+                this.match_token([SYMBOL_INT_OP]);
+                this._current_cst.climb_one_level();
             }// if
         }// parse_int_operation
         
-        private match_token(expected_token_name: string): void {
-            if (expected_token_name != this._current_token.name) {
-                console.log(`Expected ${expected_token_name}, but got ${this._current_token.name}  ${this._current_token.lexeme}`);
+        private match_token(expected_token_names: Array<string>): void {
+            if (!expected_token_names.includes(this._current_token.name)) {
+                console.log(
+                    `Expected ${expected_token_names.toString()}, ` 
+                    +`but got [${this._current_token.name}] `
+                    +`|${this._current_token.lexeme}| `
+                    +`at ${this._current_token.lineNumber}:${this._current_token.linePosition}`
+                );
                 this.output.push(
                     new OutputConsoleMessage(
                         PARSER, 
                         ERROR, 
-                        `Expected ${expected_token_name}, but got ${this._current_token}`
+                        `Expected ${expected_token_names.toString()}, ` 
+                        +`but got [${this._current_token.name}] `
+                        +`|${this._current_token.lexeme}| `
+                        +`at ${this._current_token.lineNumber}:${this._current_token.linePosition}`
                     )// OutputConsoleMessage
                 );// this.output.push
                 return;
             }// if
+            this._current_cst.add_node(this._current_token.lexeme, LEAF);
+            // this._current_cst.climb_one_level();
             this.consume_token();
             this.get_next_token();
         }// match_token
@@ -298,6 +356,8 @@ module NightingaleCompiler {
             if (this._current_token_index >= this._token_stream[this._current_program_number].length) {
                 this._current_program_number++;
                 this._current_token_index = 0;
+                this.concrete_syntax_trees.push(this._current_cst);
+                this._current_cst = new ConcreteSyntaxTree();
             }// if
 
             // Ran out of programs

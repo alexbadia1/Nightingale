@@ -19,6 +19,7 @@
 
     <!-- Personal stylesheet, bootstrap is too "cookie cutterish" -->
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="plugins/treant-js-master/Treant.css" type="text/css" />
 
     <!-- jQuery, 1st time btw -->
     <link rel="stylesheet" href="plugins/jquery/jquery-ui.css">
@@ -51,7 +52,7 @@
     <script type="text/javascript" src="../../distrib/model/stacktrace_console_model.js"></script>
     <script type="text/javascript" src="../../distrib/model/concrete_syntax_tree_model.js"></script>
     <script type="text/javascript" src="../../distrib/model/footer_model.js"></script>
-    
+
 
     <!-- Tests -->
     <script type="text/javascript" src="../../tests/default_tests.js"></script>
@@ -81,7 +82,7 @@
                 <ul class="nav navbar-nav navbar-right" style="margin-right: 0; margin-top: -.5%;">
                     <li role="presentation">
                         <a id="compile-button"
-                            onclick="NightingaleCompiler.CompilerController.compilerControllerBtnCompile_click(myCodeMirror.getValue());">
+                            onclick="NightingaleCompiler.CompilerController.compilerControllerBtnCompile_click(myCodeMirror.getValue(), trees);">
                             <svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" fill="currentColor"
                                 class="bi bi-play-fill" viewBox="0 0 16 16">
                                 <path
@@ -113,13 +114,20 @@
                 <div class="d-flex justify-content-around">
                     <!-- As you can see my creativity for test naming ran out quick... -->
                     <ul>
-                        <li><a id="sidebar__link--tests" onclick="myCodeMirror.setValue(LONG_TEST_CASE)">long_test_case.gle</a></li>
-                        <li><a id="sidebar__link--tests" onclick="myCodeMirror.setValue(ALANS_PROJECT_ONE_TEST)">project_one_test.gle</a></li>
-                        <li><a id="sidebar__link--tests" onclick="myCodeMirror.setValue(RANDOM_BOOL_OPS_TEST)">random_bool_ops.gle</a></li>
-                        <li><a id="sidebar__link--tests" onclick="myCodeMirror.setValue(BROKEN_STRINGS)">broken_strings.gle</a></li>
-                        <li><a id="sidebar__link--tests" onclick="myCodeMirror.setValue(BROKEN_COMMENTS)">broken_comments.gle</a></li>
-                        <li><a id="sidebar__link--tests" onclick="myCodeMirror.setValue(SYMBOL_SALAD)">symbol_salad.gle</a></li>
-                        <li><a id="sidebar__link--tests" onclick="myCodeMirror.setValue(LETTER_SOUP)">letter_soup.gle</a></li>
+                        <li><a id="sidebar__link--tests"
+                                onclick="myCodeMirror.setValue(LONG_TEST_CASE)">long_test_case.gle</a></li>
+                        <li><a id="sidebar__link--tests"
+                                onclick="myCodeMirror.setValue(ALANS_PROJECT_ONE_TEST)">project_one_test.gle</a></li>
+                        <li><a id="sidebar__link--tests"
+                                onclick="myCodeMirror.setValue(RANDOM_BOOL_OPS_TEST)">random_bool_ops.gle</a></li>
+                        <li><a id="sidebar__link--tests"
+                                onclick="myCodeMirror.setValue(BROKEN_STRINGS)">broken_strings.gle</a></li>
+                        <li><a id="sidebar__link--tests"
+                                onclick="myCodeMirror.setValue(BROKEN_COMMENTS)">broken_comments.gle</a></li>
+                        <li><a id="sidebar__link--tests"
+                                onclick="myCodeMirror.setValue(SYMBOL_SALAD)">symbol_salad.gle</a></li>
+                        <li><a id="sidebar__link--tests"
+                                onclick="myCodeMirror.setValue(LETTER_SOUP)">letter_soup.gle</a></li>
                     </ul>
                 </div>
             </div>
@@ -165,7 +173,11 @@
                 </div>
 
                 <div id="cst" class=" tab-content_tab-cst tab-pane fade">
-                    <p>CST goes here.</p>
+                    <div id="tree-simple_0" style="width:100%; height: 300px"> </div>
+                    <div id="tree-simple_1" style="width:100%; height: 300px"> </div>
+                    <div id="tree-simple_2" style="width:100%; height: 300px"> </div>
+                    <div id="tree-simple_3" style="width:100%; height: 300px"> </div>
+                    <div id="tree-simple_4" style="width:100%; height: 300px"> </div>
                 </div>
                 <!--<dive id = "cst"> -->
 
@@ -190,18 +202,18 @@
 <div id="footer">
     <div class="d-flex p-2" style="position: relative; top: -25%;">
         <div class="p-2" style="width: 3%;"></div>
-        <div class="p-2" style = "font-size: 1rem;">Errors: <span id = "footer-errors">0</span></div>
+        <div class="p-2" style="font-size: 1rem;">Errors: <span id="footer-errors">0</span></div>
         <div class="p-2" style="width: .5%"></div>
-        <div class="p-2" style = "font-size: 1rem;">Warnings: <span id = "footer-warnings">0</span></div>
+        <div class="p-2" style="font-size: 1rem;">Warnings: <span id="footer-warnings">0</span></div>
         <div class="p-2" style="width: .5%"></div>
 
         <div class="p-2 flex-grow-1"></div>
 
-        <div class="p-2" style = "font-size: 1rem;">Line: #, Column: #</div>
+        <div class="p-2" style="font-size: 1rem;">Line: #, Column: #</div>
         <div class="p-2" style="width: .5%"></div>
-        <div class="p-2" style = "font-size: 1rem;">Encoding: UTF-8 </div>
+        <div class="p-2" style="font-size: 1rem;">Encoding: UTF-8 </div>
         <div class="p-2" style="width: .5%"></div>
-        <div class="p-2" style = "font-size: 1rem;">Mode: Alans Language</div>
+        <div class="p-2" style="font-size: 1rem;">Mode: Alans Language</div>
         <div class="p-2" style="width: 5%"></div>
     </div><!-- <div id="footer"> -->
 </div><!-- <div class="d-flex p-2"> -->
@@ -278,6 +290,36 @@
         $('#side-nav').width(screen.width * .1125);
     });
 
+</script>
+
+<!-- Treant -->
+<script src="plugins/treant-js-master/vendor/raphael.js"></script>
+<script src="plugins/treant-js-master/Treant.js"></script>
+
+<!-- Only allow for 5 trees for now -->
+<script>
+    var trees = [];
+
+    for (let i = 0; i < 5; ++i) {
+        let simple_chart_config = {
+        chart: {
+            container: `#tree-simple_${i}`
+        },
+
+        nodeStructure: {
+            text: { name: "Parent node" },
+            children: [
+                {
+                    text: { name: "First child" }
+                },
+                {
+                    text: { name: "Second child" }
+                }
+            ]
+        }
+    };
+        trees.push(new Treant(simple_chart_config));
+    }// for
 </script>
 
 </html>

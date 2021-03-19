@@ -39,7 +39,7 @@ module NightingaleCompiler {
          * Compile Button
          * @param {string} rawSourceCode - The raw source code from Code Mirror.
          */
-        public static compilerControllerBtnCompile_click(rawSourceCode: string) {
+        public static compilerControllerBtnCompile_click(rawSourceCode: string, trees: any) {
 
             // var t = new NightingaleCompiler.ConcreteSyntaxTree();
             // t.add_node("Root", BRANCH);
@@ -70,6 +70,7 @@ module NightingaleCompiler {
             // Create a compiler instance
             this.lexer = new NightingaleCompiler.Lexer();
             console.log("Compiling");
+            console.log(trees);
 
             let trimmedSourceCode = rawSourceCode.trim();
 

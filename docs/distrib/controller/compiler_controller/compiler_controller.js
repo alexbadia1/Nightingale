@@ -24,7 +24,7 @@ var NightingaleCompiler;
          * Compile Button
          * @param {string} rawSourceCode - The raw source code from Code Mirror.
          */
-        static compilerControllerBtnCompile_click(rawSourceCode) {
+        static compilerControllerBtnCompile_click(rawSourceCode, trees) {
             // var t = new NightingaleCompiler.ConcreteSyntaxTree();
             // t.add_node("Root", BRANCH);
             // t.add_node("Expr", BRANCH);
@@ -48,6 +48,7 @@ var NightingaleCompiler;
             // Create a compiler instance
             this.lexer = new NightingaleCompiler.Lexer();
             console.log("Compiling");
+            console.log(trees);
             let trimmedSourceCode = rawSourceCode.trim();
             // Step 1: Lex
             let lexer_modified_source_code = this.lexer.main(trimmedSourceCode);

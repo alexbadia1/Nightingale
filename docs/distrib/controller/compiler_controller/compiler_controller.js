@@ -49,25 +49,16 @@ var NightingaleCompiler;
             this.lexer = new NightingaleCompiler.Lexer();
             console.log("Compiling");
             let trimmedSourceCode = rawSourceCode.trim();
-            // Lex Phase
+            // Step 1: Lex
             let lexer_modified_source_code = this.lexer.main(trimmedSourceCode);
-            // Output Lex information
-            console.log(this.lexer.token_stream);
-            let output_console_model = new NightingaleCompiler.OutputConsoleModel(this.lexer.output);
+            // Step 2: Parse
+            this.parser = new NightingaleCompiler.Parser(this.lexer.token_stream, this.lexer.invalid_programs);
+            let cst_controller = new NightingaleCompiler.ConcreteSyntaxTreeController(this.parser.concrete_syntax_trees);
+            // Final output
+            let output_console_model = new NightingaleCompiler.OutputConsoleModel(this.lexer.output, cst_controller, this.parser.output, this.parser.invalid_parsed_programs);
             let debug_console_model = new NightingaleCompiler.DebugConsoleModel(this.lexer.debug_token_stream);
             let stacktrace_console_model = new NightingaleCompiler.StacktraceConsoleModel(this.lexer.stacktrace_stack);
             let footer_model = new NightingaleCompiler.FooterModel(this.lexer.errors_stream.length, this.lexer.warnings_stream.length);
-            console.log(this.lexer.invalid_programs);
-            this.parser = new NightingaleCompiler.Parser(this.lexer.token_stream, this.lexer.invalid_programs);
-            try {
-                this.parser.parse_program();
-            } // try
-            catch (e) {
-                console.log(e);
-            } // catch
-            for (let cst of this.parser.concrete_syntax_trees) {
-                console.log(cst.toString());
-            } // for
         } // compilerControllerBtnCompile_click
     } // class
     NightingaleCompiler.CompilerController = CompilerController;

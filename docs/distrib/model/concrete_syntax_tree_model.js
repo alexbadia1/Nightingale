@@ -100,7 +100,7 @@ var NightingaleCompiler;
             } // if
             else {
                 // There are children_nodes, so note these interior/branch nodes and ...
-                traversalResult += "<" + node.name + "> \n";
+                traversalResult += "(" + node.name + ") \n";
                 // .. recursively expand them.
                 for (var h = 0; h < node.children_nodes.length; h++) {
                     traversalResult = this.expand(node.children_nodes[h], depth + 1, traversalResult);
@@ -111,8 +111,6 @@ var NightingaleCompiler;
         toString() {
             // Initialize the result string.
             var traversalResult = "";
-            console.log(this.root);
-            console.log(this.root.children_nodes);
             // Make the initial call to expand from the root.
             return this.expand(this.root, 0, traversalResult);
         } // toString

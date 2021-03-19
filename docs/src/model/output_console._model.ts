@@ -9,11 +9,14 @@
  * 
  * TODO: Override some of the Bootstrap styling.
  */
- 
- module NightingaleCompiler {
+
+module NightingaleCompiler {
     export class OutputConsoleModel {
         constructor(
-            public output: Array<Array<OutputConsoleMessage>>,
+            public lexer_output: Array<Array<OutputConsoleMessage>>,
+            public cst_controller: ConcreteSyntaxTreeController,
+            public parser_output: Array<Array<OutputConsoleMessage>> = [],
+            public invalid_parsed_programs: Array<number> = [],
         ) {
             this.show_output();
         }// constuctor
@@ -26,10 +29,10 @@
                 output_console.removeChild(output_console.firstChild);
             }// while: remove all children
 
-            for (let a_single_programs_output of this.output) {
+            for (var program_number: number = 0; program_number < this.lexer_output.length; ++program_number) {
 
-                // Add new children
-                for (let i: number = 0; i < a_single_programs_output.length; ++i) {
+                // Add Lexer output
+                for (let i: number = 0; i < this.lexer_output[program_number].length; ++i) {
                     let listItem: HTMLLIElement = document.createElement("li");
                     listItem.className = `token_${i}`;
                     listItem.style.listStyle = "none";
@@ -37,30 +40,72 @@
                     listItem.style.marginLeft = "15px";
                     listItem.style.color = "white";
 
-                    if (a_single_programs_output[i].type == INFO) {
+                    if (this.lexer_output[program_number][i].type == INFO) {
                         listItem.innerHTML =
-                            `${a_single_programs_output[i].source} `
-                            + `<span  style = "color: white;">${a_single_programs_output[i].type}</span>`
-                            + ` - ${a_single_programs_output[i].message}`;
+                            `${this.lexer_output[program_number][i].source} `
+                            + `<span  style = "color: white;">${this.lexer_output[program_number][i].type}</span>`
+                            + ` - ${this.lexer_output[program_number][i].message}`;
                     }// if
 
-                    else if (a_single_programs_output[i].type == WARNING) {
+                    else if (this.lexer_output[program_number][i].type == WARNING) {
                         listItem.innerHTML =
-                            `${a_single_programs_output[i].source} `
-                            + `<span  style = "color: yellow;">${a_single_programs_output[i].type}</span>`
-                            + ` - ${a_single_programs_output[i].message}`;
+                            `${this.lexer_output[program_number][i].source} `
+                            + `<span  style = "color: yellow;">${this.lexer_output[program_number][i].type}</span>`
+                            + ` - ${this.lexer_output[program_number][i].message}`;
                     }// else-if
 
-                    else if (a_single_programs_output[i].type == ERROR) {
+                    else if (this.lexer_output[program_number][i].type == ERROR) {
                         listItem.innerHTML =
-                            `${a_single_programs_output[i].source} `
-                            + `<span  style = "color: red;">${a_single_programs_output[i].type}</span>`
-                            + ` - ${a_single_programs_output[i].message}`;
+                            `${this.lexer_output[program_number][i].source} `
+                            + `<span  style = "color: red;">${this.lexer_output[program_number][i].type}</span>`
+                            + ` - ${this.lexer_output[program_number][i].message}`;
                     }// else-if
 
                     output_console.appendChild(listItem);
                 }// for: add new children
+
+                // Add Parser output
+                if (this.parser_output[program_number] !== null && this.parser_output[program_number] !== undefined) {
+                    for (let i: number = 0; i < this.parser_output[program_number].length; ++i) {
+                        let listItem: HTMLLIElement = document.createElement("li");
+                        listItem.className = `token_${i}`;
+                        listItem.style.listStyle = "none";
+                        listItem.style.fontSize = "1rem";
+                        listItem.style.marginLeft = "15px";
+                        listItem.style.color = "white";
+
+                        if (this.parser_output[program_number][i].type == INFO) {
+                            listItem.innerHTML =
+                                `${this.parser_output[program_number][i].source} `
+                                + `<span  style = "color: white;">${this.parser_output[program_number][i].type}</span>`
+                                + ` - ${this.parser_output[program_number][i].message}`;
+                        }// if
+
+                        else if (this.parser_output[program_number][i].type == WARNING) {
+                            listItem.innerHTML =
+                                `${this.parser_output[program_number][i].source} `
+                                + `<span  style = "color: yellow;">${this.parser_output[program_number][i].type}</span>`
+                                + ` - ${this.parser_output[program_number][i].message}`;
+                        }// else-if
+
+                        else if (this.parser_output[program_number][i].type == ERROR) {
+                            listItem.innerHTML =
+                                `${this.parser_output[program_number][i].source} `
+                                + `<span  style = "color: red;">${this.parser_output[program_number][i].type}</span>`
+                                + ` - ${this.parser_output[program_number][i].message}`;
+                        }// else-if
+
+                        output_console.appendChild(listItem);
+                    }// for: add new children
+                }// if
+
+                // Concrete Syntax Tree
+                // Skip invalidy parsed programs
+                if (!this.invalid_parsed_programs.includes(program_number)) {
+                    this.cst_controller.add_tree_to_output_console(output_console, program_number);
+                }// if
             }// for: each program
+
 
             let bottomMargin: HTMLDivElement = document.createElement("div");
 

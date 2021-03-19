@@ -28,7 +28,7 @@ var NightingaleCompiler;
         /**
          * Current token in the current program's token stream.
          */
-        _current_token = null, _current_cst = new NightingaleCompiler.ConcreteSyntaxTree(), output = [], concrete_syntax_trees = []) {
+        _current_token = null, _current_cst = new NightingaleCompiler.ConcreteSyntaxTree(), output = [[]], invalid_parsed_programs = [], concrete_syntax_trees = []) {
             this._token_stream = _token_stream;
             this._lexically_invalid_programs = _lexically_invalid_programs;
             this._current_program_number = _current_program_number;
@@ -36,16 +36,18 @@ var NightingaleCompiler;
             this._current_token = _current_token;
             this._current_cst = _current_cst;
             this.output = output;
+            this.invalid_parsed_programs = invalid_parsed_programs;
             this.concrete_syntax_trees = concrete_syntax_trees;
             // Get first token
             this._current_token = this._token_stream[this._current_program_number][this._current_token_index];
+            this.parse_program();
         } // constructor
         parse_program() {
             console.log(`Parsing Program ${this._current_program_number}...`);
             this._current_cst.add_node("Program", BRANCH);
             this.parse_block();
             this.match_token([END_OF_PROGRAM]);
-            this._current_cst.climb_one_level();
+            // this._current_cst.climb_one_level();
             if (this._current_program_number < this._token_stream.length // There are more programs to parse
                 && this._current_token_index < this._token_stream[this._current_program_number].length // There are tokens in the program to parse
             ) {
@@ -271,11 +273,15 @@ var NightingaleCompiler;
                     + `but got [${this._current_token.name}] `
                     + `|${this._current_token.lexeme}| `
                     + `at ${this._current_token.lineNumber}:${this._current_token.linePosition}`);
-                this.output.push(new NightingaleCompiler.OutputConsoleMessage(PARSER, ERROR, `Expected ${expected_token_names.toString()}, `
+                this.output[this._current_program_number].push(new NightingaleCompiler.OutputConsoleMessage(PARSER, ERROR, `Expected ${expected_token_names.toString()}, `
                     + `but got [${this._current_token.name}] `
                     + `|${this._current_token.lexeme}| `
                     + `at ${this._current_token.lineNumber}:${this._current_token.linePosition}`) // OutputConsoleMessage
                 ); // this.output.push
+                // Record that this program has an error, if no already done so
+                if (!this.invalid_parsed_programs.includes(this._current_program_number)) {
+                    this.invalid_parsed_programs.push(this._current_program_number);
+                } // if
                 return;
             } // if
             this._current_cst.add_node(this._current_token.lexeme, LEAF);
@@ -298,6 +304,7 @@ var NightingaleCompiler;
             // Ran out of tokens in the current program
             if (this._current_token_index >= this._token_stream[this._current_program_number].length) {
                 this._current_program_number++;
+                this.output.push(new Array());
                 this._current_token_index = 0;
                 this.concrete_syntax_trees.push(this._current_cst);
                 this._current_cst = new NightingaleCompiler.ConcreteSyntaxTree();

@@ -15,6 +15,10 @@ module NightingaleCompiler {
              */
             public name: string,
 
+            public id: number = -1,
+
+            public type: string = null,
+
             /**
              * Note a child can only have on parent
              */
@@ -38,12 +42,17 @@ module NightingaleCompiler {
              * Current node in the tree
              */
             public current_node: Node = null,
+
+            public _program: number = -1,
+            
+            private _node_count: number = -1,
         ) { }//constructor
 
         // Add a node: kind in {branch, leaf}.
         public add_node(new_name: string, kind: string) {
+            this._node_count++
             // Construct the node object.
-            let new_node = new Node(new_name);
+            let new_node = new Node(new_name, this._node_count, kind);
 
             // Check to see if it needs to be the root node.
             if ((this.root == null) || (!this.root)) {
@@ -129,6 +138,86 @@ module NightingaleCompiler {
             // Make the initial call to expand from the root.
             return this.expand(this.root, 0, traversalResult);
         }// toString
+
+        public toHtml() {
+            // Initialize the result string.
+            var cst: HTMLElement = document.getElementById('cst');
+            var tree_div: HTMLElement = document.createElement(`div`);
+            tree_div.className = `tree`;
+            tree_div.id= `p${this._program} `;
+            cst.appendChild(tree_div);
+
+            // Make the initial call to expand from the root
+            // Create root first
+            let ul: HTMLUListElement = document.createElement("ul");
+            ul.id = `p${this._program}_ul_node_id_0`;
+            let li: HTMLLIElement = document.createElement("li");
+            li.id = `p${this._program}_li_node_id_0`;
+            li.innerHTML = `<a>${this.root.name}</a>`;
+            ul.appendChild(li);
+            tree_div.appendChild(ul);
+
+            this.traverse_tree(this.root);
+        }// toString
+
+        public traverse_tree(root: Node) {
+
+            // Stack to store the nodes
+            let nodes: Array<Node> = [];
+
+            // push the current node onto the stack
+            nodes.push(root);
+
+            // Loop while the stack is not empty
+            while (nodes.length !== 0) {
+
+                // Store the current node and pop
+                // it from the stack
+                let curr: Node = nodes.pop();
+
+                // Current node has been travarsed
+                if (curr != null) {
+                    // Root node
+                    if (curr.parent_node == null) {
+                        // Root node already created
+                        ///console.log(`Current: ${curr.name} | ${curr.id}, Parent: ${curr.parent_node.id}`);
+                    }// if
+
+                    // Node is the first node of the parent
+                    else if (curr.parent_node.children_nodes[0] == curr) {
+                        console.log(`Current: ${curr.name} | ${curr.id}, Parent: ${curr.parent_node.id}, 1st child`);
+                        let ul: HTMLUListElement = document.createElement("ul");
+                        ul.id = `p${this._program}_ul_node_id_${curr.id}`;
+                        let li: HTMLLIElement = document.createElement("li");
+                        li.id = `p${this._program}_li_node_id_${curr.id}`;
+
+                        ul.appendChild(li);
+
+                        li.innerHTML = `<a>${curr.name}</a>`;
+
+                        document.getElementById(`p${this._program}_li_node_id_${curr.parent_node.id}`).appendChild(ul);
+                    }// if
+
+                    // Node is 2nd or 3rd or nth child of parent
+                    else {
+                        console.log(`Current: ${curr.name} | ${curr.id}, Parent: ${curr.parent_node.id}, ul ${curr.parent_node.children_nodes[0].id}`);
+                        let li: HTMLLIElement = document.createElement("li");
+                        li.id = `p${this._program}_li_node_id_${curr.id}`;
+                        li.innerHTML = `<a>${curr.name}</a>`;
+
+                        document.getElementById(`p${this._program}_ul_node_id_${curr.parent_node.children_nodes[0].id}`).appendChild(li);
+                    }// else
+
+                    // Store all the children of 
+                    // current node from right to left.
+                    for (let i: number = curr.children_nodes.length - 1; i >= 0; --i) {
+                        nodes.push(curr.children_nodes[i]);
+                    }// for
+                }
+            }
+        }
+
+
 
         // I dunno how I feel about that magic function inside of a function trick that Javascript allows...
         //

@@ -10,7 +10,7 @@
 module NightingaleCompiler {
     export class ConcreteSyntaxTreeController {
         constructor(
-            private _concrete_syntax_trees,
+            private _concrete_syntax_trees: Array<ConcreteSyntaxTree>,
         ) { }// constuctor
 
         public add_tree_to_output_console(output_console: HTMLElement, program_number: number) {
@@ -26,6 +26,12 @@ module NightingaleCompiler {
             }// for
         }// show_trees_cmd
 
-        private show_trees_gui() {}// show_trees_gui
+        public add_tree_to_gui(cst_output: HTMLElement, program_number: number) {
+            this._concrete_syntax_trees[program_number].toHtml();
+
+            let bottomMargin: HTMLDivElement = document.createElement("div");
+            bottomMargin.style.height = "10vh";
+            cst_output.appendChild(bottomMargin);
+        }// show_trees_gui
     }// class
 }// module

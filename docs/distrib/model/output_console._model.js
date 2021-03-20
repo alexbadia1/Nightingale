@@ -88,6 +88,7 @@ var NightingaleCompiler;
                 // Skip invalidy parsed programs
                 if (!this.invalid_parsed_programs.includes(program_number)) {
                     this.cst_controller.add_tree_to_output_console(output_console, program_number);
+                    this.cst_controller.add_tree_to_gui(document.getElementById("cst"), program_number);
                 } // if
             } // for: each program
             let bottomMargin = document.createElement("div");

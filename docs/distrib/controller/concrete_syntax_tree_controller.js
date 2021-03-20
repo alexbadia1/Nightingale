@@ -24,7 +24,12 @@ var NightingaleCompiler;
                 output_console.appendChild(listItem);
             } // for
         } // show_trees_cmd
-        show_trees_gui() { } // show_trees_gui
+        add_tree_to_gui(cst_output, program_number) {
+            this._concrete_syntax_trees[program_number].toHtml();
+            let bottomMargin = document.createElement("div");
+            bottomMargin.style.height = "10vh";
+            cst_output.appendChild(bottomMargin);
+        } // show_trees_gui
     } // class
     NightingaleCompiler.ConcreteSyntaxTreeController = ConcreteSyntaxTreeController;
 })(NightingaleCompiler || (NightingaleCompiler = {})); // module

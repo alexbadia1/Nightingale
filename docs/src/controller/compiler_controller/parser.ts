@@ -35,7 +35,7 @@ module NightingaleCompiler {
              */
             private _current_token: LexicalToken = null,
 
-            private _current_cst: ConcreteSyntaxTree = new ConcreteSyntaxTree(),
+            private _current_cst: ConcreteSyntaxTree = new ConcreteSyntaxTree(null, null, 0),
 
             public output: Array<Array<OutputConsoleMessage>> = [[]],
             public invalid_parsed_programs: Array<number> = [],
@@ -365,7 +365,7 @@ module NightingaleCompiler {
                 this.output.push(new Array<OutputConsoleMessage>());
                 this._current_token_index = 0;
                 this.concrete_syntax_trees.push(this._current_cst);
-                this._current_cst = new ConcreteSyntaxTree();
+                this._current_cst = new ConcreteSyntaxTree(null, null, this._current_program_number);
             }// if
 
             // Ran out of programs

@@ -28,7 +28,7 @@ var NightingaleCompiler;
         /**
          * Current token in the current program's token stream.
          */
-        _current_token = null, _current_cst = new NightingaleCompiler.ConcreteSyntaxTree(), output = [[]], invalid_parsed_programs = [], concrete_syntax_trees = []) {
+        _current_token = null, _current_cst = new NightingaleCompiler.ConcreteSyntaxTree(null, null, 0), output = [[]], invalid_parsed_programs = [], concrete_syntax_trees = []) {
             this._token_stream = _token_stream;
             this._lexically_invalid_programs = _lexically_invalid_programs;
             this._current_program_number = _current_program_number;
@@ -307,7 +307,7 @@ var NightingaleCompiler;
                 this.output.push(new Array());
                 this._current_token_index = 0;
                 this.concrete_syntax_trees.push(this._current_cst);
-                this._current_cst = new NightingaleCompiler.ConcreteSyntaxTree();
+                this._current_cst = new NightingaleCompiler.ConcreteSyntaxTree(null, null, this._current_program_number);
             } // if
             // Ran out of programs
             if (this._current_program_number >= this._token_stream.length) {

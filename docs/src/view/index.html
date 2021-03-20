@@ -19,6 +19,7 @@
 
     <!-- Personal stylesheet, bootstrap is too "cookie cutterish" -->
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/tree.css" type="text/css" />
 
     <!-- jQuery, 1st time btw -->
     <link rel="stylesheet" href="plugins/jquery/jquery-ui.css">
@@ -41,6 +42,7 @@
     <script type="text/javascript" src="../../distrib/controller/compiler_controller/compiler_controller.js"></script>
     <script type="text/javascript" src="../../distrib/controller/compiler_controller/lexer.js"></script>
     <script type="text/javascript" src="../../distrib/controller/compiler_controller/parser.js"></script>
+    <script type="text/javascript" src="../../distrib/controller/concrete_syntax_tree_controller.js"></script>
 
     <!-- Models -->
     <script type="text/javascript" src="../../distrib/model/lexical_token_model.js"></script>
@@ -50,7 +52,7 @@
     <script type="text/javascript" src="../../distrib/model/stacktrace_console_model.js"></script>
     <script type="text/javascript" src="../../distrib/model/concrete_syntax_tree_model.js"></script>
     <script type="text/javascript" src="../../distrib/model/footer_model.js"></script>
-    
+
 
     <!-- Tests -->
     <script type="text/javascript" src="../../tests/default_tests.js"></script>
@@ -112,13 +114,20 @@
                 <div class="d-flex justify-content-around">
                     <!-- As you can see my creativity for test naming ran out quick... -->
                     <ul>
-                        <li><a id="sidebar__link--tests" onclick="myCodeMirror.setValue(LONG_TEST_CASE)">long_test_case.gle</a></li>
-                        <li><a id="sidebar__link--tests" onclick="myCodeMirror.setValue(ALANS_PROJECT_ONE_TEST)">project_one_test.gle</a></li>
-                        <li><a id="sidebar__link--tests" onclick="myCodeMirror.setValue(RANDOM_BOOL_OPS_TEST)">random_bool_ops.gle</a></li>
-                        <li><a id="sidebar__link--tests" onclick="myCodeMirror.setValue(BROKEN_STRINGS)">broken_strings.gle</a></li>
-                        <li><a id="sidebar__link--tests" onclick="myCodeMirror.setValue(BROKEN_COMMENTS)">broken_comments.gle</a></li>
-                        <li><a id="sidebar__link--tests" onclick="myCodeMirror.setValue(SYMBOL_SALAD)">symbol_salad.gle</a></li>
-                        <li><a id="sidebar__link--tests" onclick="myCodeMirror.setValue(LETTER_SOUP)">letter_soup.gle</a></li>
+                        <li><a id="sidebar__link--tests"
+                                onclick="myCodeMirror.setValue(LONG_TEST_CASE)">long_test_case.gle</a></li>
+                        <li><a id="sidebar__link--tests"
+                                onclick="myCodeMirror.setValue(ALANS_PROJECT_ONE_TEST)">project_one_test.gle</a></li>
+                        <li><a id="sidebar__link--tests"
+                                onclick="myCodeMirror.setValue(RANDOM_BOOL_OPS_TEST)">random_bool_ops.gle</a></li>
+                        <li><a id="sidebar__link--tests"
+                                onclick="myCodeMirror.setValue(BROKEN_STRINGS)">broken_strings.gle</a></li>
+                        <li><a id="sidebar__link--tests"
+                                onclick="myCodeMirror.setValue(BROKEN_COMMENTS)">broken_comments.gle</a></li>
+                        <li><a id="sidebar__link--tests"
+                                onclick="myCodeMirror.setValue(SYMBOL_SALAD)">symbol_salad.gle</a></li>
+                        <li><a id="sidebar__link--tests"
+                                onclick="myCodeMirror.setValue(LETTER_SOUP)">letter_soup.gle</a></li>
                     </ul>
                 </div>
             </div>
@@ -163,8 +172,7 @@
                     </div>
                 </div>
 
-                <div id="cst" class=" tab-content_tab-cst tab-pane fade">
-                    <p>CST goes here.</p>
+                <div id="cst" class=" tab-content_tab-cst tab-pane fade" style="height: 100%; width: 100%; overflow: scroll;">
                 </div>
                 <!--<dive id = "cst"> -->
 
@@ -189,18 +197,18 @@
 <div id="footer">
     <div class="d-flex p-2" style="position: relative; top: -25%;">
         <div class="p-2" style="width: 3%;"></div>
-        <div class="p-2" style = "font-size: 1rem;">Errors: <span id = "footer-errors">0</span></div>
+        <div class="p-2" style="font-size: 1rem;">Errors: <span id="footer-errors">0</span></div>
         <div class="p-2" style="width: .5%"></div>
-        <div class="p-2" style = "font-size: 1rem;">Warnings: <span id = "footer-warnings">0</span></div>
+        <div class="p-2" style="font-size: 1rem;">Warnings: <span id="footer-warnings">0</span></div>
         <div class="p-2" style="width: .5%"></div>
 
         <div class="p-2 flex-grow-1"></div>
 
-        <div class="p-2" style = "font-size: 1rem;">Line: #, Column: #</div>
+        <div class="p-2" style="font-size: 1rem;">Line: #, Column: #</div>
         <div class="p-2" style="width: .5%"></div>
-        <div class="p-2" style = "font-size: 1rem;">Encoding: UTF-8 </div>
+        <div class="p-2" style="font-size: 1rem;">Encoding: UTF-8 </div>
         <div class="p-2" style="width: .5%"></div>
-        <div class="p-2" style = "font-size: 1rem;">Mode: Alans Language</div>
+        <div class="p-2" style="font-size: 1rem;">Mode: Alans Language</div>
         <div class="p-2" style="width: 5%"></div>
     </div><!-- <div id="footer"> -->
 </div><!-- <div class="d-flex p-2"> -->
@@ -278,5 +286,4 @@
     });
 
 </script>
-
 </html>

@@ -12,8 +12,11 @@
 var NightingaleCompiler;
 (function (NightingaleCompiler) {
     class OutputConsoleModel {
-        constructor(output) {
-            this.output = output;
+        constructor(lexer_output, cst_controller, parser_output = [], invalid_parsed_programs = []) {
+            this.lexer_output = lexer_output;
+            this.cst_controller = cst_controller;
+            this.parser_output = parser_output;
+            this.invalid_parsed_programs = invalid_parsed_programs;
             this.show_output();
         } // constuctor
         show_output() {
@@ -22,35 +25,71 @@ var NightingaleCompiler;
             while (output_console.firstChild) {
                 output_console.removeChild(output_console.firstChild);
             } // while: remove all children
-            for (let a_single_programs_output of this.output) {
-                // Add new children
-                for (let i = 0; i < a_single_programs_output.length; ++i) {
+            for (var program_number = 0; program_number < this.lexer_output.length; ++program_number) {
+                // Add Lexer output
+                for (let i = 0; i < this.lexer_output[program_number].length; ++i) {
                     let listItem = document.createElement("li");
                     listItem.className = `token_${i}`;
                     listItem.style.listStyle = "none";
                     listItem.style.fontSize = "1rem";
                     listItem.style.marginLeft = "15px";
                     listItem.style.color = "white";
-                    if (a_single_programs_output[i].type == INFO) {
+                    if (this.lexer_output[program_number][i].type == INFO) {
                         listItem.innerHTML =
-                            `${a_single_programs_output[i].source} `
-                                + `<span  style = "color: white;">${a_single_programs_output[i].type}</span>`
-                                + ` - ${a_single_programs_output[i].message}`;
+                            `${this.lexer_output[program_number][i].source} `
+                                + `<span  style = "color: white;">${this.lexer_output[program_number][i].type}</span>`
+                                + ` - ${this.lexer_output[program_number][i].message}`;
                     } // if
-                    else if (a_single_programs_output[i].type == WARNING) {
+                    else if (this.lexer_output[program_number][i].type == WARNING) {
                         listItem.innerHTML =
-                            `${a_single_programs_output[i].source} `
-                                + `<span  style = "color: yellow;">${a_single_programs_output[i].type}</span>`
-                                + ` - ${a_single_programs_output[i].message}`;
+                            `${this.lexer_output[program_number][i].source} `
+                                + `<span  style = "color: yellow;">${this.lexer_output[program_number][i].type}</span>`
+                                + ` - ${this.lexer_output[program_number][i].message}`;
                     } // else-if
-                    else if (a_single_programs_output[i].type == ERROR) {
+                    else if (this.lexer_output[program_number][i].type == ERROR) {
                         listItem.innerHTML =
-                            `${a_single_programs_output[i].source} `
-                                + `<span  style = "color: red;">${a_single_programs_output[i].type}</span>`
-                                + ` - ${a_single_programs_output[i].message}`;
+                            `${this.lexer_output[program_number][i].source} `
+                                + `<span  style = "color: red;">${this.lexer_output[program_number][i].type}</span>`
+                                + ` - ${this.lexer_output[program_number][i].message}`;
                     } // else-if
                     output_console.appendChild(listItem);
                 } // for: add new children
+                // Add Parser output
+                if (this.parser_output[program_number] !== null && this.parser_output[program_number] !== undefined) {
+                    for (let i = 0; i < this.parser_output[program_number].length; ++i) {
+                        let listItem = document.createElement("li");
+                        listItem.className = `token_${i}`;
+                        listItem.style.listStyle = "none";
+                        listItem.style.fontSize = "1rem";
+                        listItem.style.marginLeft = "15px";
+                        listItem.style.color = "white";
+                        if (this.parser_output[program_number][i].type == INFO) {
+                            listItem.innerHTML =
+                                `${this.parser_output[program_number][i].source} `
+                                    + `<span  style = "color: white;">${this.parser_output[program_number][i].type}</span>`
+                                    + ` - ${this.parser_output[program_number][i].message}`;
+                        } // if
+                        else if (this.parser_output[program_number][i].type == WARNING) {
+                            listItem.innerHTML =
+                                `${this.parser_output[program_number][i].source} `
+                                    + `<span  style = "color: yellow;">${this.parser_output[program_number][i].type}</span>`
+                                    + ` - ${this.parser_output[program_number][i].message}`;
+                        } // else-if
+                        else if (this.parser_output[program_number][i].type == ERROR) {
+                            listItem.innerHTML =
+                                `${this.parser_output[program_number][i].source} `
+                                    + `<span  style = "color: red;">${this.parser_output[program_number][i].type}</span>`
+                                    + ` - ${this.parser_output[program_number][i].message}`;
+                        } // else-if
+                        output_console.appendChild(listItem);
+                    } // for: add new children
+                } // if
+                // Concrete Syntax Tree
+                // Skip invalidy parsed programs
+                if (!this.invalid_parsed_programs.includes(program_number)) {
+                    this.cst_controller.add_tree_to_output_console(output_console, program_number);
+                    this.cst_controller.add_tree_to_gui(document.getElementById("cst"), program_number);
+                } // if
             } // for: each program
             let bottomMargin = document.createElement("div");
             // Avoids the bottom banner from overlapping over the list.

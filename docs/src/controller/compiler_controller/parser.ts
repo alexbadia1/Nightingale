@@ -35,14 +35,16 @@ module NightingaleCompiler {
              */
             private _current_token: LexicalToken = null,
 
-            private _current_cst: ConcreteSyntaxTree = new ConcreteSyntaxTree(),
+            private _current_cst: ConcreteSyntaxTree = new ConcreteSyntaxTree(null, null, 0),
 
-            public output: Array<OutputConsoleMessage> = [],
+            public output: Array<Array<OutputConsoleMessage>> = [[]],
+            public invalid_parsed_programs: Array<number> = [],
             public concrete_syntax_trees: Array<ConcreteSyntaxTree> = [],
 
         ){
             // Get first token
             this._current_token = this._token_stream[this._current_program_number][this._current_token_index];
+            this.parse_program();
         }// constructor
 
         public parse_program(): void {
@@ -50,7 +52,7 @@ module NightingaleCompiler {
             this._current_cst.add_node("Program", BRANCH);
             this.parse_block();
             this.match_token([END_OF_PROGRAM]);
-            this._current_cst.climb_one_level();
+            // this._current_cst.climb_one_level();
             if (
                 this._current_program_number < this._token_stream.length // There are more programs to parse
                 && this._current_token_index < this._token_stream[this._current_program_number].length // There are tokens in the program to parse
@@ -320,7 +322,7 @@ module NightingaleCompiler {
                     +`|${this._current_token.lexeme}| `
                     +`at ${this._current_token.lineNumber}:${this._current_token.linePosition}`
                 );
-                this.output.push(
+                this.output[this._current_program_number].push(
                     new OutputConsoleMessage(
                         PARSER, 
                         ERROR, 
@@ -330,6 +332,11 @@ module NightingaleCompiler {
                         +`at ${this._current_token.lineNumber}:${this._current_token.linePosition}`
                     )// OutputConsoleMessage
                 );// this.output.push
+
+                // Record that this program has an error, if no already done so
+                if(!this.invalid_parsed_programs.includes(this._current_program_number)){
+                    this.invalid_parsed_programs.push(this._current_program_number)
+                }// if
                 return;
             }// if
             this._current_cst.add_node(this._current_token.lexeme, LEAF);
@@ -355,9 +362,10 @@ module NightingaleCompiler {
             // Ran out of tokens in the current program
             if (this._current_token_index >= this._token_stream[this._current_program_number].length) {
                 this._current_program_number++;
+                this.output.push(new Array<OutputConsoleMessage>());
                 this._current_token_index = 0;
                 this.concrete_syntax_trees.push(this._current_cst);
-                this._current_cst = new ConcreteSyntaxTree();
+                this._current_cst = new ConcreteSyntaxTree(null, null, this._current_program_number);
             }// if
 
             // Ran out of programs

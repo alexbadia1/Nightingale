@@ -28,7 +28,7 @@ var NightingaleCompiler;
         /**
          * Current token in the current program's token stream.
          */
-        _current_token = null, _current_cst = new NightingaleCompiler.ConcreteSyntaxTree(null, null, 0), output = [[]], invalid_parsed_programs = [], concrete_syntax_trees = []) {
+        _current_token = null, _current_cst = new NightingaleCompiler.ConcreteSyntaxTree(null, null, 0), output = [[]], invalid_parsed_programs = [], concrete_syntax_trees = [], _error_count = 0, _warning_count = 0) {
             this._token_stream = _token_stream;
             this._lexically_invalid_programs = _lexically_invalid_programs;
             this._current_program_number = _current_program_number;
@@ -38,12 +38,16 @@ var NightingaleCompiler;
             this.output = output;
             this.invalid_parsed_programs = invalid_parsed_programs;
             this.concrete_syntax_trees = concrete_syntax_trees;
+            this._error_count = _error_count;
+            this._warning_count = _warning_count;
             // Get first token
             this._current_token = this._token_stream[this._current_program_number][this._current_token_index];
             this.parse_program();
         } // constructor
         parse_program() {
-            console.log(`Parsing Program ${this._current_program_number}...`);
+            if (this._error_count === 0) {
+                this.output[this._current_program_number].push(new NightingaleCompiler.OutputConsoleMessage(PARSER, INFO, `Parsing Program ${this._current_program_number + 1}...`));
+            }
             this._current_cst.add_node("Program", BRANCH);
             this.parse_block();
             this.match_token([END_OF_PROGRAM]);
@@ -269,6 +273,7 @@ var NightingaleCompiler;
         } // parse_int_operation
         match_token(expected_token_names) {
             if (!expected_token_names.includes(this._current_token.name)) {
+                this._error_count++;
                 console.log(`Expected ${expected_token_names.toString()}, `
                     + `but got [${this._current_token.name}] `
                     + `|${this._current_token.lexeme}| `
@@ -303,14 +308,23 @@ var NightingaleCompiler;
             this._current_token_index++;
             // Ran out of tokens in the current program
             if (this._current_token_index >= this._token_stream[this._current_program_number].length) {
+                // Finished parsing program #: # errors, # warnings
+                this.output[this._current_program_number].push(new NightingaleCompiler.OutputConsoleMessage(PARSER, INFO, `Parser finished parsing program ${this._current_program_number}.`));
+                // Get next program and reset pointers
                 this._current_program_number++;
-                this.output.push(new Array());
                 this._current_token_index = 0;
+                // Make room for next programs output
+                this.output.push(new Array());
+                // Push tree into the valid stack of trees
                 this.concrete_syntax_trees.push(this._current_cst);
+                // Make room for another tree
                 this._current_cst = new NightingaleCompiler.ConcreteSyntaxTree(null, null, this._current_program_number);
             } // if
             // Ran out of programs
             if (this._current_program_number >= this._token_stream.length) {
+                // Finished parsing all programs: # errors, # warnings
+                this.output[this._current_program_number - 1].push(new NightingaleCompiler.OutputConsoleMessage(PARSER, INFO, `Parser completed with ${this._warning_count} warnings.`));
+                this.output[this._current_program_number - 1].push(new NightingaleCompiler.OutputConsoleMessage(PARSER, INFO, `Parser completed with ${this._error_count} errors.`));
                 return;
             } // if
             this._current_token = this._token_stream[this._current_program_number][this._current_token_index];

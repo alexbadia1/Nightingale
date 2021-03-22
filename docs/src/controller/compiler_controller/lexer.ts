@@ -692,13 +692,17 @@ module NightingaleCompiler {
              * If theres anything after the $, then we're in a new program
              * This technically counts white-space too...
              */
+            // Output current program lex results BEFORE increasing the program counter
+            this.output[this.program_number].push(new OutputConsoleMessage(LEXER, INFO, `Lexer finished lexing program ${this.program_number + 1}.`));
+            
             if (this._last_position != source_code.length) {
+                // Get next program
                 this.program_number++;
                 this.token_stream.push(new Array<LexicalToken>());
                 this.debug_token_stream.push(new Array<LexicalToken>());
                 this.output.push(new Array<OutputConsoleMessage>());
                 this.stacktrace_stack.push(new Array<any>());
-                this.output[this.program_number].push(new OutputConsoleMessage(LEXER, INFO, `Lexer finished lexing program ${this.program_number + 1}.`));
+
                 this.output[this.program_number].push(new OutputConsoleMessage(LEXER, INFO, `Lexing program ${this.program_number + 1}...`));
                 this.missingEndOfProgram = true;
 

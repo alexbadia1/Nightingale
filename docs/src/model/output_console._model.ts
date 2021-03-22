@@ -23,10 +23,15 @@ module NightingaleCompiler {
 
         public show_output() {
             let output_console: HTMLElement = document.getElementById("output_console");
+            let cst_output: HTMLElement = document.getElementById("cst");
 
             // Remove all children, to prevent infinite list.
             while (output_console.firstChild) {
                 output_console.removeChild(output_console.firstChild);
+            }// while: remove all children
+            
+            while (cst_output.firstChild) {
+                cst_output.removeChild(cst_output.firstChild);
             }// while: remove all children
 
             for (var program_number: number = 0; program_number < this.lexer_output.length; ++program_number) {

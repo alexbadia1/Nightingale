@@ -56,7 +56,7 @@ var NightingaleCompiler;
             let cst_controller = new NightingaleCompiler.ConcreteSyntaxTreeController(this.parser.concrete_syntax_trees);
             // Final output
             let output_console_model = new NightingaleCompiler.OutputConsoleModel(this.lexer.output, cst_controller, this.parser.output, this.parser.invalid_parsed_programs);
-            let debug_console_model = new NightingaleCompiler.DebugConsoleModel(this.lexer.debug_token_stream);
+            let debug_console_model = new NightingaleCompiler.DebugConsoleModel(this.lexer.debug_token_stream, this.parser.debug);
             let stacktrace_console_model = new NightingaleCompiler.StacktraceConsoleModel(this.lexer.stacktrace_stack);
             let footer_model = new NightingaleCompiler.FooterModel(this.lexer.errors_stream.length, this.lexer.warnings_stream.length);
         } // compilerControllerBtnCompile_click

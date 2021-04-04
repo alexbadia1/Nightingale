@@ -14,6 +14,7 @@ module NightingaleCompiler {
     export class DebugConsoleModel {
         constructor(
             public debugTokens: Array<Array<LexicalToken>>,
+            public parserDebug: Array<Array<OutputConsoleMessage>>,
             private heartFaceEmojii: string = `<svg xmlns="http://www.w3.org/2000/svg" width="1.5rem" height="1.5rem" fill="green" class="bi bi-play-fill" viewBox="0 0 16 16">
             <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zM4.756 4.566c.763-1.424 4.02-.12.952 3.434-4.496-1.596-2.35-4.298-.952-3.434zm6.559 5.448a.5.5 0 0 1 .548.736A4.498 4.498 0 0 1 7.965 13a4.498 4.498 0 0 1-3.898-2.25.5.5 0 0 1 .548-.736h.005l.017.005.067.015.252.055c.215.046.515.108.857.169.693.124 1.522.242 2.152.242.63 0 1.46-.118 2.152-.242a26.58 26.58 0 0 0 1.109-.224l.067-.015.017-.004.005-.002zm-.07-5.448c1.397-.864 3.543 1.838-.953 3.434-3.067-3.554.19-4.858.952-3.434z" /> </svg>`,
             private neutralFaceEmojii: string = `<svg xmlns="http://www.w3.org/2000/svg" width="1.5rem" height="1.5rem" fill="blue" class="bi bi-play-fill" viewBox="0 0 16 16">
@@ -35,6 +36,7 @@ module NightingaleCompiler {
                 debugConsoleList.removeChild(debugConsoleList.firstChild);
             }// while: remove all children
 
+            // Add a LEGEND to explain the emojiis
             let heartFaceEmojii: HTMLLIElement = document.createElement("li");
             heartFaceEmojii.style.listStyle = "none";
             heartFaceEmojii.style.margin = "5px 5px 0px 15px";
@@ -58,6 +60,7 @@ module NightingaleCompiler {
             debugConsoleList.appendChild(frownyFaceEmojii);
             debugConsoleList.appendChild(deadFaceEmojii);
 
+            // For each program
             for (var emittedTokenArrayIndex: number = 0; emittedTokenArrayIndex < this.debugTokens.length; ++emittedTokenArrayIndex) {
                 let programNumberHeader: HTMLAnchorElement = document.createElement("a");
                 programNumberHeader.style.margin = "15px 0px 5px 17px";
@@ -67,7 +70,7 @@ module NightingaleCompiler {
 
                 debugConsoleList.appendChild(programNumberHeader);
 
-                // Add new children
+                // Add all tokens found in LEX
                 for (let nestedArrayIndex: number = 0; nestedArrayIndex < this.debugTokens[emittedTokenArrayIndex].length; ++nestedArrayIndex) {
                     if (this.debugTokens[emittedTokenArrayIndex][nestedArrayIndex].name.includes("STRING")) {
                         this.isInString = !this.isInString;
@@ -140,6 +143,30 @@ module NightingaleCompiler {
                 }// for
             }// for
 
+            // Show Parser output in batches
+            for (var parseProgramNumber: number = 0; parseProgramNumber < this.parserDebug.length; ++parseProgramNumber) {
+                // Stops showing the extra last program
+                if (this.parserDebug[parseProgramNumber].length === undefined || this.parserDebug[parseProgramNumber].length === null || this.parserDebug[parseProgramNumber].length === 0) {
+                    continue;
+                }// if
+                let parseHeader: HTMLAnchorElement = document.createElement("a");
+                parseHeader.style.margin = "15px 0px 5px 17px";
+
+                parseHeader.className = `parse_program_${parseProgramNumber}`;
+                parseHeader.innerHTML = `<span style = "font-size: 1rem; color: white;">Parsing program ${parseProgramNumber + 1}</span>`;
+                debugConsoleList.appendChild(parseHeader);
+        
+                // Add All tokens consumed in PARSE and their validity
+                for (let indexOfMessage: number = 0; indexOfMessage < this.parserDebug[parseProgramNumber].length; ++indexOfMessage) {
+                    let listItem: HTMLAnchorElement = document.createElement("a");
+                    listItem.className = `parse_message_${indexOfMessage}`;
+                    listItem.style.margin = "0px 15px 3px 15px";
+                    listItem.className = `parse_message_${indexOfMessage}`;
+                    listItem.innerHTML += `<span style = "font-size: 1rem; color: white;">${this.parserDebug[parseProgramNumber][indexOfMessage].message}</span>`;
+
+                    debugConsoleList.appendChild(listItem);
+                }// for
+            }// for
             let bottomMargin: HTMLDivElement = document.createElement("div");
 
             // Avoids the bottom banner from overlapping over the list.

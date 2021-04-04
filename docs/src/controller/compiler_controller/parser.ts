@@ -38,6 +38,12 @@ module NightingaleCompiler {
             private _current_cst: ConcreteSyntaxTree = new ConcreteSyntaxTree(null, null, 0),
 
             public output: Array<Array<OutputConsoleMessage>> = [[]],
+
+            /**
+             * An array of tokens in the order that they are consumed
+             */
+            public debug: Array<Array<OutputConsoleMessage>> = [[]],
+
             public invalid_parsed_programs: Array<number> = [],
             public concrete_syntax_trees: Array<ConcreteSyntaxTree> = [],
 
@@ -336,14 +342,35 @@ module NightingaleCompiler {
                     )// OutputConsoleMessage
                 );// this.output.push
 
+                this.debug[this._current_program_number].push(
+                    new OutputConsoleMessage(
+                        PARSER, 
+                        ERROR, 
+                        `Expected ${expected_token_names.toString()}, ` 
+                        +`but got [${this._current_token.name}] `
+                        +`|${this._current_token.lexeme}| `
+                        +`at ${this._current_token.lineNumber}:${this._current_token.linePosition}`
+                    )// OutputConsoleMessage
+                );// this.debug.push
+
                 // Record that this program has an error, if no already done so
                 if(!this.invalid_parsed_programs.includes(this._current_program_number)){
                     this.invalid_parsed_programs.push(this._current_program_number)
                 }// if
                 return;
             }// if
+
+            this.debug[this._current_program_number].push(
+                new OutputConsoleMessage(
+                    PARSER, 
+                    INFO, 
+                    `Valid token consumed: ` 
+                    +`[${this._current_token.name}] `
+                    +`|${this._current_token.lexeme}| `
+                    +`at ${this._current_token.lineNumber}:${this._current_token.linePosition}`
+                )// OutputConsoleMessage
+            );// this.debug.push
             this._current_cst.add_node(this._current_token.lexeme, LEAF);
-            // this._current_cst.climb_one_level();
             this.consume_token();
             this.get_next_token();
         }// match_token
@@ -366,7 +393,8 @@ module NightingaleCompiler {
             if (this._current_token_index >= this._token_stream[this._current_program_number].length) {
 
                 // Finished parsing program #: # errors, # warnings
-                this.output[this._current_program_number].push(new OutputConsoleMessage(PARSER, INFO, `Parser finished parsing program ${this._current_program_number}.`));
+                this.output[this._current_program_number].push(new OutputConsoleMessage(PARSER, INFO, `Parser finished parsing program ${this._current_program_number + 1}.`));
+                this.debug[this._current_program_number].push(new OutputConsoleMessage(PARSER, INFO, `Parser finished parsing program ${this._current_program_number + 1}.`));
 
                 // Get next program and reset pointers
                 this._current_program_number++;
@@ -374,6 +402,42 @@ module NightingaleCompiler {
 
                 // Make room for next programs output
                 this.output.push(new Array<OutputConsoleMessage>());
+                this.debug.push(new Array<OutputConsoleMessage>());
+
+                checkIfProgramIsValid: while (this._current_program_number < this._token_stream.length) {
+                    if (this._lexically_invalid_programs.includes(this._current_program_number)) {
+                        // Program is invalid, skip due to lex error
+                        this.output[this._current_program_number].push(
+                            new OutputConsoleMessage(
+                                PARSER, 
+                                INFO, 
+                                `Parser skipped parsing program ${this._current_program_number + 1} due to Lex Errors.`
+                            )
+                        );
+
+                        this.debug[this._current_program_number].push(
+                            new OutputConsoleMessage(
+                                PARSER, 
+                                INFO, 
+                                `Parser skipped parsing program ${this._current_program_number + 1} due to Lex Errors.`
+                            )
+                        );
+
+                        // Record the invalid lex program as an invalid parse program
+                        if(!this.invalid_parsed_programs.includes(this._current_program_number)){
+                            this.invalid_parsed_programs.push(this._current_program_number)
+                        }// if
+                        this._current_program_number++;
+                        this.output.push(new Array<OutputConsoleMessage>());
+                        this.debug.push(new Array<OutputConsoleMessage>());
+                        break checkIfProgramIsValid;
+                    }// if
+
+                    else {
+                        // The next program is valid stop checking for another valid program
+                        break checkIfProgramIsValid;
+                    }// else
+                }// while
 
                 // Push tree into the valid stack of trees
                 this.concrete_syntax_trees.push(this._current_cst);
@@ -387,6 +451,8 @@ module NightingaleCompiler {
                 // Finished parsing all programs: # errors, # warnings
                 this.output[this._current_program_number - 1].push(new OutputConsoleMessage(PARSER, INFO, `Parser completed with ${this._warning_count} warnings.`));
                 this.output[this._current_program_number - 1].push(new OutputConsoleMessage(PARSER, INFO, `Parser completed with ${this._error_count} errors.`));
+                this.debug[this._current_program_number - 1].push(new OutputConsoleMessage(PARSER, INFO, `Parser completed with ${this._warning_count} warnings.`));
+                this.debug[this._current_program_number - 1].push(new OutputConsoleMessage(PARSER, INFO, `Parser completed with ${this._error_count} errors.`));
                 return;
             }// if
 

@@ -81,7 +81,7 @@ module NightingaleCompiler {
                     this.debug.push(new Array<OutputConsoleMessage>());
 
                     // Make room for another tree
-                    this._current_cst = new ConcreteSyntaxTree(null, null, this._current_program_number);
+                    this._current_cst = new ConcreteSyntaxTree(null, null, this._current_program_number + 1);
                 }// finally
             }// for
 
@@ -182,6 +182,7 @@ module NightingaleCompiler {
                     if (!this.invalid_parsed_programs.includes(this._current_program_number)) {
                         this.invalid_parsed_programs.push(this._current_program_number)
                     }// if
+
                     throw new OutputConsoleMessage(
                         PARSER,
                         ERROR,
@@ -450,7 +451,7 @@ module NightingaleCompiler {
         private is_current_program_lexically_valid(): void {
             if (this._lexically_invalid_programs.includes(this._current_program_number)) {
                 this._warning_count++;
-                
+
                 // Record the invalid lex program as an invalid parse program
                 if (!this.invalid_parsed_programs.includes(this._current_program_number)) {
                     this.invalid_parsed_programs.push(this._current_program_number)

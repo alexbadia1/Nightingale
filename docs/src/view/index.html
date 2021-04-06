@@ -124,15 +124,13 @@
         <!-- lists all test files -->
         <div id="side-nav">
             <div class="d-flex flex-column mt-3">
-
-
                 <div class="treeview-animated w-20 mx-4 my-4">
-                    <h6 class="pt-3 pl-3">Tests</h6>
+                    <h6 class="pt-3 pl-3" style="color: white;">Tests</h6>
                     <ul class="treeview-animated-list mb-3">
                         <li class="treeview-animated-items">
                             <a class="closed">
                                 <i class="fas fa-angle-right"></i>
-                                <span></i>Lexer</span>
+                                <span style="color: white; font-size: 1.2rem;">Lexer</span>
                             </a>
                             <ul class="nested">
                                 <li>
@@ -171,50 +169,30 @@
                         <li class="treeview-animated-items">
                             <a class="closed">
                                 <i class="fas fa-angle-right"></i>
-                                <span><i class="far fa-folder-open ic-w mx-1"></i>Parser</span>
+                                <span style="color: white; font-size: 1.2rem;">Parser</span>
                             </a>
                             <ul class="nested">
                                 <li>
                                     <div class="treeview-animated-element"><a id="sidebar__link--tests"
-                                        onclick="myCodeMirror.setValue(JUICE_COMPILER_CRAZY_ONE_LINER)">juice_compiler_crazy_one_liner.gle</a></div>
-                                </li>
-                                <li>
-                                    <div class="treeview-animated-element"><i
-                                            class="far fa-folder-open ic-w mr-1"></i>Corporate </div>
-                                </li>
-                                <li>
-                                    <div class="treeview-animated-element"><i
-                                            class="far fa-folder-open ic-w mr-1"></i>Finance </div>
-                                </li>
-                                <li>
-                                    <div class="treeview-animated-element"><i
-                                            class="far fa-folder-open ic-w mr-1"></i>Other </div>
+                                            onclick="myCodeMirror.setValue(JUICE_COMPILER_CRAZY_ONE_LINER)">juice_compiler_crazy_one_liner.gle</a>
+                                    </div>
                                 </li>
                             </ul>
                         </li>
 
                         <li>
-                            <div class="treeview-animated-element" onclick="myCodeMirror.setValue(LONG_TEST_CASE)"><i
-                                    class="far fa-comment ic-w mr-1"></i><a id="sidebar__link--tests"
+                            <div class="treeview-animated-element" onclick="myCodeMirror.setValue(LONG_TEST_CASE)"><a
+                                    id="sidebar__link--tests"
                                     onclick="myCodeMirror.setValue(LONG_TEST_CASE)">long_test_case.gle</a> </div>
                         </li>
                         <li>
                             <div class="treeview-animated-element"
-                                onclick="myCodeMirror.setValue(ALANS_PROJECT_ONE_TEST)"><i
-                                    class="fas fa-cogs ic-w mr-1"></i><a id="sidebar__link--tests"
+                                onclick="myCodeMirror.setValue(ALANS_PROJECT_ONE_TEST)"><a id="sidebar__link--tests"
                                     onclick="myCodeMirror.setValue(ALANS_PROJECT_ONE_TEST)">project_one_test.gle</a>
                             </div>
                         </li>
                     </ul>
                 </div>
-                <!-- 
-                    <h3>Parser Tests</h3>
-                    <ul>
-                        <li><a id="sidebar__link--tests"
-                                onclick="myCodeMirror.setValue(JUICE_COMPILER_CRAZY_ONE_LINER)">juice_compiler_crazy_one_liner.gle</a>
-                        </li>
-                    </ul> -->
-
             </div>
         </div>
         <!--<div id="side-nav"> -->
@@ -258,7 +236,7 @@
                 </div>
 
                 <div id="cst" class=" tab-content_tab-cst tab-pane fade"
-                    style="height: 92%; width: 100%; overflow: scroll;">
+                    style="height: 85%; width: 100%; overflow: scroll;">
                 </div>
                 <!--<dive id = "cst"> -->
 

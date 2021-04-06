@@ -81,7 +81,7 @@
       }
 
       .open {
-        background-color: rgb(50, 160, 255);
+        background-color: rgba(64, 64, 64, .8);
         transition: all .1s linear;
 
         &:hover {
@@ -108,7 +108,7 @@
 
       &.opened {
         color: #f8f9fa;
-        background-color: rgb(50, 160, 255);
+        background-color: rgba(64, 64, 64, .8);
 
         &:hover {
           color: #f8f9fa;

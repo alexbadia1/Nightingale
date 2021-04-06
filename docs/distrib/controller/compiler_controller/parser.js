@@ -70,7 +70,7 @@ var NightingaleCompiler;
                     this.output.push(new Array());
                     this.debug.push(new Array());
                     // Make room for another tree
-                    this._current_cst = new NightingaleCompiler.ConcreteSyntaxTree(null, null, this._current_program_number);
+                    this._current_cst = new NightingaleCompiler.ConcreteSyntaxTree(null, null, this._current_program_number + 1);
                 } // finally
             } // for
             // Finished parsing all programs: # errors, # warnings

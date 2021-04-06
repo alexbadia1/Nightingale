@@ -20,6 +20,8 @@ var NightingaleCompiler;
             this.show_output();
         } // constuctor
         show_output() {
+            console.log("Invalid Parsed Programs");
+            console.log(this.invalid_parsed_programs);
             let output_console = document.getElementById("output_console");
             let cst_output = document.getElementById("cst");
             // Remove all children, to prevent infinite list.
@@ -59,7 +61,7 @@ var NightingaleCompiler;
                     output_console.appendChild(listItem);
                 } // for: add new children
                 // Add Parser output
-                if (this.parser_output[program_number] !== null && this.parser_output[program_number] !== undefined) {
+                if (this.parser_output[program_number] !== null || this.parser_output[program_number] !== null) {
                     for (let i = 0; i < this.parser_output[program_number].length; ++i) {
                         let listItem = document.createElement("li");
                         listItem.className = `token_${i}`;
@@ -87,19 +89,21 @@ var NightingaleCompiler;
                         } // else-if
                         output_console.appendChild(listItem);
                     } // for: add new children
-                } // if
-                // Concrete Syntax Tree
-                // Skip invalidy parsed programs
-                if (!this.invalid_parsed_programs.includes(program_number)) {
-                    this.cst_controller.add_tree_to_output_console(output_console, program_number);
-                    this.cst_controller.add_tree_to_gui(document.getElementById("cst"), program_number);
+                    // Concrete Syntax Tree
+                    // Skip invalidy parsed programs
+                    console.log("Program Number: " + program_number);
+                    if (!this.invalid_parsed_programs.includes(program_number)) {
+                        this.cst_controller.add_tree_to_output_console(output_console, program_number);
+                        this.cst_controller.add_tree_to_gui(document.getElementById("cst"), program_number);
+                    } // if
                 } // if
             } // for: each program
-            let bottomMargin = document.createElement("div");
+            let bottomMarginOutputConsole = document.createElement("div");
+            bottomMarginOutputConsole.id = "bottomMarginOutputConsole";
             // Avoids the bottom banner from overlapping over the list.
             // Double check the stylesheet to make sure the height is slightly larger than the ".footer" height
-            bottomMargin.style.height = "10vh";
-            output_console.appendChild(bottomMargin);
+            bottomMarginOutputConsole.style.height = "10vh";
+            output_console.appendChild(bottomMarginOutputConsole);
         } // ListEmmitedTokens
     } // class: DebugConsoleModel
     NightingaleCompiler.OutputConsoleModel = OutputConsoleModel;

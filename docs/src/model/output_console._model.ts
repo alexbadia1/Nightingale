@@ -22,6 +22,8 @@ module NightingaleCompiler {
         }// constuctor
 
         public show_output() {
+            console.log("Invalid Parsed Programs");
+            console.log(this.invalid_parsed_programs);
             let output_console: HTMLElement = document.getElementById("output_console");
             let cst_output: HTMLElement = document.getElementById("cst");
 
@@ -29,7 +31,7 @@ module NightingaleCompiler {
             while (output_console.firstChild) {
                 output_console.removeChild(output_console.firstChild);
             }// while: remove all children
-            
+
             while (cst_output.firstChild) {
                 cst_output.removeChild(cst_output.firstChild);
             }// while: remove all children
@@ -70,7 +72,7 @@ module NightingaleCompiler {
                 }// for: add new children
 
                 // Add Parser output
-                if (this.parser_output[program_number] !== null && this.parser_output[program_number] !== undefined) {
+                if (this.parser_output[program_number] !== null || this.parser_output[program_number] !== null) {
                     for (let i: number = 0; i < this.parser_output[program_number].length; ++i) {
                         let listItem: HTMLLIElement = document.createElement("li");
                         listItem.className = `token_${i}`;
@@ -102,23 +104,25 @@ module NightingaleCompiler {
 
                         output_console.appendChild(listItem);
                     }// for: add new children
-                }// if
 
-                // Concrete Syntax Tree
-                // Skip invalidy parsed programs
-                if (!this.invalid_parsed_programs.includes(program_number)) {
-                    this.cst_controller.add_tree_to_output_console(output_console, program_number);
-                    this.cst_controller.add_tree_to_gui(document.getElementById("cst"), program_number);
+                    // Concrete Syntax Tree
+                    // Skip invalidy parsed programs
+                    console.log("Program Number: " + program_number);
+                    if (!this.invalid_parsed_programs.includes(program_number)) {
+                        this.cst_controller.add_tree_to_output_console(output_console, program_number);
+                        this.cst_controller.add_tree_to_gui(document.getElementById("cst"), program_number);
+                    }// if
                 }// if
             }// for: each program
 
 
-            let bottomMargin: HTMLDivElement = document.createElement("div");
+            let bottomMarginOutputConsole: HTMLDivElement = document.createElement("div");
+            bottomMarginOutputConsole.id = "bottomMarginOutputConsole";
 
             // Avoids the bottom banner from overlapping over the list.
             // Double check the stylesheet to make sure the height is slightly larger than the ".footer" height
-            bottomMargin.style.height = "10vh";
-            output_console.appendChild(bottomMargin);
+            bottomMarginOutputConsole.style.height = "10vh";
+            output_console.appendChild(bottomMarginOutputConsole);
         }// ListEmmitedTokens
 
     }// class: DebugConsoleModel

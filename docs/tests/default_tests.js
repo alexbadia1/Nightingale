@@ -65,3 +65,7 @@ const BROKEN_COMMENTS =
 + "subspecies (L. m. golzi) and the Caucasian subspecies (L. m. africana) have paler upperparts and a stronger face-pattern,\n"
 + "including a pale supercilium. The song of the nightingale[6] has been described as one of the most beautiful\n"
 +"sounds in nature, inspiring songs, fairy tales, opera, books, and a great deal of poetry.\n"
+
+const JUICE_COMPILER_CRAZY_ONE_LINER = 
+"/* Test case for crazy one liner */\n"
++ "${hellotruefalse!======trueprinta=3b=0print(\"false true\")whi33leiftruefalsestring!= stringintbooleanaa truewhileif{hi+++==!==}}/*aaahaha*/hahahahaha/*awao*/$"

@@ -198,7 +198,13 @@ var NightingaleCompiler;
                 case STRING_EXPRESSION_BOUNDARY:
                     this.parse_string_expression();
                     break;
-                // All boolean expressions must start with (
+                // Boolean expression can start with true
+                case KEYWORD_TRUE:
+                // Fall through
+                // Boolean expression can start with false
+                case KEYWORD_FALSE:
+                // Fall through
+                // Boolean expression can start with (
                 case SYMBOL_OPEN_ARGUMENT:
                     this.parse_boolean_expression();
                     break;
@@ -373,8 +379,7 @@ var NightingaleCompiler;
                 KEYWORD_WHILE,
                 KEYWORD_IF,
                 IDENTIFIER,
-                KEYWORD_TRUE,
-                KEYWORD_FALSE,
+                KEYWORD_BOOLEAN,
                 KEYWORD_INT,
                 KEYWORD_STRING,
                 SYMBOL_OPEN_BLOCK,

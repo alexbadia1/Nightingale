@@ -28,7 +28,7 @@ module NightingaleCompiler {
             /**
              * Current index in the current program's token stream.
              */
-            private _current_token_index: number = 0,
+            private _current_token_index: number = -1,
 
             /**
              * Current token in the current program's token stream.
@@ -38,27 +38,82 @@ module NightingaleCompiler {
             private _current_cst: ConcreteSyntaxTree = new ConcreteSyntaxTree(null, null, 0),
 
             public output: Array<Array<OutputConsoleMessage>> = [[]],
+
+            /**
+             * An array of tokens in the order that they are consumed
+             */
+            public debug: Array<Array<OutputConsoleMessage>> = [[]],
+
             public invalid_parsed_programs: Array<number> = [],
             public concrete_syntax_trees: Array<ConcreteSyntaxTree> = [],
 
-        ){
-            // Get first token
-            this._current_token = this._token_stream[this._current_program_number][this._current_token_index];
-            this.parse_program();
+            private _error_count: number = 0,
+            private _warning_count: number = 0,
+        ) {
+            for (this._current_program_number; this._current_program_number < this._token_stream.length; ++this._current_program_number) {
+                // Try parsing the program
+                try {
+                    this.parse_program();
+                }// try
+
+                // Catch a fatal parse error
+                catch (e) {
+                    if (e instanceof OutputConsoleMessage) {
+                        this.output[this._current_program_number].push(e);
+                        this.debug[this._current_program_number].push(e);
+                    }// if
+                }// catch
+
+                // Report output to output console
+                finally {
+                    // Finished parsing program #: # errors, # warnings
+                    this.output[this._current_program_number].push(new OutputConsoleMessage(PARSER, INFO, `Parser finished parsing program ${this._current_program_number + 1}.`));
+                    this.debug[this._current_program_number].push(new OutputConsoleMessage(PARSER, INFO, `Parser finished parsing program ${this._current_program_number + 1}.`));
+
+                    // Push tree into the valid stack of trees
+                    this.concrete_syntax_trees.push(this._current_cst);
+
+                    // Reset pointers
+                    this._current_token_index = -1;
+
+                    // Make room for next programs output
+                    this.output.push(new Array<OutputConsoleMessage>());
+                    this.debug.push(new Array<OutputConsoleMessage>());
+
+                    // Make room for another tree
+                    this._current_cst = new ConcreteSyntaxTree(null, null, this._current_program_number + 1);
+                }// finally
+            }// for
+
+            // Finished parsing all programs: # errors, # warnings
+            this.output[this._current_program_number - 1].push(new OutputConsoleMessage(PARSER, INFO, `Parser completed with ${this._warning_count} warnings.`));
+            this.output[this._current_program_number - 1].push(new OutputConsoleMessage(PARSER, INFO, `Parser completed with ${this._error_count} errors.`));
+            this.debug[this._current_program_number - 1].push(new OutputConsoleMessage(PARSER, INFO, `Parser completed with ${this._warning_count} warnings.`));
+            this.debug[this._current_program_number - 1].push(new OutputConsoleMessage(PARSER, INFO, `Parser completed with ${this._error_count} errors.`));
         }// constructor
 
         public parse_program(): void {
-            console.log(`Parsing Program ${this._current_program_number}...`);
+            // Skips invalid lex programs and throws an error message
+            this.is_current_program_lexically_valid();
+            
+            // Get first token
+            this.get_next_token();
+
+            // Output to console which program is being parsed
+            this.output[this._current_program_number].push(
+                new OutputConsoleMessage(
+                    PARSER,
+                    INFO,
+                    `Parsing Program ${this._current_program_number + 1}...`
+                )
+            );// this.output[this._current_program_number].push
+
+            // Add the root node for CST
             this._current_cst.add_node("Program", BRANCH);
+
+            // Now the recursive descent part
             this.parse_block();
             this.match_token([END_OF_PROGRAM]);
-            // this._current_cst.climb_one_level();
-            if (
-                this._current_program_number < this._token_stream.length // There are more programs to parse
-                && this._current_token_index < this._token_stream[this._current_program_number].length // There are tokens in the program to parse
-            ) {
-                this.parse_program();
-            }// if
         }// parse_program
 
         private parse_block(): void {
@@ -70,7 +125,7 @@ module NightingaleCompiler {
         }// parse_block
 
         private parse_statement_list(): void {
-            if (this.current_token_is_statement()) {
+            if (this.is_current_token_statement()) {
                 this._current_cst.add_node("Statement List", BRANCH);
                 //console.log(`Parse Statement List: ${this._current_token.name} -> true`);
                 this.parse_statement();
@@ -85,7 +140,7 @@ module NightingaleCompiler {
 
         private parse_statement(): void {
             this._current_cst.add_node("Statement", BRANCH);
-            switch(this._current_token.name) {
+            switch (this._current_token.name) {
                 case KEYWORD_PRINT:
                     this.parse_print_statement();
                     break;
@@ -96,22 +151,22 @@ module NightingaleCompiler {
                     break;
 
                 case KEYWORD_INT:
-                    // Non-terminal: int is a subset of the non-terminal: type.
-                    // Just fall through.
+                // Non-terminal: int is a subset of the non-terminal: type.
+                // Just fall through.
 
                 case KEYWORD_STRING:
-                    // Non-terminal: string is a subset of the non-terminal: type.
-                    // Just fall through.
+                // Non-terminal: string is a subset of the non-terminal: type.
+                // Just fall through.
 
                 case KEYWORD_BOOLEAN:
                     // Non-terminal: boolean is a subset of the non-terminal: type.
                     this.parse_variable_declaration();
                     break;
-                
+
                 case KEYWORD_WHILE:
                     this.parse_while_statement();
                     break;
-                
+
                 case KEYWORD_IF:
                     this.parse_if_statement();
                     break;
@@ -119,9 +174,22 @@ module NightingaleCompiler {
                 case SYMBOL_OPEN_BLOCK:
                     this.parse_block();
                     break;
-                
-                default: 
-                    throw Error(`Fatal Error: Parse Statement --> token [${this._current_token.name}] has no matching non-terminal or terminal!`);
+
+                default:
+                    this._error_count++;
+
+                    // Record that this program has an error, if no already done so
+                    if (!this.invalid_parsed_programs.includes(this._current_program_number)) {
+                        this.invalid_parsed_programs.push(this._current_program_number)
+                    }// if
+
+                    throw new OutputConsoleMessage(
+                        PARSER,
+                        ERROR,
+                        `Parse Statement Failure --> Expected [KEYWORD_PRINT, IDENTIFIER, KEYWORD_INT, KEYWORD_STRING, KEYWORD_BOOLEAN, KEYWORD_WHILE, KEYWORD_IF, OPEN_BLOCK], but got [${this._current_token.name}] `
+                        + `|${this._current_token.lexeme}| `
+                        + `at ${this._current_token.lineNumber}:${this._current_token.linePosition}.`
+                    );
             }// switch
 
             this._current_cst.climb_one_level();
@@ -169,7 +237,7 @@ module NightingaleCompiler {
 
         private parse_expression(): void {
             this._current_cst.add_node("Expression", BRANCH);
-            switch (this._current_token.name){
+            switch (this._current_token.name) {
                 // Int expressions must start with a DIGIT
                 case DIGIT:
                     this.parse_int_expression();
@@ -179,18 +247,39 @@ module NightingaleCompiler {
                 case STRING_EXPRESSION_BOUNDARY:
                     this.parse_string_expression();
                     break;
-                
-                // All boolean expressions must start with (
+
+                // Boolean expression can start with true
+                case KEYWORD_TRUE:
+                    // Fall through
+
+                // Boolean expression can start with false
+                case KEYWORD_FALSE:
+                    // Fall through
+
+                // Boolean expression can start with (
                 case SYMBOL_OPEN_ARGUMENT:
                     this.parse_boolean_expression();
                     break;
-                
+
                 case IDENTIFIER:
                     this.parse_identifier();
                     break;
-                
+
                 default:
-                    throw Error("Fatal Error: Parse Expression --> token has no matching non-terminal or terminal!");
+                    this._error_count++;
+
+                    // Record that this program has an error, if no already done so
+                    if (!this.invalid_parsed_programs.includes(this._current_program_number)) {
+                        this.invalid_parsed_programs.push(this._current_program_number)
+                    }// if
+
+                    throw new OutputConsoleMessage(
+                        PARSER,
+                        ERROR,
+                        `Parse Expression Failure --> Expected [DIGIT, STRING_EXPRESSION_BOUNDARY, SYMBOL_OPEN_ARGUMENT, IDENTIFIER], but got [${this._current_token.name}] `
+                        + `|${this._current_token.lexeme}| `
+                        + `at ${this._current_token.lineNumber}:${this._current_token.linePosition}.`
+                    );
             }// switch
             this._current_cst.climb_one_level();
         }//parse_expression
@@ -266,11 +355,10 @@ module NightingaleCompiler {
             }// else
         }// parse_character_list
 
-        private parse_type():void {
+        private parse_type(): void {
             this._current_cst.add_node("Type", BRANCH);
             this.match_token([KEYWORD_INT, KEYWORD_STRING, KEYWORD_BOOLEAN]);
             this._current_cst.climb_one_level();
-            // throw Error(`Fatal Error: Parse Type --> token [${this._current_token.name}] is not type int | string | boolean!`);
         }// parse_type
 
         private parse_character(): void {
@@ -283,7 +371,6 @@ module NightingaleCompiler {
             this._current_cst.add_node("Space", BRANCH);
             this.match_token([SPACE_SINGLE, SPACE_TAB]);
             this._current_cst.climb_one_level();
-            // throw Error(`Fatal Error: Parse Space --> token [${this._current_token.name}] is not a space or tab character!`);
         }// parse_space
 
         private parse_digit(): void {
@@ -296,14 +383,12 @@ module NightingaleCompiler {
             this._current_cst.add_node("Boolean Operation", BRANCH);
             this.match_token([SYMBOL_BOOL_OP_EQUALS, SYMBOL_BOOL_OP_NOT_EQUALS]);
             this._current_cst.climb_one_level();
-            // throw Error(`Fatal Error: Parse Boolean Operation --> token ${this._current_token.name} is not a SYMBOL_BOOL_OP_EQUALS or SYMBOL_BOOL_OP_NOT_EQUALS!`);
         }// parse_boolean_operation
 
         private parse_boolean_value(): void {
             this._current_cst.add_node("Boolean Value", BRANCH);
             this.match_token([KEYWORD_TRUE, KEYWORD_FALSE]);
             this._current_cst.climb_one_level();
-            // throw Error(`Fatal Error: Parse Boolean Value --> token ${this._current_token.name} is not a true | false`);
         }// parse_boolean_operation
 
         private parse_int_operation(): void {
@@ -313,34 +398,37 @@ module NightingaleCompiler {
                 this._current_cst.climb_one_level();
             }// if
         }// parse_int_operation
-        
+
         private match_token(expected_token_names: Array<string>): void {
             if (!expected_token_names.includes(this._current_token.name)) {
-                console.log(
-                    `Expected ${expected_token_names.toString()}, ` 
-                    +`but got [${this._current_token.name}] `
-                    +`|${this._current_token.lexeme}| `
-                    +`at ${this._current_token.lineNumber}:${this._current_token.linePosition}`
-                );
-                this.output[this._current_program_number].push(
-                    new OutputConsoleMessage(
-                        PARSER, 
-                        ERROR, 
-                        `Expected ${expected_token_names.toString()}, ` 
-                        +`but got [${this._current_token.name}] `
-                        +`|${this._current_token.lexeme}| `
-                        +`at ${this._current_token.lineNumber}:${this._current_token.linePosition}`
-                    )// OutputConsoleMessage
-                );// this.output.push
+                this._error_count++;
 
                 // Record that this program has an error, if no already done so
-                if(!this.invalid_parsed_programs.includes(this._current_program_number)){
+                if (!this.invalid_parsed_programs.includes(this._current_program_number)) {
                     this.invalid_parsed_programs.push(this._current_program_number)
                 }// if
-                return;
+
+                throw new OutputConsoleMessage(
+                    PARSER,
+                    ERROR,
+                    `Expected [${expected_token_names.toString()}], but got [${this._current_token.name}]. ` 
+                    + `|${this._current_token.lexeme}| `
+                    + `at ${this._current_token.lineNumber}:${this._current_token.linePosition}.`
+                );
             }// if
+
+            this.debug[this._current_program_number].push(
+                new OutputConsoleMessage(
+                    PARSER,
+                    INFO,
+                    `Valid token consumed: `
+                    + `[${this._current_token.name}] `
+                    + `|${this._current_token.lexeme}| `
+                    + `at ${this._current_token.lineNumber}:${this._current_token.linePosition}`
+                )// OutputConsoleMessage
+            );// this.debug.push
+
             this._current_cst.add_node(this._current_token.lexeme, LEAF);
-            // this._current_cst.climb_one_level();
             this.consume_token();
             this.get_next_token();
         }// match_token
@@ -357,34 +445,42 @@ module NightingaleCompiler {
         }// consume_token
 
         private get_next_token(): void {
+            // Advance token pointer
             this._current_token_index++;
 
             // Ran out of tokens in the current program
-            if (this._current_token_index >= this._token_stream[this._current_program_number].length) {
-                this._current_program_number++;
-                this.output.push(new Array<OutputConsoleMessage>());
-                this._current_token_index = 0;
-                this.concrete_syntax_trees.push(this._current_cst);
-                this._current_cst = new ConcreteSyntaxTree(null, null, this._current_program_number);
-            }// if
+            if (this._current_token_index >= this._token_stream[this._current_program_number].length) { return; }// if
 
-            // Ran out of programs
-            if (this._current_program_number >= this._token_stream.length) {
-                return;
-            }// if
-
+            // Retrieve token from token stream
             this._current_token = this._token_stream[this._current_program_number][this._current_token_index];
             console.log(`Retrieved next Token [${this._current_token.name}], Lexeme % ${this._current_token.lexeme} %`);
         }// get_next_token
 
-        private current_token_is_statement(): boolean {
+        private is_current_program_lexically_valid(): void {
+            if (this._lexically_invalid_programs.includes(this._current_program_number)) {
+                this._warning_count++;
+
+                // Record the invalid lex program as an invalid parse program
+                if (!this.invalid_parsed_programs.includes(this._current_program_number)) {
+                    this.invalid_parsed_programs.push(this._current_program_number)
+                }// if
+
+                // Program is invalid, skip due to lex error
+                throw new OutputConsoleMessage(
+                    PARSER,
+                    WARNING,
+                    `Parser is skipping program ${this._current_program_number + 1} due to Lex Errors.`
+                );
+            }// if
+        }// current_program_is_lexically_valid
+
+        private is_current_token_statement(): boolean {
             let statements: Array<string> = [
                 KEYWORD_PRINT,
                 KEYWORD_WHILE,
                 KEYWORD_IF,
                 IDENTIFIER,
-                KEYWORD_TRUE,
-                KEYWORD_FALSE,
+                KEYWORD_BOOLEAN,
                 KEYWORD_INT,
                 KEYWORD_STRING,
                 SYMBOL_OPEN_BLOCK,

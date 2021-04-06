@@ -21,16 +21,29 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/tree.css" type="text/css" />
 
-    <!-- jQuery, 1st time btw -->
+    <!-- MDBootstrap Stylesheets -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.11.2/css/all.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    <link rel="stylesheet" href="plugins/MDB-Free_4.19.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="plugins/MDB-Free_4.19.2/css/mdb.min.css">
+    <link rel="stylesheet" href="plugins/MDB-Free_4.19.2/css/style.css">
+
+    <!-- jQuery -->
     <link rel="stylesheet" href="plugins/jquery/jquery-ui.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
 
-    <!-- Bootstrap, also 1st time btw -->
+    <!-- Bootstrap -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
         integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+
+    <!-- MDBootstrap Scripts -->
+    <script type="text/javascript" src="plugins/MDB-Free_4.19.2/src/js/free/treeview.js"></script>
+    <script type="text/javascript" src="plugins/MDB-Free_4.19.2/js/popper.min.js"></script>
+    <script type="text/javascript" src="plugins/MDB-Free_4.19.2/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="plugins/MDB-Free_4.19.2/js/mdb.min.js"></script>
 
     <!-- Code Mirror, wow apparently many people us this including Adobe, codepen, Go, emmet, and more! -->
     <script src="plugins/codemirror-5.59.3/lib/codemirror.js"></script>
@@ -111,23 +124,98 @@
         <!-- lists all test files -->
         <div id="side-nav">
             <div class="d-flex flex-column mt-3">
-                <div class="d-flex justify-content-around">
-                    <!-- As you can see my creativity for test naming ran out quick... -->
-                    <ul>
-                        <li><a id="sidebar__link--tests"
-                                onclick="myCodeMirror.setValue(LONG_TEST_CASE)">long_test_case.gle</a></li>
-                        <li><a id="sidebar__link--tests"
-                                onclick="myCodeMirror.setValue(ALANS_PROJECT_ONE_TEST)">project_one_test.gle</a></li>
-                        <li><a id="sidebar__link--tests"
-                                onclick="myCodeMirror.setValue(RANDOM_BOOL_OPS_TEST)">random_bool_ops.gle</a></li>
-                        <li><a id="sidebar__link--tests"
-                                onclick="myCodeMirror.setValue(BROKEN_STRINGS)">broken_strings.gle</a></li>
-                        <li><a id="sidebar__link--tests"
-                                onclick="myCodeMirror.setValue(BROKEN_COMMENTS)">broken_comments.gle</a></li>
-                        <li><a id="sidebar__link--tests"
-                                onclick="myCodeMirror.setValue(SYMBOL_SALAD)">symbol_salad.gle</a></li>
-                        <li><a id="sidebar__link--tests"
-                                onclick="myCodeMirror.setValue(LETTER_SOUP)">letter_soup.gle</a></li>
+                <div class="treeview-animated w-20 mx-4 my-4">
+                    <h6 class="pt-3 pl-3" style="color: white;">Tests</h6>
+                    <ul class="treeview-animated-list mb-3">
+                        <li class="treeview-animated-items">
+                            <a class="closed">
+                                <i class="fas fa-angle-right"></i>
+                                <span style="color: white; font-size: 1.2rem;">Lexer</span>
+                            </a>
+                            <ul class="nested">
+                                <li>
+                                    <div class="treeview-animated-element"
+                                        onclick="myCodeMirror.setValue(RANDOM_BOOL_OPS_TEST)">
+                                        <a id="sidebar__link--tests"
+                                            onclick="myCodeMirror.setValue(RANDOM_BOOL_OPS_TEST)">random_bool_ops.gle</a>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="treeview-animated-element"
+                                        onclick="myCodeMirror.setValue(BROKEN_STRINGS)"><a id="sidebar__link--tests"
+                                            onclick="myCodeMirror.setValue(BROKEN_STRINGS)">broken_strings.gle</a>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="treeview-animated-element"
+                                        onclick="myCodeMirror.setValue(BROKEN_COMMENTS)"><a id="sidebar__link--tests"
+                                            onclick="myCodeMirror.setValue(BROKEN_COMMENTS)">broken_comments.gle</a>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="treeview-animated-element"
+                                        onclick="myCodeMirror.setValue(SYMBOL_SALAD)"><a id="sidebar__link--tests"
+                                            onclick="myCodeMirror.setValue(SYMBOL_SALAD)">symbol_salad.gle</a>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="treeview-animated-element" onclick="myCodeMirror.setValue(LETTER_SOUP)">
+                                        <a id="sidebar__link--tests"
+                                            onclick="myCodeMirror.setValue(LETTER_SOUP)">letter_soup.gle</a>
+                                    </div>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="treeview-animated-items">
+                            <a class="closed">
+                                <i class="fas fa-angle-right"></i>
+                                <span style="color: white; font-size: 1.2rem;">Parser</span>
+                            </a>
+                            <ul class="nested">
+                                <li>
+                                    <div class="treeview-animated-element" onclick="myCodeMirror.setValue(INCOMPLETE_EXPRESSIONS)"><a id="sidebar__link--tests"
+                                            onclick="myCodeMirror.setValue(INCOMPLETE_EXPRESSIONS)">incomplete_expressions.gle</a>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="treeview-animated-element" onclick="myCodeMirror.setValue(TRICKY_DECLARATIONS)"><a id="sidebar__link--tests"
+                                            onclick="myCodeMirror.setValue(TRICKY_DECLARATIONS)">tricky_declarations.gle</a>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="treeview-animated-element" onclick="myCodeMirror.setValue(CRAZY_BOOLEAN_EXPRESSION)"><a id="sidebar__link--tests"
+                                            onclick="myCodeMirror.setValue(CRAZY_BOOLEAN_EXPRESSION)">crazy_boolean_expression.gle</a>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="treeview-animated-element" onclick="myCodeMirror.setValue(JUICE_COMPILER_CRAZY_ONE_LINER)"><a id="sidebar__link--tests"
+                                            onclick="myCodeMirror.setValue(JUICE_COMPILER_CRAZY_ONE_LINER)">juice_compiler_crazy_one_liner.gle</a>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="treeview-animated-element" onclick="myCodeMirror.setValue(SONARS_STRING_DECLARATION)"><a id="sidebar__link--tests"
+                                            onclick="myCodeMirror.setValue(SONARS_STRING_CASE)">sonars_string_declaration.gle</a>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="treeview-animated-element" onclick="myCodeMirror.setValue(SVEGLIATOR_INVALID_PROGRAM)"><a id="sidebar__link--tests"
+                                            onclick="myCodeMirror.setValue(SVEGLIATOR_INVALID_PROGRAM)">svegliator_invalid_program.gle</a>
+                                    </div>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <li>
+                            <div class="treeview-animated-element" onclick="myCodeMirror.setValue(LONG_TEST_CASE)"><a
+                                    id="sidebar__link--tests"
+                                    onclick="myCodeMirror.setValue(LONG_TEST_CASE)">long_test_case.gle</a> </div>
+                        </li>
+                        <li>
+                            <div class="treeview-animated-element"
+                                onclick="myCodeMirror.setValue(ALANS_PROJECT_ONE_TEST)"><a id="sidebar__link--tests"
+                                    onclick="myCodeMirror.setValue(ALANS_PROJECT_ONE_TEST)">project_one_test.gle</a>
+                            </div>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -172,7 +260,8 @@
                     </div>
                 </div>
 
-                <div id="cst" class=" tab-content_tab-cst tab-pane fade" style="height: 100%; width: 100%; overflow: scroll;">
+                <div id="cst" class=" tab-content_tab-cst tab-pane fade"
+                    style="height: 85%; width: 100%; overflow: scroll;">
                 </div>
                 <!--<dive id = "cst"> -->
 
@@ -285,5 +374,10 @@
         $('#side-nav').width(screen.width * .1125);
     });
 
+    // MDBootstrap Treeview Initialization
+    $(document).ready(function () {
+        $('.treeview-animated').mdbTreeview();
+    });
 </script>
+
 </html>

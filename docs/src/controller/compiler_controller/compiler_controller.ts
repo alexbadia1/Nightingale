@@ -83,7 +83,7 @@ module NightingaleCompiler {
 
             // Final output
              let output_console_model: OutputConsoleModel = new OutputConsoleModel(this.lexer.output, cst_controller, this.parser.output, this.parser.invalid_parsed_programs);
-             let debug_console_model: DebugConsoleModel = new DebugConsoleModel(this.lexer.debug_token_stream);
+             let debug_console_model: DebugConsoleModel = new DebugConsoleModel(this.lexer.debug_token_stream, this.parser.debug);
              let stacktrace_console_model: StacktraceConsoleModel = new StacktraceConsoleModel(this.lexer.stacktrace_stack);
              let footer_model: FooterModel = new FooterModel(this.lexer.errors_stream.length, this.lexer.warnings_stream.length);
         }// compilerControllerBtnCompile_click

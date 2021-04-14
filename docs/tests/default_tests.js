@@ -107,6 +107,28 @@ const TRICKY_DECLARATIONS=
 + `}$\n\n`;
 
 // Parser Tests
+
+const ALANS_PROJECT_TWO_TEST = `
+/* You’re expecting anything that could start a statement or SYMBOL_CLOSE_BLOCK. */
+{a=12}$
+{1 = 2}$
+
+/* You’re expecting any Bool_Expression */
+{
+    while "a" {
+        print ( "a" )
+    }  
+    print ( "done" )
+}$
+
+/* Checking to make sure this works */
+{
+    while (1 == 1) {
+        print(true)
+    }
+}$
+`;
+
 const CRAZY_BOOLEAN_EXPRESSION = 
 `/* This is theoretically correct.. I'll be damned if my computer doesn't blow up from this. */\n` 
 + `{\n`

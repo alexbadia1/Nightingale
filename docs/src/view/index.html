@@ -349,6 +349,7 @@
 
 <!-- Reactive UI Changes Script -->
 <script>
+
     // Resize Side Navigation
     $('#side-nav').resizable({
         // north, east, south, west sides of a div
@@ -382,6 +383,11 @@
     // MDBootstrap Treeview Initialization
     $(document).ready(function () {
         $('.treeview-animated').mdbTreeview();
+
+        // Light up children on click
+        // .tree li a:active+ul li a
+        // .tree li a:active+ul li::after, 
+        // .tree li a:active+ul li::before,
     });
 </script>
 

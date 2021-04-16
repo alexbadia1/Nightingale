@@ -162,7 +162,7 @@ var NightingaleCompiler;
                         let li = document.createElement("li");
                         li.id = `p${this._program}_li_node_id_${curr.id}`;
                         ul.appendChild(li);
-                        li.innerHTML = `<a>${curr.name}</a>`;
+                        li.innerHTML = `<a class = "node" href = "#" onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this._program}, ${curr.id});" >${curr.name}</a>`;
                         document.getElementById(`p${this._program}_li_node_id_${curr.parent_node.id}`).appendChild(ul);
                     } // if
                     // Node is 2nd or 3rd or nth child of parent

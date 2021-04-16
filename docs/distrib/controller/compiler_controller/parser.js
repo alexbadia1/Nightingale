@@ -96,7 +96,8 @@ var NightingaleCompiler;
             this._current_cst.add_node("Block", BRANCH);
             this.match_token([SYMBOL_OPEN_BLOCK]);
             this.parse_statement_list();
-            this.match_token([SYMBOL_CLOSE_BLOCK]);
+            // Parse Statement Error falls through into match
+            this.match_token(["STATEMENT", SYMBOL_CLOSE_BLOCK]);
             this._current_cst.climb_one_level();
         } // parse_block
         parse_statement_list() {
@@ -248,8 +249,18 @@ var NightingaleCompiler;
                 this.parse_expression();
                 this.match_token([SYMBOL_CLOSE_ARGUMENT]);
             } // if
-            else {
+            else if (this._current_token.name == KEYWORD_TRUE || this._current_token.name == KEYWORD_FALSE) {
                 this.parse_boolean_value();
+            } // else if
+            else {
+                this._error_count++;
+                // Record that this program has an error, if no already done so
+                if (!this.invalid_parsed_programs.includes(this._current_program_number)) {
+                    this.invalid_parsed_programs.push(this._current_program_number);
+                } // if
+                throw new NightingaleCompiler.OutputConsoleMessage(PARSER, ERROR, `Parse Expression Failure --> Expected [BOOLEAN EXPRESSION], but got [${this._current_token.name}] `
+                    + `|${this._current_token.lexeme}| `
+                    + `at ${this._current_token.lineNumber}:${this._current_token.linePosition}.`);
             } // else
             this._current_cst.climb_one_level();
         } //parse_boolean_expression

@@ -61,39 +61,40 @@ var NightingaleCompiler;
             let footer_model = new NightingaleCompiler.FooterModel(this.lexer.errors_stream.length, this.lexer.warnings_stream.length);
         } // compilerControllerBtnCompile_click
         static compilerControllerBtnLightUpTree_click(program_num, node_id) {
-            let stack = [];
-            let current_node = document.getElementById(`p${program_num}_li_node_id_${node_id}`);
-            stack.push(current_node.children);
-            if (current_node.classList.contains("node_active")) {
-                current_node.classList.remove("node__active");
-                let children = current_node.children;
-                while (stack.length != 0) {
-                    let currentItemInStack = stack.pop();
-                    for (let child = 0; child < currentItemInStack.length; ++child) {
-                        children[child].classList.remove("node__active");
-                        let nestedChildren = children[child].children;
-                        // Prevents infinite stack hopefully... I hatre recursion...
-                        if (nestedChildren != undefined && nestedChildren != null && nestedChildren.length > 0) {
-                            stack.push(children[child].children);
-                        } // if
-                    } // for
-                } // while
-            } // if
-            else {
-                current_node.classList.remove("node__active");
-                let children = current_node.children;
-                while (stack.length != 0) {
-                    let currentItemInStack = stack.pop();
-                    for (let child = 0; child < currentItemInStack.length; ++child) {
-                        children[child].classList.add("node__active");
-                        let nestedChildren = children[child].children;
-                        // Prevents infinite stack hopefully... I hatre recursion...
-                        if (nestedChildren != undefined && nestedChildren != null && nestedChildren.length > 0) {
-                            stack.push(children[child].children);
-                        } // if
-                    } // for
-                } // while
-            } // else
+            //  TODO: Fix this, not important though
+            // let stack: Array<HTMLCollection> = [];
+            // let current_node = document.getElementById(`p${program_num}_li_node_id_${node_id}`);
+            // stack.push(current_node.children);
+            // if (current_node.classList.contains("node_active")) {
+            //     current_node.classList.remove("node__active");
+            //     let children = current_node.children;
+            //     while (stack.length != 0) {
+            //         let currentItemInStack = stack.pop();
+            //         for (let child: number = 0; child < currentItemInStack.length; ++child) {
+            //             children[child].classList.remove("node__active");
+            //             let nestedChildren = children[child].children;
+            //             // Prevents infinite stack hopefully... I hatre recursion...
+            //             if (nestedChildren != undefined && nestedChildren != null && nestedChildren.length > 0) {
+            //                 stack.push(children[child].children);
+            //             }// if
+            //         }// for
+            //     }// while
+            // }// if
+            // else {
+            //     current_node.classList.remove("node__active");
+            //     let children = current_node.children;
+            //     while (stack.length != 0) {
+            //         let currentItemInStack = stack.pop();
+            //         for (let child: number = 0; child < currentItemInStack.length; ++child) {
+            //             children[child].classList.add("node__active");
+            //             let nestedChildren = children[child].children;
+            //             // Prevents infinite stack hopefully... I hatre recursion...
+            //             if (nestedChildren != undefined && nestedChildren != null && nestedChildren.length > 0) {
+            //                 stack.push(children[child].children);
+            //             }// if
+            //         }// for
+            //     }// while
+            // }// else
             // // background: #c8e4f8; color: #000; border: 1px solid #94a0b4;
             // current_node.style.backgroundColor = "#c8e4f8";
             // current_node.style.color = "#000000";

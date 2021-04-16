@@ -193,7 +193,7 @@ module NightingaleCompiler {
 
                         ul.appendChild(li);
 
-                        li.innerHTML = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this._program}, ${curr.id});" >${curr.name}</a>`;
+                        li.innerHTML = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this._program}, ${curr.id});" name = "node-anchor-tag" >${curr.name}</a>`;
 
                         document.getElementById(`p${this._program}_li_node_id_${curr.parent_node.id}`).appendChild(ul);
                     }// if
@@ -203,7 +203,7 @@ module NightingaleCompiler {
                         console.log(`Current: ${curr.name} | ${curr.id}, Parent: ${curr.parent_node.id}, ul ${curr.parent_node.children_nodes[0].id}`);
                         let li: HTMLLIElement = document.createElement("li");
                         li.id = `p${this._program}_li_node_id_${curr.id}`;
-                        li.innerHTML = `<a>${curr.name}</a>`;
+                        li.innerHTML = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this._program}, ${curr.id});" name = "node-anchor-tag">${curr.name}</a>`;
 
                         document.getElementById(`p${this._program}_ul_node_id_${curr.parent_node.children_nodes[0].id}`).appendChild(li);
                     }// else

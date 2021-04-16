@@ -113,19 +113,10 @@ right connector from last child*/
 	border-color:  #94a0b4;
 } */
 
-/* Clicking on a node lights up children */
-/* .tree li a:active, .tree li a:active+ul li a */
-
+/* Changed his CSS Stlyling with a more immersive script in CompilerController.ts*/
 .anchor-node__active {
 	background: #c8e4f8; color: #000; border: 1px solid #94a0b4;
 }
 
-/*Connector styles on active*/
-/* .tree li a:active+ul li::after, 
-.tree li a:active+ul li::before, 
-.tree li a:active+ul::before, 
-.tree li a:active+ul ul::before{
-	border-color:  #94a0b4;
-} */
 /*Thats all. I hope you enjoyed it.
 Thanks :)*/

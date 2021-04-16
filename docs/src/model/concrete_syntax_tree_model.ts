@@ -153,7 +153,7 @@ module NightingaleCompiler {
             ul.id = `p${this._program}_ul_node_id_0`;
             let li: HTMLLIElement = document.createElement("li");
             li.id = `p${this._program}_li_node_id_0`;
-            li.innerHTML = `<a>${this.root.name}</a>`;
+            li.innerHTML = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this._program}, 0);" name = "node-anchor-tag">${this.root.name}</a>`;
             ul.appendChild(li);
             tree_div.appendChild(ul);
 

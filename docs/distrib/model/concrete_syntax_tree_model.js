@@ -132,7 +132,7 @@ var NightingaleCompiler;
             ul.id = `p${this._program}_ul_node_id_0`;
             let li = document.createElement("li");
             li.id = `p${this._program}_li_node_id_0`;
-            li.innerHTML = `<a>${this.root.name}</a>`;
+            li.innerHTML = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this._program}, 0);" name = "node-anchor-tag">${this.root.name}</a>`;
             ul.appendChild(li);
             tree_div.appendChild(ul);
             this.traverse_tree(this.root);
@@ -162,7 +162,7 @@ var NightingaleCompiler;
                         let li = document.createElement("li");
                         li.id = `p${this._program}_li_node_id_${curr.id}`;
                         ul.appendChild(li);
-                        li.innerHTML = `<a>${curr.name}</a>`;
+                        li.innerHTML = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this._program}, ${curr.id});" name = "node-anchor-tag" >${curr.name}</a>`;
                         document.getElementById(`p${this._program}_li_node_id_${curr.parent_node.id}`).appendChild(ul);
                     } // if
                     // Node is 2nd or 3rd or nth child of parent
@@ -170,7 +170,7 @@ var NightingaleCompiler;
                         console.log(`Current: ${curr.name} | ${curr.id}, Parent: ${curr.parent_node.id}, ul ${curr.parent_node.children_nodes[0].id}`);
                         let li = document.createElement("li");
                         li.id = `p${this._program}_li_node_id_${curr.id}`;
-                        li.innerHTML = `<a>${curr.name}</a>`;
+                        li.innerHTML = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this._program}, ${curr.id});" name = "node-anchor-tag">${curr.name}</a>`;
                         document.getElementById(`p${this._program}_ul_node_id_${curr.parent_node.children_nodes[0].id}`).appendChild(li);
                     } // else
                     // Store all the children of 

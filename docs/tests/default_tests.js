@@ -107,7 +107,17 @@ const TRICKY_DECLARATIONS=
 + `}$\n\n`;
 
 // Parser Tests
+const TRICKY_ASSIGNMENT_STATEMENTS = `
+/* This is a valid parse... */
+{
+	a = 1 + (true == false)
+}$
 
+/* This is a valid parse as well..
+{
+    a = 1 + "hmmmmmmmm"
+}$
+`
 const ALANS_PROJECT_TWO_TEST = `
 /* You’re expecting anything that could start a statement or SYMBOL_CLOSE_BLOCK. */
 {a=12}$

@@ -5,30 +5,11 @@
  *
  * By Alan G. Labouseur, based on the 2009
  * work by Michael Ardizzone and Tim Smith.
+ *
+ * Enhanced by Alex Badia
  */
 var NightingaleCompiler;
 (function (NightingaleCompiler) {
-    class Node {
-        constructor(
-        /**
-         * Either the name of the non-terminal or terminal.
-         */
-        name, id = -1, type = null, 
-        /**
-         * Note a child can only have on parent
-         */
-        parent_node = null, 
-        /**
-         * Note that a node can have multiple children
-         */
-        children_nodes = []) {
-            this.name = name;
-            this.id = id;
-            this.type = type;
-            this.parent_node = parent_node;
-            this.children_nodes = children_nodes;
-        } // constructor
-    } // node
     class ConcreteSyntaxTree {
         constructor(
         /**
@@ -38,20 +19,29 @@ var NightingaleCompiler;
         /**
          * Current node in the tree
          */
-        current_node = null, _program = -1, _node_count = -1) {
+        current_node = null, 
+        /**
+         * Program this tree belongs to
+         */
+        program = -1, 
+        /**
+         * Number of nodes in the tree
+         */
+        _node_count = -1) {
             this.root = root;
             this.current_node = current_node;
-            this._program = _program;
+            this.program = program;
             this._node_count = _node_count;
         } //constructor
         // Add a node: kind in {branch, leaf}.
         add_node(new_name, kind) {
             this._node_count++;
             // Construct the node object.
-            let new_node = new Node(new_name, this._node_count, kind);
+            let new_node = new NightingaleCompiler.Node(new_name, this._node_count, kind);
             // Check to see if it needs to be the root node.
             if ((this.root == null) || (!this.root)) {
                 this.root = new_node;
+                console.log("Root Node: " + this.root.name);
             } // if
             // Not root node...
             else {
@@ -61,10 +51,9 @@ var NightingaleCompiler;
                 // ... and add ourselves (via the unfrotunately-named
                 // "push" function) to the children array of the current node.
                 this.current_node.children_nodes.push(new_node);
-                console.log(this.current_node.children_nodes);
             } // else
             // If we are an interior/branch node, then...
-            if (kind == BRANCH) {
+            if (kind == NODE_TYPE_BRANCH) {
                 // ... update the CURrent node pointer to ourselves.
                 this.current_node = new_node;
             } // if
@@ -124,19 +113,26 @@ var NightingaleCompiler;
             var cst = document.getElementById('cst');
             var tree_div = document.createElement(`div`);
             tree_div.className = `tree`;
-            tree_div.id = `p${this._program} `;
+            tree_div.id = `cst_p${this.program} `;
             cst.appendChild(tree_div);
             // Make the initial call to expand from the root
             // Create root first
             let ul = document.createElement("ul");
-            ul.id = `p${this._program}_ul_node_id_0`;
+            ul.id = `cst_p${this.program}_ul_node_id_0`;
             let li = document.createElement("li");
-            li.id = `p${this._program}_li_node_id_0`;
-            li.innerHTML = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this._program}, 0);" name = "node-anchor-tag">${this.root.name}</a>`;
+            li.id = `cst_p${this.program}_li_node_id_0`;
+            li.innerHTML = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this.program}, 0, 'CST');" name = "node-anchor-tag">${this.root.name}</a>`;
             ul.appendChild(li);
             tree_div.appendChild(ul);
             this.traverse_tree(this.root);
         } // toString
+        /**
+         * Depth first traversal, to translate the tree into a series of <ul> and <li>.
+         *
+         * Yes, this is a lot of brain damage.
+         *
+         * @param root root node of the n-array tree
+         */
         traverse_tree(root) {
             // Stack to store the nodes
             let nodes = [];
@@ -152,35 +148,32 @@ var NightingaleCompiler;
                     // Root node
                     if (curr.parent_node == null) {
                         // Root node already created
-                        ///console.log(`Current: ${curr.name} | ${curr.id}, Parent: ${curr.parent_node.id}`);
                     } // if
                     // Node is the first node of the parent
                     else if (curr.parent_node.children_nodes[0] == curr) {
-                        console.log(`Current: ${curr.name} | ${curr.id}, Parent: ${curr.parent_node.id}, 1st child`);
                         let ul = document.createElement("ul");
-                        ul.id = `p${this._program}_ul_node_id_${curr.id}`;
+                        ul.id = `cst_p${this.program}_ul_node_id_${curr.id}`;
                         let li = document.createElement("li");
-                        li.id = `p${this._program}_li_node_id_${curr.id}`;
+                        li.id = `cst_p${this.program}_li_node_id_${curr.id}`;
                         ul.appendChild(li);
-                        li.innerHTML = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this._program}, ${curr.id});" name = "node-anchor-tag" >${curr.name}</a>`;
-                        document.getElementById(`p${this._program}_li_node_id_${curr.parent_node.id}`).appendChild(ul);
+                        li.innerHTML = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this.program}, ${curr.id}, 'CST');" name = "node-anchor-tag" >${curr.name}</a>`;
+                        document.getElementById(`cst_p${this.program}_li_node_id_${curr.parent_node.id}`).appendChild(ul);
                     } // if
                     // Node is 2nd or 3rd or nth child of parent
                     else {
-                        console.log(`Current: ${curr.name} | ${curr.id}, Parent: ${curr.parent_node.id}, ul ${curr.parent_node.children_nodes[0].id}`);
                         let li = document.createElement("li");
-                        li.id = `p${this._program}_li_node_id_${curr.id}`;
-                        li.innerHTML = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this._program}, ${curr.id});" name = "node-anchor-tag">${curr.name}</a>`;
-                        document.getElementById(`p${this._program}_ul_node_id_${curr.parent_node.children_nodes[0].id}`).appendChild(li);
+                        li.id = `cst_p${this.program}_li_node_id_${curr.id}`;
+                        li.innerHTML = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this.program}, ${curr.id}, 'CST');" name = "node-anchor-tag">${curr.name}</a>`;
+                        document.getElementById(`cst_p${this.program}_ul_node_id_${curr.parent_node.children_nodes[0].id}`).appendChild(li);
                     } // else
                     // Store all the children of 
                     // current node from right to left.
                     for (let i = curr.children_nodes.length - 1; i >= 0; --i) {
                         nodes.push(curr.children_nodes[i]);
                     } // for
-                }
-            }
-        }
+                } // if
+            } // while
+        } // traverse tree
     } // class
     NightingaleCompiler.ConcreteSyntaxTree = ConcreteSyntaxTree;
 })(NightingaleCompiler || (NightingaleCompiler = {})); // module

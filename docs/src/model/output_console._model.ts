@@ -15,17 +15,17 @@ module NightingaleCompiler {
         constructor(
             public lexer_output: Array<Array<OutputConsoleMessage>>,
             public cst_controller: ConcreteSyntaxTreeController,
-            public parser_output: Array<Array<OutputConsoleMessage>> = [],
-            public invalid_parsed_programs: Array<number> = [],
+            public ast_controller: AbstractSyntaxTreeController,
+            public parser_output: Array<Array<OutputConsoleMessage>>,
+            public invalid_parsed_programs: Array<number>,
         ) {
             this.show_output();
         }// constuctor
 
         public show_output() {
-            console.log("Invalid Parsed Programs");
-            console.log(this.invalid_parsed_programs);
             let output_console: HTMLElement = document.getElementById("output_console");
             let cst_output: HTMLElement = document.getElementById("cst");
+            let ast_output: HTMLElement = document.getElementById("cst");
 
             // Remove all children, to prevent infinite list.
             while (output_console.firstChild) {
@@ -33,6 +33,10 @@ module NightingaleCompiler {
             }// while: remove all children
 
             while (cst_output.firstChild) {
+                cst_output.removeChild(cst_output.firstChild);
+            }// while: remove all children
+
+            while (ast_output.firstChild) {
                 cst_output.removeChild(cst_output.firstChild);
             }// while: remove all children
 
@@ -111,6 +115,9 @@ module NightingaleCompiler {
                     if (!this.invalid_parsed_programs.includes(program_number)) {
                         this.cst_controller.add_tree_to_output_console(output_console, program_number);
                         this.cst_controller.add_tree_to_gui(document.getElementById("cst"), program_number);
+
+                        this.ast_controller.add_tree_to_output_console(output_console, program_number);
+                        this.ast_controller.add_tree_to_gui(document.getElementById("ast"), program_number);
                     }// if
                 }// if
             }// for: each program

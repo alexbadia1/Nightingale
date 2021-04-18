@@ -12,23 +12,26 @@
 var NightingaleCompiler;
 (function (NightingaleCompiler) {
     class OutputConsoleModel {
-        constructor(lexer_output, cst_controller, parser_output = [], invalid_parsed_programs = []) {
+        constructor(lexer_output, cst_controller, ast_controller, parser_output, invalid_parsed_programs) {
             this.lexer_output = lexer_output;
             this.cst_controller = cst_controller;
+            this.ast_controller = ast_controller;
             this.parser_output = parser_output;
             this.invalid_parsed_programs = invalid_parsed_programs;
             this.show_output();
         } // constuctor
         show_output() {
-            console.log("Invalid Parsed Programs");
-            console.log(this.invalid_parsed_programs);
             let output_console = document.getElementById("output_console");
             let cst_output = document.getElementById("cst");
+            let ast_output = document.getElementById("cst");
             // Remove all children, to prevent infinite list.
             while (output_console.firstChild) {
                 output_console.removeChild(output_console.firstChild);
             } // while: remove all children
             while (cst_output.firstChild) {
+                cst_output.removeChild(cst_output.firstChild);
+            } // while: remove all children
+            while (ast_output.firstChild) {
                 cst_output.removeChild(cst_output.firstChild);
             } // while: remove all children
             for (var program_number = 0; program_number < this.lexer_output.length; ++program_number) {
@@ -95,6 +98,8 @@ var NightingaleCompiler;
                     if (!this.invalid_parsed_programs.includes(program_number)) {
                         this.cst_controller.add_tree_to_output_console(output_console, program_number);
                         this.cst_controller.add_tree_to_gui(document.getElementById("cst"), program_number);
+                        this.ast_controller.add_tree_to_output_console(output_console, program_number);
+                        this.ast_controller.add_tree_to_gui(document.getElementById("ast"), program_number);
                     } // if
                 } // if
             } // for: each program

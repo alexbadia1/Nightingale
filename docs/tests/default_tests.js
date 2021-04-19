@@ -204,7 +204,9 @@ const JUICE_COMPILER_CRAZY_ONE_LINER =
 "/* JUICES TEST CASE Test case for crazy one liner */\n"
 + "${hellotruefalse!======trueprinta=3b=0print(\"false true\")whi33leiftruefalsestring!= stringintbooleanaa truewhileif{hi+++==!==}}/*aaahaha*/hahahahaha/*awao*/$";
 
-const BlOCKS_AND_INTEGER_ASSIGNMENTS = `{
+const BlOCKS_AND_INTEGER_ASSIGNMENTS = `
+/* Obviously missing varible decalarations, but still a good test for your tree */
+{
 	{
     	x = 1 + 2 + 3
         y = 6 + 7
@@ -222,5 +224,64 @@ const BlOCKS_AND_INTEGER_ASSIGNMENTS = `{
     
     {
     	z = 1 + 2 + 3 + 4 + 5 + 6 + 7 + 9
+    }
+}$`;
+
+const BlOCKS_AND_STRING_ASSIGNMENTS = `
+/* Obviously missing varible decalarations, but still a good test for your tree */
+{
+	{
+    	x = "abc"
+        y = "e"
+        p = "fghijklm" 
+        o = "nop" 
+        w = "qrstuvwxyz"
+    }
+    
+	a = "qrstuvwxyz"
+	b = "nop" 
+    c = "e"
+    d = "fghijklm"
+    e = "abc"
+    f = "z"
+
+    {
+    	z = "abcdefghijklmnopqrstuvwxyz"
+    }
+}$`;
+
+const BlOCKS_INTEGERS_AND_STRING_ASSIGNMENTS = `/* Semantically incorrect, but make sure your AST structure is correct */
+{
+    /* This is technically syntactically correct, though semantically is full of issues */
+    r = 1 + (true == (1 == "hi"))
+
+	{
+    	x = "abc"
+        y = "e"
+        p = "fghijklm" 
+        o = "nop" 
+        w = "qrstuvwxyz"
+    }
+
+    {
+    	x = 1 + 2 + 3
+        y = 6 + 7
+        p = 1 
+        o = 9 + 8 
+        w = 4 + 5 + 0
+    }
+    
+    a = 1
+	b = 1 + 2
+	a = "qrstuvwxyz"
+    d = "fghijklm"
+    e = "abc"
+    f = "z"
+    d = 5 + 6 + 7
+    e = 7 + 8
+
+    {
+    	z = "abcdefghijklmnopqrstuvwxyz"
+        z = 1 + 2 + 3 + 4 + 5 + 6 + 7 + 9
     }
 }$`;

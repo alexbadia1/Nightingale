@@ -67,7 +67,7 @@ module NightingaleCompiler {
             let cst_controller = new ConcreteSyntaxTreeController(this.parser.concrete_syntax_trees);
 
             // Step 3: Semantic Analysis
-            this.semantic_analysis = new SemanticAnalysis(this.parser.concrete_syntax_trees);
+            this.semantic_analysis = new SemanticAnalysis(this.parser.concrete_syntax_trees, this.parser.invalid_parsed_programs);
             let ast_controller = new AbstractSyntaxTreeController(this.semantic_analysis.abstract_syntax_trees);
 
             // Final output

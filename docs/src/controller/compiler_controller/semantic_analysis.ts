@@ -26,16 +26,24 @@ module NightingaleCompiler {
              */
             public concrete_syntax_trees: Array<ConcreteSyntaxTree>,
 
+            public invalid_parsed_programs: Array<number>,
+
             public abstract_syntax_trees: Array<AbstractSyntaxTree> = Array<AbstractSyntaxTree>(),
+
             private _current_ast: AbstractSyntaxTree = null,
         ) {
-            // this.main();
+            this.main();
         }// constructor 
 
         private main(): void {
             for (var cstIndex: number = 0; cstIndex < this.concrete_syntax_trees.length; ++cstIndex) {
-                this.generate_abstract_syntax_tree(this.concrete_syntax_trees[cstIndex]);
-                this.abstract_syntax_trees.push(this._current_ast);
+                // Skip invalid parsed programs... 
+                // Probably shouldn't be passing invalid parse trees around, though
+                // It's be cool to show where visually, exactly the parse tree messed up
+                if (!this.invalid_parsed_programs.includes(this.concrete_syntax_trees[cstIndex].program)) {
+                    this.generate_abstract_syntax_tree(this.concrete_syntax_trees[cstIndex]);
+                    this.abstract_syntax_trees.push(this._current_ast);
+                }// if
             }// for
         }// main
 

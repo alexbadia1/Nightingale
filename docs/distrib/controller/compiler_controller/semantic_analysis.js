@@ -24,16 +24,22 @@ var NightingaleCompiler;
         /**
          * Valid Concrete Syntax Trees passed from the parser.
          */
-        concrete_syntax_trees, abstract_syntax_trees = Array(), _current_ast = null) {
+        concrete_syntax_trees, invalid_parsed_programs, abstract_syntax_trees = Array(), _current_ast = null) {
             this.concrete_syntax_trees = concrete_syntax_trees;
+            this.invalid_parsed_programs = invalid_parsed_programs;
             this.abstract_syntax_trees = abstract_syntax_trees;
             this._current_ast = _current_ast;
-            // this.main();
+            this.main();
         } // constructor 
         main() {
             for (var cstIndex = 0; cstIndex < this.concrete_syntax_trees.length; ++cstIndex) {
-                this.generate_abstract_syntax_tree(this.concrete_syntax_trees[cstIndex]);
-                this.abstract_syntax_trees.push(this._current_ast);
+                // Skip invalid parsed programs... 
+                // Probably shouldn't be passing invalid parse trees around, though
+                // It's be cool to show where visually, exactly the parse tree messed up
+                if (!this.invalid_parsed_programs.includes(this.concrete_syntax_trees[cstIndex].program)) {
+                    this.generate_abstract_syntax_tree(this.concrete_syntax_trees[cstIndex]);
+                    this.abstract_syntax_trees.push(this._current_ast);
+                } // if
             } // for
         } // main
         /**

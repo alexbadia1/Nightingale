@@ -29,7 +29,7 @@ module NightingaleCompiler {
             public abstract_syntax_trees: Array<AbstractSyntaxTree> = Array<AbstractSyntaxTree>(),
             private _current_ast: AbstractSyntaxTree = null,
         ) {
-            this.main();
+            // this.main();
         }// constructor 
 
         private main(): void {
@@ -64,25 +64,33 @@ module NightingaleCompiler {
             switch(cst_current_node.name) {
                 case NODE_NAME_BLOCK:
                     this._add_block_subtree_to_ast(cst_current_node);
+                    this._climb_ast_to_block();
                     break;
                 case NODE_NAME_VARIABLE_DECLARATION:
                     this._add_variable_declaration_subtree_to_ast(cst_current_node);
                     break;
                 case NODE_NAME_ASSIGNMENT_STATEMENT:
                     this._add_assignment_statement_subtree_to_ast(cst_current_node);
+                    this._climb_ast_to_block();
                     break;
+                case NODE_NAME_PRINT_STATEMENT:
+                    throw Error("Print Statement Subtree Pattern");
+                case NODE_NAME_WHILE_STATEMENT:
+                    throw Error("While Statement Subtree Pattern");
+                case NODE_NAME_IF_STATEMENT:
+                    throw Error("If Statement Subtree Pattern");
                 default:
                     break;
             }// switch
         }// add_node_to_ast
 
-        private _skip_node_for_ast(cst_current_node: Node) {
+        private _skip_node_for_ast(cst_current_node: Node): void {
             switch(cst_current_node.name) {
-                case NODE_NAME_STATEMENT_LIST:
-                    this._skip_statement_list(cst_current_node);
-                    break;
                 case NODE_NAME_STATEMENT:
                     this._skip_statement(cst_current_node);
+                    break;
+                case NODE_NAME_STATEMENT_LIST:
+                    this._skip_statement_list(cst_current_node);
                     break;
                 default:
                     break;
@@ -106,7 +114,7 @@ module NightingaleCompiler {
             this._skip_node_for_ast(statement_list_node);
         }// _add_block_subtree_to_ast
 
-        private _skip_statement_list(cst_current_node: Node) {
+        private _skip_statement_list(cst_current_node: Node): void {
             // Remember, if you built your tree correctly..
             //
             //   Node(Statement List).children[0] --> Node(Statement)
@@ -128,7 +136,7 @@ module NightingaleCompiler {
             }// if
         }// _skip_statement_list
 
-        private _skip_statement(cst_current_node: Node) {
+        private _skip_statement(cst_current_node: Node): void {
             // Remember, if you built your tree correctly..
             //
             //   Node(Statement).children[0] --> Node(Print Statement)
@@ -178,7 +186,7 @@ module NightingaleCompiler {
             this._current_ast.add_node(identifier_node.name, NODE_TYPE_BRANCH);
             this._climb_ast_one_level();
 
-            // Point back to the root node of the variable declaration subtree
+            // Point back to the parent of root node of the variable declaration subtree
             this._climb_ast_one_level();
         }// _add_variable_declaration_subtree_to_ast
 
@@ -190,7 +198,7 @@ module NightingaleCompiler {
          * @param cst_current_node 
          */
         private _add_assignment_statement_subtree_to_ast(cst_current_node: Node): void {
-            // Add root node for asignment statement subtree
+            // Add root Node(Assignment Statement) for asignment statement subtree
             this._current_ast.add_node(cst_current_node.name, NODE_TYPE_BRANCH);
 
             // Remember, if you built your tree correctly..
@@ -206,29 +214,31 @@ module NightingaleCompiler {
             //                                --> Node(String Expression)
             //                                --> Node(Boolean Expression)
             //                                --> Node(Id)
+            //
+            // Add the identifier to assignment statement subtree
             let identifier_node: Node = cst_current_node.children_nodes[0].children_nodes[0];
+            this._current_ast.add_node(identifier_node.name, NODE_TYPE_LEAF);
+
+            // Ignore the assignment operator: Node(=)
+            // let assignment_op = cst_current_node.children_nodes[1]
+
+            // Add the expression node to assignment statement subtree at the SAME LEVEL
             let expression_node: Node = cst_current_node.children_nodes[2];
-
-            // Add children to assignment_statement subtree at the SAME LEVEL
-            this._current_ast.add_node(identifier_node.name, NODE_TYPE_BRANCH);
-            this._climb_ast_one_level();
-
-            // Add expression to assignment statement subtree
-            this._add_expression_to_assignment_statement_subtree(cst_current_node, expression_node.children_nodes[0]);
+            this._add_expression_to_assignment_statement_subtree(expression_node);
         }// _add_assignment_statement_subtree_to_ast
 
-        private _add_expression_to_assignment_statement_subtree(cst_current_node: Node, expression_node: Node): string {
+        private _add_expression_to_assignment_statement_subtree(expression_node: Node): string {
             let result = "";
-
+            console.log(expression_node.name);
             switch (expression_node.children_nodes[0].name) {
                 case NODE_NAME_INT_EXPRESSION:
                     // Add integer expression to assignment_statement subtree at the SAME Level
-                    result = this._add_integer_expression_subtree_to_ast(cst_current_node, expression_node.children_nodes[0])
+                    this._add_integer_expression_subtree_to_ast(expression_node.children_nodes[0])
                     break;
 
                 case NODE_NAME_STRING_EXPRESSION:
                     // Add string expression to assignment_statement subtree at the SAME Level
-                    result = this._add_string_expression_subtree_to_ast(cst_current_node, expression_node.children_nodes[0]);
+                    this._add_string_expression_subtree_to_ast(expression_node.children_nodes[0]);
                     break;
 
                 case NODE_NAME_BOOLEAN_EXPRESSION:
@@ -237,9 +247,7 @@ module NightingaleCompiler {
 
                 case NODE_NAME_IDENTIFIER:
                     // Add identifier to ast subtree at the SAME Level
-                    this._current_ast.add_node(expression_node.children_nodes[0].name, NODE_TYPE_LEAF);
-                    this._climb_ast_one_level();
-                    result = "id";
+                    this._current_ast.add_node(expression_node.children_nodes[0].name, NODE_TYPE_LEAF)
                     break;
 
                 default:
@@ -250,52 +258,43 @@ module NightingaleCompiler {
             return result;
         }// add_expression_to_assignment_statement_subtree
 
-        private _add_integer_expression_subtree_to_ast(cst_current_node: Node, integer_expression_node: Node): string {
-            // Integer Expression is just a DIGIT
-            if (integer_expression_node.children_nodes.length === 1) {
-                // Add identifier to ast subtree at the SAME Level
+        private _add_integer_expression_subtree_to_ast(integer_expression_node: Node) {
+             // Remember, if you built your tree correctly...
+            //
+            //   Node(Integer Expression).children[0] --> Node(Digit)
+            //   Node(Integer Expression).children[1] --> Node(Integer Operation)
+            //   Node(Integer Expression).children[2] --> Node(Expression)
+            //
+            //   AND
+            //
+            //   Node(Digit).children[0] --> Digit Lexeme [0-9]
+            //   Node(Integer Operation).children[0] --> Integer Operation Lexeme [+]
+            //   
+            //   Check this recurisvely:
+            //     Node(Expression)
+            
+            // Integer expression is DIGIT--INTOP--EXPRESSION
+            if (integer_expression_node.children_nodes.length > 1) {
+                let integer_operation_lexeme_node: Node = integer_expression_node.children_nodes[1].children_nodes[0];
+                let expression_node: Node = integer_expression_node.children_nodes[2];
+
+                // Add INT_OP to the assignment statement subtree at SAME LEVEL as identifier
+                this._current_ast.add_node(integer_operation_lexeme_node.name, NODE_TYPE_BRANCH);
+
+                 // Add DIGIT to ast subtree
                 this._current_ast.add_node(integer_expression_node.children_nodes[0].children_nodes[0].name, NODE_TYPE_LEAF);
-                this._climb_ast_one_level();
-
-                return NODE_NAME_INT_EXPRESSION;
-            }// if
-
-            // Integer expression is DIGIT INTOP EXPRESSION
-            else if (integer_expression_node.children_nodes.length > 1) {
-                // Remember, if you built your tree correctly...
-                //
-                //   Node(Integer Expression).children[0] --> Node(Digit)
-                //   Node(Integer Expression).children[1] --> Node(Integer Operation)
-                //   Node(Integer Expression).children[2] --> Node(Expression)
-                //
-                //   AND
-                //
-                //   Node(Digit).children[0] --> Digit Lexeme [0-9]
-                //   Node(Integer Operation).children[0] --> Integer Operation Lexeme [+]
-                //   
-                //   Check this recurisvely:
-                //     Node(Expression)
-
-                // Add DIGIT to the assignment statement subtree at SAME LEVEL
-                this._current_ast.add_node(integer_expression_node.children_nodes[0].children_nodes[0].name, NODE_TYPE_LEAF);
-                this._climb_ast_one_level();
-
-                // Add INT_OP to the assignment statement subtree at SAME LEVEL
-                this._current_ast.add_node(integer_expression_node.children_nodes[1].children_nodes[0].name, NODE_TYPE_LEAF);
-                this._climb_ast_one_level();
 
                 // Add Expression to the assignment statement subtree
-                this._add_expression_to_assignment_statement_subtree(cst_current_node, integer_expression_node.children_nodes[2]);
-                this._climb_ast_one_level();
-            }// else if
+                this._add_expression_to_assignment_statement_subtree(expression_node);
+            }// if
 
             else {
-                // This should never happen, given a valid CST...
-                throw Error("Semantic Analysis failed at add_integer_expression_subtree_to_ast()! IntExpr did not have DIGIT or DIGIT-INTOP-EXPR");
+                 // Add DIGIT to ast subtree
+                 this._current_ast.add_node(integer_expression_node.children_nodes[0].children_nodes[0].name, NODE_TYPE_LEAF);
             }// else
         }// add_integer_expression_subtree_to_ast
 
-        private _add_string_expression_subtree_to_ast(cst_current_node: Node, string_expression_node: Node): string {
+        private _add_string_expression_subtree_to_ast(string_expression_node: Node) {
             // Remember, if you built your tree correctly...
             //
             //   Node(String Expression).children[0] --> Open String Expression boundary ["]
@@ -314,36 +313,74 @@ module NightingaleCompiler {
             //   Check recurisvely:
             //     Node(Character List)
 
-            let string = "";
-            let curr_node = string_expression_node.children_nodes[2];
+            let string: string = "\"";
+            let curr_char_list_node: Node = string_expression_node.children_nodes[1];
+            console.log(curr_char_list_node.name);
 
             // Get entire string
-            while (curr_node != null) {
+            while (curr_char_list_node !== undefined && curr_char_list_node !== null) {
+                console.log("While Loop Current NOde: " + curr_char_list_node.name);
 
-                // Apeend each character to string
-                string += curr_node.children_nodes[0].children_nodes[0].name;
+                // Get Character Node
+                console.log("While Loop Char Node: " + curr_char_list_node.children_nodes[0].name);
+                let char_node: Node = curr_char_list_node.children_nodes[0];
 
-                // Ran out of characters
-                if (curr_node.children_nodes[1] === undefined || curr_node.children_nodes[1] === null) {
-                    break;
+                // Get Character Lexeme Node
+                console.log("While Loop Char Lexeme Node: " + char_node.children_nodes[0].name);
+                let char_lexeme_node: Node = char_node.children_nodes[0];
+
+                // Append the string value
+                string += char_lexeme_node.name;
+
+                if (curr_char_list_node.children_nodes.length > 1) {
+                    curr_char_list_node = curr_char_list_node.children_nodes[1];
                 }// if
 
-                // Get next character list
                 else {
-                    curr_node = curr_node.children_nodes[1]
+                    string += "\""
+                    break;
                 }// else
             }// while
             
             this._current_ast.add_node(string, NODE_TYPE_LEAF);
-            this._climb_ast_one_level();
-
-            return NODE_NAME_STRING_EXPRESSION;
         }// add_string_expression_subtree_to_ast
 
 
 
-        private _add_boolean_expression_subtree_to_ast(): void {
-            
+        private _add_boolean_expression_subtree_to_ast(boolean_expression_node: Node): void {
+            // Remember, if you built your tree correctly...
+            //
+            //   Node(Boolean Expression).children[0] --> Open String Expression boundary [(]
+            //   Node(Boolean Expression).children[1] --> Node(Expression)
+            //   Node(Boolean Expression).children[2] --> Node(Boolean Operator)
+            //   Node(Boolean Expression).children[3] --> Node(Expression)
+            //   Node(Boolean Expression).children[4] --> Close String Expression boundary [)]
+            //
+            //   OR...
+            //
+            //   Node(Boolean Expression).children[0] --> Node(Boolean Value)
+            //
+            // Boolean expression is just a boolean value...
+            if (boolean_expression_node.children_nodes.length === 1) {
+                let boolean_value_node: Node = boolean_expression_node.children_nodes[0];
+                let boolean_node: Node = boolean_value_node.children_nodes[0];
+                this._current_ast.add_node(boolean_node.name, NODE_TYPE_LEAF);
+                this._climb_ast_one_level();
+            }// if 
+
+            else if (boolean_expression_node.children_nodes.length > 1) {
+                // Ignore Open Parenthesis
+                // boolean_expression_node.children_nodes[0];
+
+
+
+                // Ignore End Parenthesis
+                // boolean_expression_node.children_nodes[0];
+            }// if
+
+            else {
+                throw Error("You messed up Parse: Boolean expression has no children, or negative children.");
+            }// else 
         }// add_boolean_expression_subtree_to_ast
 
         /**
@@ -353,6 +390,24 @@ module NightingaleCompiler {
             if (this._current_ast.current_node !== undefined || this._current_ast.current_node !== null) {
                 this._current_ast.climb_one_level();
             }// if
+        }// climb_ast_one
+
+        private _climb_ast_to_block(): void {
+            
+            // If already at a block, try to climb one node higher...
+            if (this._current_ast.current_node.name === NODE_NAME_BLOCK) {
+                this._climb_ast_one_level();
+            }// if
+
+            // Climbs to the nearest parent Node(Block)
+            while ( 
+                (this._current_ast.current_node !== undefined || this._current_ast.current_node !== null) 
+                && this._current_ast.current_node.name !== NODE_NAME_BLOCK) 
+            {
+                if (this._current_ast.current_node.name !== NODE_NAME_BLOCK) {
+                    this._current_ast.climb_one_level();
+                }// if
+            }// while
         }// climb_ast_one
     }// class
 }// module

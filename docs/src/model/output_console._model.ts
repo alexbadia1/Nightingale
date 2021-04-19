@@ -25,7 +25,7 @@ module NightingaleCompiler {
         public show_output() {
             let output_console: HTMLElement = document.getElementById("output_console");
             let cst_output: HTMLElement = document.getElementById("cst");
-            let ast_output: HTMLElement = document.getElementById("cst");
+            let ast_output: HTMLElement = document.getElementById("ast");
 
             // Remove all children, to prevent infinite list.
             while (output_console.firstChild) {
@@ -37,7 +37,7 @@ module NightingaleCompiler {
             }// while: remove all children
 
             while (ast_output.firstChild) {
-                cst_output.removeChild(cst_output.firstChild);
+                ast_output.removeChild(ast_output.firstChild);
             }// while: remove all children
 
             for (var program_number: number = 0; program_number < this.lexer_output.length; ++program_number) {

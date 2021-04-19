@@ -162,7 +162,6 @@
          * @param root root node of the n-array tree
          */
         public traverse_tree(root: Node) {
-
             // Stack to store the nodes
             let nodes: Array<Node> = [];
 
@@ -189,12 +188,17 @@
                         console.log(`Current: ${curr.name} | ${curr.id}, Parent: ${curr.parent_node.id}, 1st child`);
                         let ul: HTMLUListElement = document.createElement("ul");
                         ul.id = `ast_p${this.program}_ul_node_id_${curr.id}`;
-                        let li: HTMLLIElement = document.createElement("li");
+                        let li: HTMLLIElement= document.createElement("li");
                         li.id = `ast_p${this.program}_li_node_id_${curr.id}`;
 
                         ul.appendChild(li);
 
                         li.innerHTML = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this.program}, ${curr.id}, 'AST');" name = "node-anchor-tag" >${curr.name}</a>`;
+
+                        // Single characters alignment are off... Add padding to the left.
+                        if (curr.name.length  >= 1 || curr.name.length  <= 3) {
+                            li.style.paddingLeft = "1.5rem";
+                        }// if
 
                         document.getElementById(`ast_p${this.program}_li_node_id_${curr.parent_node.id}`).appendChild(ul);
                     }// if
@@ -205,6 +209,11 @@
                         let li: HTMLLIElement = document.createElement("li");
                         li.id = `ast_p${this.program}_li_node_id_${curr.id}`;
                         li.innerHTML = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this.program}, ${curr.id}, 'AST');" name = "node-anchor-tag">${curr.name}</a>`;
+
+                        // Single characters alignment are off... Add padding to the left.
+                        if (curr.name.length  >= 1 || curr.name.length  <= 3) {
+                            li.style.paddingLeft = "1.5rem";
+                        }// if
 
                         document.getElementById(`ast_p${this.program}_ul_node_id_${curr.parent_node.children_nodes[0].id}`).appendChild(li);
                     }// else

@@ -83,7 +83,6 @@ const INCOMPLETE_EXPRESSIONS=
 + `\t}\n`
 + `}$\n\n`;
 
-// Parser Tests
 const TRICKY_DECLARATIONS= 
 `/* Tricky Declarations */\n` 
 + `{\n`
@@ -106,7 +105,6 @@ const TRICKY_DECLARATIONS=
 + `\t if ((true != false))\n`
 + `}$\n\n`;
 
-// Parser Tests
 const TRICKY_ASSIGNMENT_STATEMENTS = `
 /* This is a valid parse... */
 {
@@ -204,4 +202,25 @@ const SVEGLIATOR_INVALID_PROGRAM =
 
 const JUICE_COMPILER_CRAZY_ONE_LINER = 
 "/* JUICES TEST CASE Test case for crazy one liner */\n"
-+ "${hellotruefalse!======trueprinta=3b=0print(\"false true\")whi33leiftruefalsestring!= stringintbooleanaa truewhileif{hi+++==!==}}/*aaahaha*/hahahahaha/*awao*/$"
++ "${hellotruefalse!======trueprinta=3b=0print(\"false true\")whi33leiftruefalsestring!= stringintbooleanaa truewhileif{hi+++==!==}}/*aaahaha*/hahahahaha/*awao*/$";
+
+const BlOCKS_AND_INTEGER_ASSIGNMENTS = `{
+	{
+    	x = 1 + 2 + 3
+        y = 6 + 7
+        p = 1 
+        o = 9 + 8 
+        w = 4 + 5 + 0
+    }
+    
+	a = 1
+	b = 1 + 2
+    c = 3 + 4 + 5
+    d = 5 + 6 + 7
+    e = 7 + 8
+    f = 9
+    
+    {
+    	z = 1 + 2 + 3 + 4 + 5 + 6 + 7 + 9
+    }
+}$`;

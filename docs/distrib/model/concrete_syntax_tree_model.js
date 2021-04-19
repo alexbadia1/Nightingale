@@ -157,6 +157,10 @@ var NightingaleCompiler;
                         li.id = `cst_p${this.program}_li_node_id_${curr.id}`;
                         ul.appendChild(li);
                         li.innerHTML = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this.program}, ${curr.id}, 'CST');" name = "node-anchor-tag" >${curr.name}</a>`;
+                        // Single characters alignment are off... Add padding to the left.
+                        if (curr.name.length >= 1 || curr.name.length <= 3) {
+                            li.style.paddingLeft = "1.5rem";
+                        } // if
                         document.getElementById(`cst_p${this.program}_li_node_id_${curr.parent_node.id}`).appendChild(ul);
                     } // if
                     // Node is 2nd or 3rd or nth child of parent
@@ -164,6 +168,10 @@ var NightingaleCompiler;
                         let li = document.createElement("li");
                         li.id = `cst_p${this.program}_li_node_id_${curr.id}`;
                         li.innerHTML = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this.program}, ${curr.id}, 'CST');" name = "node-anchor-tag">${curr.name}</a>`;
+                        // Single characters alignment are off... Add padding to the left.
+                        if (curr.name.length >= 1 || curr.name.length <= 3) {
+                            li.style.paddingLeft = "1.5rem";
+                        } // if
                         document.getElementById(`cst_p${this.program}_ul_node_id_${curr.parent_node.children_nodes[0].id}`).appendChild(li);
                     } // else
                     // Store all the children of 

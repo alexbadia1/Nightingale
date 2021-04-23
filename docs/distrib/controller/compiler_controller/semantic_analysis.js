@@ -56,8 +56,6 @@ var NightingaleCompiler;
             this._current_ast = new NightingaleCompiler.AbstractSyntaxTree();
             // Get program number from CST
             this._current_ast.program = cst.program;
-            console.log("Program: " + cst.program);
-            console.log("Root: " + cst.root.children_nodes[0].name);
             // Begin adding nodes to the ast from the cst, filtering for the key elements
             this.add_subtree_to_ast(cst.root.children_nodes[0]);
         } // generate_abstract_syntax_trees
@@ -82,7 +80,7 @@ var NightingaleCompiler;
                     this._add_if_subtree_to_ast(cst_current_node);
                     break;
                 default:
-                    break;
+                    throw Error(`Semantic Analysis Failed: [${cst_current_node.name}] does not have a valid child [BLOCK, VARIABLE DECLARATION< ASSIGNMENT STATEMENT, PRINT STATEMENT, WHILE STATEMENT, IF STATEMENT]`);
             } // switch
             this._climb_ast_to_block();
         } // add_subtree_to_ast
@@ -95,7 +93,7 @@ var NightingaleCompiler;
                     this._skip_statement_list(cst_current_node);
                     break;
                 default:
-                    break;
+                    throw Error(`Semantic Analysis Failed: [${cst_current_node.name}] does not have a valid child [STATEMENT, STATEMENT_LIST]`);
             } // switch
         } // skip_node_for_ast
         /**
@@ -228,8 +226,6 @@ var NightingaleCompiler;
          *   - Identifier
          */
         _add_expression_subtree(expression_node) {
-            let result = "";
-            console.log(expression_node.name);
             switch (expression_node.children_nodes[0].name) {
                 case NODE_NAME_INT_EXPRESSION:
                     this._add_integer_expression_subtree_to_ast(expression_node.children_nodes[0]);
@@ -245,10 +241,8 @@ var NightingaleCompiler;
                     this._current_ast.add_node(expression_node.children_nodes[0].name, NODE_TYPE_LEAF);
                     break;
                 default:
-                    // This should never happen, given a valid CST...
-                    throw Error("Well, it happened... Semantic Analysis failed at _add_assignment_statement_subtree_to_ast() switch statement :(");
+                    throw Error(`Semantic Analysis Failed: [${expression_node.name}] does not have a valid child [INT EXPRESSION, STRING EXPRESSION, BOOLEAN EXPRESSION, IDENTIFIER]`);
             } // switch
-            return result;
         } // add_expression_to_assignment_statement_subtree
         /**
          * Construct a subtree in the abstract syntax tree
@@ -318,7 +312,6 @@ var NightingaleCompiler;
             // Not an empty string, iteratively add each character.
             if (string_expression_node.children_nodes.length > 2) {
                 let curr_char_list_node = string_expression_node.children_nodes[1];
-                console.log(curr_char_list_node.name);
                 // Get entire string
                 while (curr_char_list_node !== undefined && curr_char_list_node !== null) {
                     // Get Character Node
@@ -370,10 +363,8 @@ var NightingaleCompiler;
                 this._current_ast.add_node(boolean_operator_value_node.name, NODE_TYPE_BRANCH);
                 // Add Expressions as children of the Boolean Operator
                 let left_expression_node = boolean_expression_node.children_nodes[1];
-                console.log("Left: " + left_expression_node.name);
                 this._add_expression_subtree(left_expression_node);
                 let right_expression_node = boolean_expression_node.children_nodes[3];
-                console.log("Right: " + right_expression_node.name);
                 this._add_expression_subtree(right_expression_node);
                 // Ignore End Parenthesis
                 // let open_parenthisis_node = boolean_expression_node.children_nodes[4];

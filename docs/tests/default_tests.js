@@ -289,3 +289,29 @@ const ULTIMATE_ASSIGNMENT_TEST = `/* Semantically incorrect, but make sure your 
         z = (true == (false == ("a" != "b")))
     }
 }$`;
+
+const PRINT_STATEMENTS_TESTS = `/* Here's a bunch of print statements */
+{
+	print("i")
+    print("think")
+    
+    {
+    	print("i")
+    	print("can")
+        
+        print("i")
+    	print("think")
+        print("i")
+        
+        {
+			 print("can")       
+        }
+    }
+    
+	print("i")
+	print("think")
+    print("")
+    print("i")
+    print("")
+    print("can")
+}$`;

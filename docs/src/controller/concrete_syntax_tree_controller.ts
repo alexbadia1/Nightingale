@@ -18,7 +18,7 @@ module NightingaleCompiler {
             let index: number = 0;
             while (index < this._concrete_syntax_trees.length) {
                 if (this._concrete_syntax_trees[index].program === program_number) {
-                    traversalResults = this._concrete_syntax_trees[program_number].toString().split("\n");
+                    traversalResults = this._concrete_syntax_trees[index].toString().split("\n");
 
                     for (let result of traversalResults) {
                         let listItem: HTMLLIElement = document.createElement("li");
@@ -43,7 +43,7 @@ module NightingaleCompiler {
             let index: number = 0;
             while (index < this._concrete_syntax_trees.length) {
                 if (this._concrete_syntax_trees[index].program === program_number) {
-                    this._concrete_syntax_trees[program_number].toHtml();
+                    this._concrete_syntax_trees[index].toHtml();
 
                     let bottomMargin: HTMLDivElement = document.createElement("div");
                     bottomMargin.style.height = "10vh";

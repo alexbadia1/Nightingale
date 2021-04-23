@@ -19,7 +19,7 @@
             while (index < this._abstract_syntax_trees.length) {
                 if (this._abstract_syntax_trees[index].program === program_number) {
                     
-                    traversalResults = this._abstract_syntax_trees[program_number].toString().split("\n");
+                    traversalResults = this._abstract_syntax_trees[index].toString().split("\n");
 
                     for (let result of traversalResults) {
                         let listItem: HTMLLIElement = document.createElement("li");
@@ -43,7 +43,7 @@
             let index: number = 0;
             while (index < this._abstract_syntax_trees.length) {
                 if (this._abstract_syntax_trees[index].program === program_number) {
-                    this._abstract_syntax_trees[program_number].toHtml();
+                    this._abstract_syntax_trees[index].toHtml();
 
                     let bottomMargin: HTMLDivElement = document.createElement("div");
                     bottomMargin.style.height = "10vh";

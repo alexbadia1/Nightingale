@@ -377,18 +377,24 @@ var NightingaleCompiler;
                 this._add_expression_subtree(right_expression_node);
                 // Ignore End Parenthesis
                 // let open_parenthisis_node = boolean_expression_node.children_nodes[4];
+                return NODE_NAME_BOOLEAN_EXPRESSION;
             } // if
             // Boolean expression is just a boolean value...
             else if (boolean_expression_node.children_nodes.length === 1) {
                 let boolean_value_node = boolean_expression_node.children_nodes[0];
                 let boolean_node = boolean_value_node.children_nodes[0];
                 this._current_ast.add_node(boolean_node.name, NODE_TYPE_LEAF);
+                return NODE_NAME_BOOLEAN_VALUE;
             } // else if
             // This should never happen...
             else {
                 throw Error("You messed up Parse: Boolean expression has no children, or negative children.");
             } // else 
         } // add_boolean_expression_subtree_to_ast
+        /**
+         * Construct a subtree in the abstract syntax tree rooted with the Keyword Print and adds:
+         *   - Expression
+         */
         _add_print_subtree_to_ast(print_node) {
             // Remember, if you built your tree correctly...
             //
@@ -408,11 +414,49 @@ var NightingaleCompiler;
             let expression_node = print_node.children_nodes[2];
             this._add_expression_subtree(expression_node);
         } // _add_print_subtree_to_ast
+        /**
+         * Construct a subtree in the abstract syntax tree rooted with the Keyword While and adds:
+         *   - Boolean Expression
+         *   - Block
+         */
         _add_while_subtree_to_ast(while_node) {
-            throw Error("Unimplemented Error: While Statement Subtree Pattern");
+            // Remember, if you built your tree correctly...
+            //
+            //   Node(While).children[0] --> Keyword While [while]
+            //   Node(While).children[1] --> Node(Boolean Expression)
+            //   Node(While).children[2] --> Node(Block)
+            //
+            // Add While Statment
+            this._current_ast.add_node(while_node.children_nodes[0].name, NODE_TYPE_BRANCH);
+            // Add boolean expression node to subtree
+            let node_name = this._add_boolean_expression_subtree_to_ast(while_node.children_nodes[1]);
+            // Add the Block subtree directly under the While Statement Keyword
+            if (node_name === NODE_NAME_BOOLEAN_EXPRESSION) {
+                this._climb_ast_one_level();
+            } // if
+            this._add_block_subtree_to_ast(while_node.children_nodes[2]);
         } // _add_while_subtree_to_ast
+        /**
+         * Construct a subtree in the abstract syntax tree rooted with the Keyword If and adds:
+         *   - Boolean Expression
+         *   - Block
+         */
         _add_if_subtree_to_ast(if_node) {
-            throw Error("Unimplemented Error: If Statement Subtree Pattern");
+            // Remember, if you built your tree correctly...
+            //
+            //   Node(If).children[0] --> Keyword If [If]
+            //   Node(If).children[1] --> Node(Boolean Expression)
+            //   Node(If).children[2] --> Node(Block)
+            //
+            // Add If Statment
+            this._current_ast.add_node(if_node.children_nodes[0].name, NODE_TYPE_BRANCH);
+            // Add boolean expression node to subtree
+            let node_name = this._add_boolean_expression_subtree_to_ast(if_node.children_nodes[1]);
+            // Add the Block subtree directly under the While Statement Keyword
+            if (node_name === NODE_NAME_BOOLEAN_EXPRESSION) {
+                this._climb_ast_one_level();
+            } // if
+            this._add_block_subtree_to_ast(if_node.children_nodes[2]);
         } // _add_if_subtree_to_ast
         /**
          * Moves the AST's current node pointer up one level in the tree (to the parent node)

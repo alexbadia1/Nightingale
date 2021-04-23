@@ -94,8 +94,8 @@ var NightingaleCompiler;
                     } // for: add new children
                     // Concrete Syntax Tree
                     // Skip invalidy parsed programs
-                    console.log("Program Number: " + program_number);
                     if (!this.invalid_parsed_programs.includes(program_number)) {
+                        console.log("Not Invalid Parsed Program Number: " + program_number);
                         this.cst_controller.add_tree_to_output_console(output_console, program_number);
                         this.cst_controller.add_tree_to_gui(document.getElementById("cst"), program_number);
                         this.ast_controller.add_tree_to_output_console(output_console, program_number);

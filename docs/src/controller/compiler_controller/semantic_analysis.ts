@@ -416,7 +416,7 @@ module NightingaleCompiler {
                 this._add_expression_subtree(left_expression_node);
 
                 if (left_expression_node.children_nodes[0].name == NODE_NAME_INT_EXPRESSION 
-                    || left_expression_node.children_nodes[0].name == NODE_NAME_BOOLEAN_EXPRESSION) {
+                    || left_expression_node.children_nodes[0].children_nodes[0].name == "(") {
                     this._climb_ast_one_level();
                 }
 

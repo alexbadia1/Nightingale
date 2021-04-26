@@ -268,7 +268,7 @@ module NightingaleCompiler {
 
                 case NODE_NAME_IDENTIFIER:
                     // Add identifier to ast subtree at the SAME Level
-                    this._current_ast.add_node(expression_node.children_nodes[0].name, NODE_TYPE_LEAF)
+                    this._current_ast.add_node(expression_node.children_nodes[0].children_nodes[0].name, NODE_TYPE_LEAF);
                     break;
 
                 default:
@@ -414,6 +414,12 @@ module NightingaleCompiler {
                 // Add Expressions as children of the Boolean Operator
                 let left_expression_node: Node = boolean_expression_node.children_nodes[1];
                 this._add_expression_subtree(left_expression_node);
+
+                if (left_expression_node.children_nodes[0].name == NODE_NAME_INT_EXPRESSION 
+                    || left_expression_node.children_nodes[0].name == NODE_NAME_BOOLEAN_EXPRESSION) {
+                    this._climb_ast_one_level();
+                }
+
                 let right_expression_node: Node = boolean_expression_node.children_nodes[3];
                 this._add_expression_subtree(right_expression_node);
 

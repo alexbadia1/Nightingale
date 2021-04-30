@@ -86,7 +86,7 @@ var NightingaleCompiler;
                     this._add_if_subtree_to_ast(cst_current_node);
                     break;
                 default:
-                    break;
+                    throw Error(`Semantic Analysis Failed: [${cst_current_node.name}] does not have a valid child [BLOCK, VARIABLE DECLARATION< ASSIGNMENT STATEMENT, PRINT STATEMENT, WHILE STATEMENT, IF STATEMENT]`);
             } // switch
             this._climb_ast_to_block();
         } // add_subtree_to_ast
@@ -99,7 +99,7 @@ var NightingaleCompiler;
                     this._skip_statement_list(cst_current_node);
                     break;
                 default:
-                    break;
+                    throw Error(`Semantic Analysis Failed: [${cst_current_node.name}] does not have a valid child [STATEMENT, STATEMENT_LIST]`);
             } // switch
         } // skip_node_for_ast
         /**
@@ -241,8 +241,6 @@ var NightingaleCompiler;
          *   - Identifier
          */
         _add_expression_subtree(expression_node) {
-            let result = "";
-            console.log(expression_node.name);
             switch (expression_node.children_nodes[0].name) {
                 case NODE_NAME_INT_EXPRESSION:
                     this._add_integer_expression_subtree_to_ast(expression_node.children_nodes[0]);
@@ -255,13 +253,11 @@ var NightingaleCompiler;
                     break;
                 case NODE_NAME_IDENTIFIER:
                     // Add identifier to ast subtree at the SAME Level
-                    this._current_ast.add_node(expression_node.children_nodes[0].name, NODE_TYPE_LEAF);
+                    this._current_ast.add_node(expression_node.children_nodes[0].children_nodes[0].name, NODE_TYPE_LEAF);
                     break;
                 default:
-                    // This should never happen, given a valid CST...
-                    throw Error("Well, it happened... Semantic Analysis failed at _add_assignment_statement_subtree_to_ast() switch statement :(");
+                    throw Error(`Semantic Analysis Failed: [${expression_node.name}] does not have a valid child [INT EXPRESSION, STRING EXPRESSION, BOOLEAN EXPRESSION, IDENTIFIER]`);
             } // switch
-            return result;
         } // add_expression_to_assignment_statement_subtree
         /**
          * Construct a subtree in the abstract syntax tree
@@ -331,7 +327,6 @@ var NightingaleCompiler;
             // Not an empty string, iteratively add each character.
             if (string_expression_node.children_nodes.length > 2) {
                 let curr_char_list_node = string_expression_node.children_nodes[1];
-                console.log(curr_char_list_node.name);
                 // Get entire string
                 while (curr_char_list_node !== undefined && curr_char_list_node !== null) {
                     // Get Character Node
@@ -383,25 +378,33 @@ var NightingaleCompiler;
                 this._current_ast.add_node(boolean_operator_value_node.name, NODE_TYPE_BRANCH);
                 // Add Expressions as children of the Boolean Operator
                 let left_expression_node = boolean_expression_node.children_nodes[1];
-                console.log("Left: " + left_expression_node.name);
                 this._add_expression_subtree(left_expression_node);
+                if (left_expression_node.children_nodes[0].name == NODE_NAME_INT_EXPRESSION
+                    || left_expression_node.children_nodes[0].children_nodes[0].name == "(") {
+                    this._climb_ast_one_level();
+                }
                 let right_expression_node = boolean_expression_node.children_nodes[3];
-                console.log("Right: " + right_expression_node.name);
                 this._add_expression_subtree(right_expression_node);
                 // Ignore End Parenthesis
                 // let open_parenthisis_node = boolean_expression_node.children_nodes[4];
+                return NODE_NAME_BOOLEAN_EXPRESSION;
             } // if
             // Boolean expression is just a boolean value...
             else if (boolean_expression_node.children_nodes.length === 1) {
                 let boolean_value_node = boolean_expression_node.children_nodes[0];
                 let boolean_node = boolean_value_node.children_nodes[0];
                 this._current_ast.add_node(boolean_node.name, NODE_TYPE_LEAF);
+                return NODE_NAME_BOOLEAN_VALUE;
             } // else if
             // This should never happen...
             else {
                 throw Error("You messed up Parse: Boolean expression has no children, or negative children.");
             } // else 
         } // add_boolean_expression_subtree_to_ast
+        /**
+         * Construct a subtree in the abstract syntax tree rooted with the Keyword Print and adds:
+         *   - Expression
+         */
         _add_print_subtree_to_ast(print_node) {
             // Remember, if you built your tree correctly...
             //
@@ -421,11 +424,49 @@ var NightingaleCompiler;
             let expression_node = print_node.children_nodes[2];
             this._add_expression_subtree(expression_node);
         } // _add_print_subtree_to_ast
+        /**
+         * Construct a subtree in the abstract syntax tree rooted with the Keyword While and adds:
+         *   - Boolean Expression
+         *   - Block
+         */
         _add_while_subtree_to_ast(while_node) {
-            throw Error("Unimplemented Error: While Statement Subtree Pattern");
+            // Remember, if you built your tree correctly...
+            //
+            //   Node(While).children[0] --> Keyword While [while]
+            //   Node(While).children[1] --> Node(Boolean Expression)
+            //   Node(While).children[2] --> Node(Block)
+            //
+            // Add While Statment
+            this._current_ast.add_node(while_node.children_nodes[0].name, NODE_TYPE_BRANCH);
+            // Add boolean expression node to subtree
+            let node_name = this._add_boolean_expression_subtree_to_ast(while_node.children_nodes[1]);
+            // Add the Block subtree directly under the While Statement Keyword
+            if (node_name === NODE_NAME_BOOLEAN_EXPRESSION) {
+                this._climb_ast_one_level();
+            } // if
+            this._add_block_subtree_to_ast(while_node.children_nodes[2]);
         } // _add_while_subtree_to_ast
+        /**
+         * Construct a subtree in the abstract syntax tree rooted with the Keyword If and adds:
+         *   - Boolean Expression
+         *   - Block
+         */
         _add_if_subtree_to_ast(if_node) {
-            throw Error("Unimplemented Error: If Statement Subtree Pattern");
+            // Remember, if you built your tree correctly...
+            //
+            //   Node(If).children[0] --> Keyword If [If]
+            //   Node(If).children[1] --> Node(Boolean Expression)
+            //   Node(If).children[2] --> Node(Block)
+            //
+            // Add If Statment
+            this._current_ast.add_node(if_node.children_nodes[0].name, NODE_TYPE_BRANCH);
+            // Add boolean expression node to subtree
+            let node_name = this._add_boolean_expression_subtree_to_ast(if_node.children_nodes[1]);
+            // Add the Block subtree directly under the While Statement Keyword
+            if (node_name === NODE_NAME_BOOLEAN_EXPRESSION) {
+                this._climb_ast_one_level();
+            } // if
+            this._add_block_subtree_to_ast(if_node.children_nodes[2]);
         } // _add_if_subtree_to_ast
         /**
          * Moves the AST's current node pointer up one level in the tree (to the parent node)

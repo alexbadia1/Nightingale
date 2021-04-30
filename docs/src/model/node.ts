@@ -1,5 +1,8 @@
 module NightingaleCompiler {
     export class Node {
+        private _scope_table: ScopeTable = null;
+        public _isValid: boolean = true;
+
         constructor(
             /**
              * Either the name of the non-terminal or terminal.
@@ -26,5 +29,14 @@ module NightingaleCompiler {
              */
             public children_nodes: Array<Node> = [],
         ) { }// constructor
+
+
+        public setData(new_scope_table: ScopeTable): void {
+            this._scope_table = new_scope_table;
+        }// setData
+
+        public getData(): ScopeTable {
+            return this._scope_table;
+        }// getData
     }//class
 }// module

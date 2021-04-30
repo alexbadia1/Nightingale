@@ -98,4 +98,6 @@ const NODE_NAME_DIGIT = "Digit";
 const NODE_NAME_BOOLEAN_OPERATION = "Boolean Operation";
 const NODE_NAME_BOOLEAN_VALUE = "Boolean Value";
 const NODE_NAME_INT_OPERATION = "Int Operation";
+// Scope Tree Node Names
+const NODE_NAME_SCOPE = "Scope";
 //# sourceMappingURL=global.js.map

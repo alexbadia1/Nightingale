@@ -7,6 +7,9 @@
  * work by Michael Ardizzone and Tim Smith.
  * 
  * Enhanced by Alex Badia
+ * 
+ * TODO: Learn how inheritance and polymorphism work in typescript and
+ *       refactor the cst, ast, and scope tree using them...
  */
 
 module NightingaleCompiler {

@@ -27,7 +27,15 @@ var NightingaleCompiler;
             this.type = type;
             this.parent_node = parent_node;
             this.children_nodes = children_nodes;
+            this._scope_table = null;
+            this._isValid = true;
         } // constructor
+        setData(new_scope_table) {
+            this._scope_table = new_scope_table;
+        } // setData
+        getData() {
+            return this._scope_table;
+        } // getData
     } //class
     NightingaleCompiler.Node = Node;
 })(NightingaleCompiler || (NightingaleCompiler = {})); // module

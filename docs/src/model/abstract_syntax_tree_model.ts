@@ -9,6 +9,9 @@
  * work by Michael Ardizzone and Tim Smith.
  * 
  * Enhanced by Alex Badia
+ * 
+ * TODO: Learn how inheritance and polymorphism work in typescript and
+ *       refactor the cst, ast, and scope tree using them...
  */
 
  module NightingaleCompiler {
@@ -43,12 +46,13 @@
          * @param new_name Name of the node, could be a string or lexeme
          * @param kind Root, Branch, or Leaf Node?
          */
-        public add_node(new_name: string, kind: string) {
+        public add_node(new_name: string, kind: string, isValid: boolean = true) {
             this._node_count++
 
             // Construct the node object.
             let new_node = new Node(new_name, this._node_count, kind);
-
+            new_node._isValid = isValid;
+            
             // Check to see if it needs to be the root node.
             if ((this.root == null) || (!this.root)) {
                 this.root = new_node;

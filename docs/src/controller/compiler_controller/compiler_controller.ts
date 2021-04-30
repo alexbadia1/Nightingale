@@ -69,13 +69,16 @@ module NightingaleCompiler {
             // Step 3: Semantic Analysis
             this.semantic_analysis = new SemanticAnalysis(this.parser.concrete_syntax_trees, this.parser.invalid_parsed_programs);
             let ast_controller = new AbstractSyntaxTreeController(this.semantic_analysis.abstract_syntax_trees);
+            let scope_tree_controller = new ScopeTreeController(this.semantic_analysis._scope_trees);
 
             // Final output
              let output_console_model: OutputConsoleModel = new OutputConsoleModel(
                                                                 this.lexer.output, 
                                                                 cst_controller, 
                                                                 ast_controller,
+                                                                scope_tree_controller,
                                                                 this.parser.output, 
+                                                                this.semantic_analysis.output,
                                                                 this.parser.invalid_parsed_programs,
                                                             );
              let debug_console_model: DebugConsoleModel = new DebugConsoleModel(this.lexer.debug_token_stream, this.parser.debug);

@@ -6,14 +6,14 @@
  * By Alan G. Labouseur, based on the 2009
  * work by Michael Ardizzone and Tim Smith.
  *
- * Enhanced by Alex Badia
+ * Enhanced by Alex Badia.
  *
  * TODO: Learn how inheritance and polymorphism work in typescript and
  *       refactor the cst, ast, and scope tree using them...
  */
 var NightingaleCompiler;
 (function (NightingaleCompiler) {
-    class ConcreteSyntaxTree {
+    class ScopeTreeModel {
         constructor(
         /**
          * Root node of the tree.
@@ -37,10 +37,12 @@ var NightingaleCompiler;
             this._node_count = _node_count;
         } //constructor
         // Add a node: kind in {branch, leaf}.
-        add_node(new_name, kind) {
+        add_node(new_name, kind, scope_table = null) {
             this._node_count++;
             // Construct the node object.
             let new_node = new NightingaleCompiler.Node(new_name, this._node_count, kind);
+            // Set new node's metadata
+            new_node.setData(scope_table);
             // Check to see if it needs to be the root node.
             if ((this.root == null) || (!this.root)) {
                 this.root = new_node;
@@ -124,7 +126,7 @@ var NightingaleCompiler;
             ul.id = `cst_p${this.program}_ul_node_id_0`;
             let li = document.createElement("li");
             li.id = `cst_p${this.program}_li_node_id_0`;
-            li.innerHTML = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this.program}, 0, 'CST');" name = "node-anchor-tag">${this.root.name}</a>`;
+            li.innerHTML = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this.program}, 0, 'SCOPETREE');" name = "node-anchor-tag">${this.root.name}</a>`;
             ul.appendChild(li);
             tree_div.appendChild(ul);
             this.traverse_tree(this.root);
@@ -159,7 +161,7 @@ var NightingaleCompiler;
                         let li = document.createElement("li");
                         li.id = `cst_p${this.program}_li_node_id_${curr.id}`;
                         ul.appendChild(li);
-                        li.innerHTML = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this.program}, ${curr.id}, 'CST');" name = "node-anchor-tag" >${curr.name}</a>`;
+                        li.innerHTML = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this.program}, ${curr.id}, 'SCOPETREE');" name = "node-anchor-tag" >${curr.name}</a>`;
                         // Single characters alignment are off... Add padding to the left.
                         if (curr.name.length >= 1 || curr.name.length <= 3) {
                             li.style.paddingLeft = "1.5rem";
@@ -186,6 +188,6 @@ var NightingaleCompiler;
             } // while
         } // traverse tree
     } // class
-    NightingaleCompiler.ConcreteSyntaxTree = ConcreteSyntaxTree;
+    NightingaleCompiler.ScopeTreeModel = ScopeTreeModel;
 })(NightingaleCompiler || (NightingaleCompiler = {})); // module
-//# sourceMappingURL=concrete_syntax_tree_model.js.map
+//# sourceMappingURL=scope_tree_model.js.map

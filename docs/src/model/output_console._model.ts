@@ -16,7 +16,9 @@ module NightingaleCompiler {
             public lexer_output: Array<Array<OutputConsoleMessage>>,
             public cst_controller: ConcreteSyntaxTreeController,
             public ast_controller: AbstractSyntaxTreeController,
+            public scope_tree_controller: ScopeTreeController,
             public parser_output: Array<Array<OutputConsoleMessage>>,
+            public semantic_output: Array<Array<OutputConsoleMessage>>,
             public invalid_parsed_programs: Array<number>,
         ) {
             this.show_output();
@@ -26,6 +28,7 @@ module NightingaleCompiler {
             let output_console: HTMLElement = document.getElementById("output_console");
             let cst_output: HTMLElement = document.getElementById("cst");
             let ast_output: HTMLElement = document.getElementById("ast");
+            let scope_tree_output: HTMLElement = document.getElementById("scope-tree");
 
             // Remove all children, to prevent infinite list.
             while (output_console.firstChild) {
@@ -40,6 +43,11 @@ module NightingaleCompiler {
                 ast_output.removeChild(ast_output.firstChild);
             }// while: remove all children
 
+            while (scope_tree_output.firstChild) {
+                scope_tree_output.removeChild(scope_tree_output.firstChild);
+            }// while: remove all children
+
+            // Kept as separate for loops for future customized styling of each steps output
             for (var program_number: number = 0; program_number < this.lexer_output.length; ++program_number) {
 
                 // Add Lexer output
@@ -109,15 +117,53 @@ module NightingaleCompiler {
                         output_console.appendChild(listItem);
                     }// for: add new children
 
+                    // Semantic Analysis Output
+                    if (this.semantic_output[program_number] !== null || this.semantic_output[program_number] !== null) {
+                        for (let i: number = 0; i < this.semantic_output[program_number].length; ++i) {
+                            let listItem: HTMLLIElement = document.createElement("li");
+                            listItem.className = `token_${i}`;
+                            listItem.style.listStyle = "none";
+                            listItem.style.fontSize = "1rem";
+                            listItem.style.marginLeft = "15px";
+                            listItem.style.color = "white";
+
+                            if (this.semantic_output[program_number][i].type == INFO) {
+                                listItem.innerHTML =
+                                    `${this.semantic_output[program_number][i].source} `
+                                    + `<span  style = "color: white;">${this.semantic_output[program_number][i].type}</span>`
+                                    + ` - ${this.semantic_output[program_number][i].message}`;
+                            }// if
+
+                            else if (this.semantic_output[program_number][i].type == WARNING) {
+                                listItem.innerHTML =
+                                    `${this.semantic_output[program_number][i].source} `
+                                    + `<span  style = "color: yellow;">${this.semantic_output[program_number][i].type}</span>`
+                                    + ` - ${this.semantic_output[program_number][i].message}`;
+                            }// else-if
+
+                            else if (this.semantic_output[program_number][i].type == ERROR) {
+                                listItem.innerHTML =
+                                    `${this.semantic_output[program_number][i].source} `
+                                    + `<span  style = "color: red;">${this.semantic_output[program_number][i].type}</span>`
+                                    + ` - ${this.semantic_output[program_number][i].message}`;
+                            }// else-if
+
+                            output_console.appendChild(listItem);
+                        }// for: add new children
+                    }// if
+                    
                     // Concrete Syntax Tree
                     // Skip invalidy parsed programs
-                    console.log("Program Number: " + program_number);
                     if (!this.invalid_parsed_programs.includes(program_number)) {
                         this.cst_controller.add_tree_to_output_console(output_console, program_number);
-                        this.cst_controller.add_tree_to_gui(document.getElementById("cst"), program_number);
+                        this.cst_controller.add_tree_to_gui(cst_output, program_number);
 
+                        // Yes, this will show invalid ast's but not passed to code gen
                         this.ast_controller.add_tree_to_output_console(output_console, program_number);
-                        this.ast_controller.add_tree_to_gui(document.getElementById("ast"), program_number);
+                        this.ast_controller.add_tree_to_gui(ast_output, program_number);
+
+                        this.scope_tree_controller.add_tree_to_output_console(output_console, program_number);
+                        this.scope_tree_controller.add_tree_to_gui(scope_tree_output, program_number);
                     }// if
                 }// if
             }// for: each program

@@ -58,6 +58,7 @@
     <script type="text/javascript" src="../../distrib/controller/compiler_controller/semantic_analysis.js"></script>
     <script type="text/javascript" src="../../distrib/controller/concrete_syntax_tree_controller.js"></script>
     <script type="text/javascript" src="../../distrib/controller/abstract_syntax_tree_controller.js"></script>
+    <script type="text/javascript" src="../../distrib/controller/scope_tree_controller.js"></script>
 
     <!-- Models -->
     <script type="text/javascript" src="../../distrib/model/lexical_token_model.js"></script>
@@ -68,6 +69,8 @@
     <script type="text/javascript" src="../../distrib/model/node.js"></script>
     <script type="text/javascript" src="../../distrib/model/concrete_syntax_tree_model.js"></script>
     <script type="text/javascript" src="../../distrib/model/abstract_syntax_tree_model.js"></script>
+    <script type="text/javascript" src="../../distrib/model/scope_tree_model.js"></script>
+    <script type="text/javascript" src="../../distrib/model/scope_table_model.js"></script>
     <script type="text/javascript" src="../../distrib/model/footer_model.js"></script>
 
     <!-- Tests -->
@@ -287,6 +290,7 @@
                         href="#stacktrace_console">STACKTRACE</a></li>
                 <li class=" console__tab-cst"><a class='output-anchor' data-toggle="tab" href="#cst">CST</a></li>
                 <li class=" console__tab-ast"><a class='output-anchor' data-toggle="tab" href="#ast">AST</a></li>
+                <li class=" console__tab-scope-tree"><a class='output-anchor' data-toggle="tab" href="#scope-trees">SCOPE TREE</a></li>
                 <li class=" console__tab-terminal"><a class='output-anchor' data-toggle="tab"
                         href="#terminal">TERMINAL</a></li>
             </ul>
@@ -316,6 +320,10 @@
 
                 <div id="ast" class="tab-content_tab-ast tab-pane fade" style="height: 85%; width: 100%; overflow: scroll;">
                     <!-- AST dynamically generated here -->
+                </div>
+
+                <div id="scope-tree" class="tab-content_tab-scope-tree tab-pane fade" style="height: 85%; width: 100%; overflow: scroll;">
+                    <!-- Scope Tree dynamically generated here -->
                 </div>
 
                 <div id="terminal" class="tab-content_tab-terminal tab-pane fade">

@@ -22,27 +22,33 @@
 
 module NightingaleCompiler {
     export class SemanticAnalysis {
+        public abstract_syntax_trees: Array<AbstractSyntaxTree> = Array<AbstractSyntaxTree>();
+        public invalid_semantic_programs: Array<number> = [];
+        private _current_ast: AbstractSyntaxTree = null;
+        private _current_scope_table: ScopeTableModel = null;
+        private _current_scope_tree: ScopeTreeModel = null;
+        public _scope_trees: Array<ScopeTreeModel> =  Array<ScopeTreeModel>();
+        public output: Array<Array<OutputConsoleMessage>> = [[]];
+
         constructor(
-            /**
-             * Valid Concrete Syntax Trees passed from the parser.
-             */
             public concrete_syntax_trees: Array<ConcreteSyntaxTree>,
-
             public invalid_parsed_programs: Array<number>,
-
-            public abstract_syntax_trees: Array<AbstractSyntaxTree> = Array<AbstractSyntaxTree>(),
-
-            private _current_ast: AbstractSyntaxTree = null,
         ) {
             this.main();
         }// constructor 
 
         private main(): void {
             for (var cstIndex: number = 0; cstIndex < this.concrete_syntax_trees.length; ++cstIndex) {
-                // Skip invalid parsed programs... 
+                // Skips invalid parsed programs
+                //
                 // Probably shouldn't be passing invalid parse trees around, though
-                // It's be cool to show visually, where exactly the parse tree messed up
+                // It'd be cool to show visually, where exactly the parse tree messed up
                 if (!this.invalid_parsed_programs.includes(this.concrete_syntax_trees[cstIndex].program)) {
+                    // Create a scope tree
+                    this._current_scope_tree = new ScopeTreeModel();
+                    this._scope_trees.push(this._current_scope_tree);
+
+                    // Traverse the CST and create the AST while also doing type and scope checking
                     this.generate_abstract_syntax_tree(this.concrete_syntax_trees[cstIndex]);
                     this.abstract_syntax_trees.push(this._current_ast);
                 }// if
@@ -62,9 +68,6 @@ module NightingaleCompiler {
 
             // Get program number from CST
             this._current_ast.program = cst.program;
-
-            console.log("Program: " + cst.program);
-            console.log("Root: " + cst.root.children_nodes[0].name);
 
             // Begin adding nodes to the ast from the cst, filtering for the key elements
             this.add_subtree_to_ast(cst.root.children_nodes[0]);
@@ -118,7 +121,7 @@ module NightingaleCompiler {
          */
         private _add_block_subtree_to_ast(cst_current_node: Node): void {
             // Add new BLOCK node
-            this._current_ast.add_node(cst_current_node.name, NODE_TYPE_BRANCH);
+            this._current_ast.add_node(cst_current_node.name, NODE_TYPE_BRANCH, true);
 
             // Remember, if you built your tree correctly..
             //
@@ -128,6 +131,10 @@ module NightingaleCompiler {
             //
             // Get child node, which should be a statement list
             let statement_list_node = cst_current_node.children_nodes[1];
+
+            // Add a new scope node to the scope tree
+            this._current_scope_table = new ScopeTableModel();
+            this._current_scope_tree.add_node(NODE_NAME_SCOPE, NODE_TYPE_BRANCH, this._current_scope_table);
 
             // Skip the statement list node
             this._skip_node_for_ast(statement_list_node);
@@ -181,9 +188,6 @@ module NightingaleCompiler {
          * @param cst_current_node current node in the cst
          */
         private _add_variable_declaration_subtree_to_ast(cst_current_node: Node): void {
-            // Add root node for variable declaration subtree
-            this._current_ast.add_node(cst_current_node.name, NODE_TYPE_BRANCH);
-
             // Remember, if you built your tree correctly..
             //
             //   Node(Variable Declaration).children[0] --> Node(Type)
@@ -196,13 +200,24 @@ module NightingaleCompiler {
             let type_node: Node = cst_current_node.children_nodes[0].children_nodes[0];
             let identifier_node: Node = cst_current_node.children_nodes[1].children_nodes[0];
 
+            // Check current scope table
+            let hasCollision: boolean = this._current_scope_table.put(identifier_node.name, new VariableMetaData(type_node.name, false));
+
+            // Mark as invalid if collison
+            if (hasCollision && !this.invalid_semantic_programs.includes(this._current_ast.program)) {
+                this.invalid_semantic_programs.push(this._current_ast.program);
+            }// if
+
+            // Add root node for variable declaration subtree
+            this._current_ast.add_node(cst_current_node.name, NODE_TYPE_BRANCH, !hasCollision);
+
             // Add children to ast subtree at the SAME LEVEL
             //
             // Meaning, climb up the tree ONE level after each insertion 
             // (since tree.addNode() inserts a new node at a new, increased, depth)
-            this._current_ast.add_node(type_node.name, NODE_TYPE_BRANCH);
+            this._current_ast.add_node(type_node.name, NODE_TYPE_BRANCH, !hasCollision);
             this._climb_ast_one_level();
-            this._current_ast.add_node(identifier_node.name, NODE_TYPE_BRANCH);
+            this._current_ast.add_node(identifier_node.name, NODE_TYPE_BRANCH, !hasCollision);
             this._climb_ast_one_level();
 
             // Point back to the parent of root node of the variable declaration subtree

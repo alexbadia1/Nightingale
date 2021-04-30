@@ -58,6 +58,10 @@ module NightingaleCompiler {
             return Array.from(this._map.entries());
         }// entries
 
+        public has(key: string): boolean{
+            return this._map.has(key);
+        }// has
+        
         public isEmpty(): boolean {
             return this._map.size === 0;
         }// isEmpty

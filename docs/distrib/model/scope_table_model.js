@@ -50,6 +50,9 @@ var NightingaleCompiler;
         entries() {
             return Array.from(this._map.entries());
         } // entries
+        has(key) {
+            return this._map.has(key);
+        } // has
         isEmpty() {
             return this._map.size === 0;
         } // isEmpty

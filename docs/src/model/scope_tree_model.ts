@@ -49,7 +49,6 @@
             // Check to see if it needs to be the root node.
             if ((this.root == null) || (!this.root)) {
                 this.root = new_node;
-                console.log("Root Node: " + this.root.name);
             }// if
 
             // Not root node...

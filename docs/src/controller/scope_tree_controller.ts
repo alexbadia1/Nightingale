@@ -36,7 +36,7 @@
                     divider.innerHTML += `--------------------------------`;
                     output_console.appendChild(divider);
 
-                    traversalResults = this._scope_trees[program_number].toString().split("\n");
+                    traversalResults = this._scope_trees[index].toString().split("\n");
 
                     for (let result of traversalResults) {
                         let listItem: HTMLLIElement = document.createElement("li");
@@ -62,7 +62,7 @@
             let index: number = 0;
             while (index < this._scope_trees.length) {
                 if (this._scope_trees[index].program === program_number) {
-                    this._scope_trees[program_number].toHtml();
+                    this._scope_trees[index].toHtml();
 
                     let bottomMargin: HTMLDivElement = document.createElement("div");
                     bottomMargin.style.height = "10vh";

@@ -78,7 +78,7 @@ var NightingaleCompiler;
          *
          */
         generate_abstract_syntax_tree(cst) {
-            this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, WARNING, `Generating Abstract Syntax Tree...`));
+            this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, INFO, `Generating Abstract Syntax Tree...`));
             // Make new ast
             this._current_ast = new NightingaleCompiler.AbstractSyntaxTree();
             // Get program number from CST
@@ -87,7 +87,7 @@ var NightingaleCompiler;
             this.add_subtree_to_ast(cst.root.children_nodes[0]);
         } // generate_abstract_syntax_trees
         add_subtree_to_ast(cst_current_node) {
-            this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, WARNING, `Attempting to add ${cst_current_node.name} subtree to abstract syntax tree.`));
+            this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, INFO, `Attempting to add ${cst_current_node.name} subtree to abstract syntax tree.`));
             switch (cst_current_node.name) {
                 case NODE_NAME_BLOCK:
                     this._add_block_subtree_to_ast(cst_current_node);
@@ -113,7 +113,7 @@ var NightingaleCompiler;
             this._climb_ast_to_block();
         } // add_subtree_to_ast
         _skip_node_for_ast(cst_current_node) {
-            this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, WARNING, `Traversing over ${cst_current_node.name} concrete syntax tree node.`) // OutputConsoleMessage
+            this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, INFO, `Traversing over ${cst_current_node.name} concrete syntax tree node.`) // OutputConsoleMessage
             ); // this.verbose[this.verbose.length - 1].push
             switch (cst_current_node.name) {
                 case NODE_NAME_STATEMENT:
@@ -134,7 +134,7 @@ var NightingaleCompiler;
          * @param cst_current_node current node in the cst
          */
         _add_block_subtree_to_ast(cst_current_node) {
-            this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, WARNING, `Adding ${cst_current_node.name} subtree to abstract syntax tree.`) // OutputConsoleMessage
+            this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, INFO, `Adding ${cst_current_node.name} subtree to abstract syntax tree.`) // OutputConsoleMessage
             ); // this.verbose[this.verbose.length - 1].push
             // Add new BLOCK node
             // SYMBOL_OPEN_BLOCK Token
@@ -153,9 +153,11 @@ var NightingaleCompiler;
             // Skip the statement list node
             if (cst_current_node.children_nodes.length === 3) {
                 this._skip_node_for_ast(statement_list_node);
+                this._current_scope_tree.climb_one_level();
             } // if
             else {
                 // Do nothing, it's an empty block
+                this._current_scope_tree.climb_one_level();
             } // else
         } // _add_block_subtree_to_ast
         _skip_statement_list(cst_current_node) {
@@ -247,8 +249,6 @@ var NightingaleCompiler;
         _add_assignment_statement_subtree_to_ast(cst_current_node) {
             this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, WARNING, `Adding assignment statement subtree to abstract syntax tree.`) // OutputConsoleMessage
             ); // this.verbose[this.verbose.length - 1].push
-            // Add root Node(Assignment Statement) for asignment statement subtree
-            this._current_ast.add_node(cst_current_node.name, NODE_TYPE_BRANCH, true);
             // Remember, if you built your tree correctly..
             //
             //   Node(Assignment Statement).children[0] --> Node(Identifier)
@@ -262,10 +262,32 @@ var NightingaleCompiler;
             //                                --> Node(String Expression)
             //                                --> Node(Boolean Expression)
             //                                --> Node(Id)
-            //
-            // Add the identifier to assignment statement subtree
             let identifier_node = cst_current_node.children_nodes[0].children_nodes[0];
-            this._current_ast.add_node(identifier_node.name, NODE_TYPE_LEAF, true, cst_current_node.getToken());
+            // Check scope tree if the variable exists and get its type
+            let isDeclared = false;
+            let var_metadata = null;
+            let curr_scope_table_node = this._current_scope_tree.current_node;
+            while (curr_scope_table_node !== undefined && curr_scope_table_node !== null && !isDeclared) {
+                let scope_table = curr_scope_table_node.getScopeTable();
+                isDeclared = scope_table.has(identifier_node.name);
+                // Variable exists in current scope table
+                if (isDeclared) {
+                    var_metadata = scope_table.get(identifier_node.name);
+                    var_metadata.isUsed = true;
+                } // if
+                // Check parent
+                else {
+                    curr_scope_table_node = curr_scope_table_node.parent_node;
+                } // else
+            } // while
+            if (!isDeclared) {
+                this.output[this.output.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, ERROR, `missing variable declaration [${identifier_node.name}] at ${identifier_node.getToken().lineNumber}:${identifier_node.getToken().linePosition}`) // OutputConsoleMessage
+                ); // this.output[this.verbose.length - 1].push
+            } // if
+            // Add root Node(Assignment Statement) for asignment statement subtree
+            this._current_ast.add_node(cst_current_node.name, NODE_TYPE_BRANCH, isDeclared);
+            // Add the identifier to assignment statement subtree
+            this._current_ast.add_node(identifier_node.name, NODE_TYPE_LEAF, isDeclared, cst_current_node.getToken());
             // Ignore the assignment operator: Node(=)
             // let assignment_op = cst_current_node.children_nodes[1]
             // Add the expression node to assignment statement subtree at the SAME LEVEL
@@ -428,10 +450,9 @@ var NightingaleCompiler;
                 // Add Expressions as children of the Boolean Operator
                 let left_expression_node = boolean_expression_node.children_nodes[1];
                 this._add_expression_subtree(left_expression_node);
-                if (left_expression_node.children_nodes[0].name == NODE_NAME_INT_EXPRESSION
-                    || left_expression_node.children_nodes[0].children_nodes[0].name == "(") {
+                if (left_expression_node.children_nodes[0].children_nodes[0].name == "(") {
                     this._climb_ast_one_level();
-                }
+                } // if
                 let right_expression_node = boolean_expression_node.children_nodes[3];
                 this._add_expression_subtree(right_expression_node);
                 // Ignore End Parenthesis

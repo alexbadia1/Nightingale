@@ -69,7 +69,7 @@ module NightingaleCompiler {
             // Step 3: Semantic Analysis
             this.semantic_analysis = new SemanticAnalysis(this.parser.concrete_syntax_trees, this.parser.invalid_parsed_programs);
             let ast_controller = new AbstractSyntaxTreeController(this.semantic_analysis.abstract_syntax_trees);
-            let scope_tree_controller = new ScopeTreeController(this.semantic_analysis._scope_trees);
+            let scope_tree_controller = new ScopeTreeController(this.semantic_analysis.scope_trees);
 
             // Final output
              let output_console_model: OutputConsoleModel = new OutputConsoleModel(
@@ -97,7 +97,7 @@ module NightingaleCompiler {
          * @param program_num program number that the cst belongs to.
          * @param node_id unique id to keep track of each node in the tree.
          */
-        public static compilerControllerBtnLightUpTree_click(program_num: number, node_id: number, cst_or_ast: string /* This is crude, i know */): void {
+        public static compilerControllerBtnLightUpTree_click(program_num: number, node_id: number, cst_or_ast_or_scope_tree: string /* This is crude, i know */): void {
             // To simulate recursion, iteratively, use a stack.
             let stack: Array<HTMLCollection> = [];
 
@@ -105,14 +105,18 @@ module NightingaleCompiler {
             let current_node;
             
             // TODO: Change this curde implementation of abstracting the button!
-            if (cst_or_ast === "CST") {
+            if (cst_or_ast_or_scope_tree === "CST") {
                 current_node = document.getElementById(`cst_p${program_num}_li_node_id_${node_id}`);
             }// if
 
-            else if (cst_or_ast === "AST"){
+            else if (cst_or_ast_or_scope_tree === "AST"){
                 current_node = document.getElementById(`ast_p${program_num}_li_node_id_${node_id}`);
             }// else if
 
+            else if (cst_or_ast_or_scope_tree === "SCOPETREE") {
+                current_node = document.getElementById(`scope-tree_p${program_num}_li_node_id_${node_id}`);
+            }// else if
+            
             else {
                 return;
             }// else

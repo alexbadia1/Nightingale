@@ -50,6 +50,10 @@ module NightingaleCompiler {
             }// if
 
             return null;
-        }// put
+        }// get
+
+        public entries(): Array<Array<any>> {
+            return Array.from(this._map.entries());
+        }// entries
     }// class
 }// module

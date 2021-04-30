@@ -37,10 +37,11 @@ module NightingaleCompiler {
         ) { }//constructor
 
         // Add a node: kind in {branch, leaf}.
-        public add_node(new_name: string, kind: string) {
+        public add_node(new_name: string, kind: string, lex_token: LexicalToken) {
             this._node_count++
             // Construct the node object.
             let new_node = new Node(new_name, this._node_count, kind);
+            new_node.setToken(lex_token);
 
             // Check to see if it needs to be the root node.
             if ((this.root == null) || (!this.root)) {

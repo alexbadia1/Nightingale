@@ -13,6 +13,7 @@ const CODE_EDITOR_TAB_LENGTH = 4;
 
 const LEXER = "LEXER";
 const PARSER = "PARSER";
+const SEMANTIC_ANALYSIS = "Semantic Analysis";
 const ERROR = "ERROR";
 const WARNING = "WARNING";
 const INFO = "INFO";

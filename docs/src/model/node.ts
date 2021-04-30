@@ -1,7 +1,8 @@
 module NightingaleCompiler {
     export class Node {
-        private _scope_table: ScopeTable = null;
-        public _isValid: boolean = true;
+        private _scope_table: ScopeTableModel = null;
+        private _token: LexicalToken = null;
+        public isValid: boolean = true;
 
         constructor(
             /**
@@ -31,12 +32,21 @@ module NightingaleCompiler {
         ) { }// constructor
 
 
-        public setData(new_scope_table: ScopeTable): void {
+        public setScopeTable(new_scope_table: ScopeTableModel): void {
             this._scope_table = new_scope_table;
         }// setData
 
-        public getData(): ScopeTable {
+        public getScopeTable(): ScopeTableModel {
             return this._scope_table;
+        }// getData
+
+        public setToken(new_token: LexicalToken): void {
+            this._token = new_token;
+        }// setData
+
+        public getToken(): LexicalToken {
+            if(this._token === null) {console.log("Null token!");}
+            return this._token;
         }// getData
     }//class
 }// module

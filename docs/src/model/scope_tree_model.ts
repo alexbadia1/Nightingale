@@ -44,7 +44,7 @@
             let new_node = new Node(new_name, this._node_count, kind);
 
             // Set new node's metadata
-            new_node.setData(scope_table);
+            new_node.setScopeTable(scope_table);
             
             // Check to see if it needs to be the root node.
             if ((this.root == null) || (!this.root)) {
@@ -132,19 +132,29 @@
 
         public toHtml() {
             // Initialize the result string.
-            var cst: HTMLElement = document.getElementById('cst');
+            var cst: HTMLElement = document.getElementById('scope-tree');
             var tree_div: HTMLElement = document.createElement(`div`);
             tree_div.className = `tree`;
-            tree_div.id= `cst_p${this.program} `;
+            tree_div.id= `scope-tree_p${this.program} `;
             cst.appendChild(tree_div);
 
             // Make the initial call to expand from the root
             // Create root first
             let ul: HTMLUListElement = document.createElement("ul");
-            ul.id = `cst_p${this.program}_ul_node_id_0`;
+            ul.id = `scope-tree_p${this.program}_ul_node_id_0`;
             let li: HTMLLIElement = document.createElement("li");
-            li.id = `cst_p${this.program}_li_node_id_0`;
-            li.innerHTML = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this.program}, 0, 'SCOPETREE');" name = "node-anchor-tag">${this.root.name}</a>`;
+            li.id = `scope-tree_p${this.program}_li_node_id_0`;
+
+            let innerHtml = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this.program}, 0, 'SCOPETREE');" name = "node-anchor-tag">`
+            innerHtml += `${this.root.name}`;
+
+            for (let entry of this.root.getScopeTable().entries()) {
+                innerHtml += `<br> ${entry[0]} | [Type: ${entry[1].type} Used: ${entry[1].isUsed}]`;
+            }// for
+            
+            innerHtml += `</a>`;
+            li.innerHTML = innerHtml;
+            
             ul.appendChild(li);
             tree_div.appendChild(ul);
 
@@ -183,34 +193,50 @@
                     // Node is the first node of the parent
                     else if (curr.parent_node.children_nodes[0] == curr) {
                         let ul: HTMLUListElement = document.createElement("ul");
-                        ul.id = `cst_p${this.program}_ul_node_id_${curr.id}`;
+                        ul.id = `scope-tree_p${this.program}_ul_node_id_${curr.id}`;
                         let li: HTMLLIElement = document.createElement("li");
-                        li.id = `cst_p${this.program}_li_node_id_${curr.id}`;
+                        li.id = `scope-tree_p${this.program}_li_node_id_${curr.id}`;
 
                         ul.appendChild(li);
 
-                        li.innerHTML = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this.program}, ${curr.id}, 'SCOPETREE');" name = "node-anchor-tag" >${curr.name}</a>`;
+                        let innerHtml = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this.program}, ${curr.id}, 'SCOPETREE');" name = "node-anchor-tag" >${curr.name}`;
 
                         // Single characters alignment are off... Add padding to the left.
                         if (curr.name.length  >= 1 || curr.name.length  <= 3) {
                             li.style.paddingLeft = "1.5rem";
                         }// if
 
-                        document.getElementById(`cst_p${this.program}_li_node_id_${curr.parent_node.id}`).appendChild(ul);
+                        // Add scope table
+                        for (let entry of curr.getScopeTable().entries()) {
+                            innerHtml += `<br> ${entry[0]} | [Type: ${entry[1].type}, Used: ${entry[1].isUsed}]`;
+                        }// for
+                        
+                        innerHtml += `</a>`;
+                        li.innerHTML = innerHtml;
+
+                        document.getElementById(`scope-tree_p${this.program}_li_node_id_${curr.parent_node.id}`).appendChild(ul);
                     }// if
 
                     // Node is 2nd or 3rd or nth child of parent
                     else {
                         let li: HTMLLIElement = document.createElement("li");
-                        li.id = `cst_p${this.program}_li_node_id_${curr.id}`;
-                        li.innerHTML = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this.program}, ${curr.id}, 'CST');" name = "node-anchor-tag">${curr.name}</a>`;
+                        li.id = `scope-tree_p${this.program}_li_node_id_${curr.id}`;
+                        let innerHtml = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this.program}, ${curr.id}, 'SCOPETREE');" name = "node-anchor-tag">${curr.name}`;
 
                         // Single characters alignment are off... Add padding to the left.
                         if (curr.name.length  >= 1 || curr.name.length  <= 3) {
                             li.style.paddingLeft = "1.5rem";
                         }// if
+
+                        // Add scope table
+                        for (let entry of curr.getScopeTable().entries()) {
+                            innerHtml += `<br> ${entry[0]} | [Type: ${entry[1].type}, Used: ${entry[1].isUsed}]`;
+                        }// for
                         
-                        document.getElementById(`cst_p${this.program}_ul_node_id_${curr.parent_node.children_nodes[0].id}`).appendChild(li);
+                        innerHtml += `</a>`;
+                        li.innerHTML = innerHtml;
+                        
+                        document.getElementById(`scope-tree_p${this.program}_ul_node_id_${curr.parent_node.children_nodes[0].id}`).appendChild(li);
                     }// else
 
                     // Store all the children of 

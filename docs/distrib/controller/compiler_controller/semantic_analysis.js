@@ -30,24 +30,36 @@ var NightingaleCompiler;
             this._current_ast = null;
             this._current_scope_table = null;
             this._current_scope_tree = null;
-            this._scope_trees = Array();
-            this.output = [[]];
+            this.scope_trees = Array();
+            this.output = [];
+            this.errors = 0;
+            this.warnings = 0;
             this.main();
         } // constructor 
         main() {
             for (var cstIndex = 0; cstIndex < this.concrete_syntax_trees.length; ++cstIndex) {
+                this.output.push(new Array());
                 // Skips invalid parsed programs
                 //
                 // Probably shouldn't be passing invalid parse trees around, though
                 // It'd be cool to show visually, where exactly the parse tree messed up
                 if (!this.invalid_parsed_programs.includes(this.concrete_syntax_trees[cstIndex].program)) {
+                    this.output[cstIndex].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, INFO, `Perfomring Semantic Analysis on program ${this.concrete_syntax_trees[cstIndex].program}...`));
                     // Create a scope tree
                     this._current_scope_tree = new NightingaleCompiler.ScopeTreeModel();
-                    this._scope_trees.push(this._current_scope_tree);
+                    this._current_scope_tree.program = this.concrete_syntax_trees[cstIndex].program;
+                    this.scope_trees.push(this._current_scope_tree);
                     // Traverse the CST and create the AST while also doing type and scope checking
                     this.generate_abstract_syntax_tree(this.concrete_syntax_trees[cstIndex]);
                     this.abstract_syntax_trees.push(this._current_ast);
+                    this.output[cstIndex].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, INFO, `Semantic Analysis on program ${this.concrete_syntax_trees[cstIndex].program + 1} completed with ${this.warnings} warning(s) and ${this.errors} error(s)`));
+                    this.warnings = 0;
+                    this.errors = 0;
                 } // if
+                // Tell user, skipped the program
+                else {
+                    this.output[cstIndex].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, WARNING, `Skipping program ${this.concrete_syntax_trees[cstIndex].program + 1} due to parse errors.`));
+                }
             } // for
         } // main
         /**
@@ -111,7 +123,7 @@ var NightingaleCompiler;
          */
         _add_block_subtree_to_ast(cst_current_node) {
             // Add new BLOCK node
-            this._current_ast.add_node(cst_current_node.name, NODE_TYPE_BRANCH, true);
+            this._current_ast.add_node(cst_current_node.name, NODE_TYPE_BRANCH, true, cst_current_node.getToken());
             // Remember, if you built your tree correctly..
             //
             //   Node(Block).children[0] --> Open Block Lexem [{]
@@ -124,7 +136,12 @@ var NightingaleCompiler;
             this._current_scope_table = new NightingaleCompiler.ScopeTableModel();
             this._current_scope_tree.add_node(NODE_NAME_SCOPE, NODE_TYPE_BRANCH, this._current_scope_table);
             // Skip the statement list node
-            this._skip_node_for_ast(statement_list_node);
+            if (cst_current_node.children_nodes.length === 3) {
+                this._skip_node_for_ast(statement_list_node);
+            } // if
+            else {
+                // Do nothing, it's an empty block
+            }
         } // _add_block_subtree_to_ast
         _skip_statement_list(cst_current_node) {
             // Remember, if you built your tree correctly..
@@ -180,22 +197,24 @@ var NightingaleCompiler;
             let type_node = cst_current_node.children_nodes[0].children_nodes[0];
             let identifier_node = cst_current_node.children_nodes[1].children_nodes[0];
             // Check current scope table
-            let hasCollision = this._current_scope_table.put(identifier_node.name, new NightingaleCompiler.VariableMetaData(type_node.name, false));
+            let noCollision = this._current_scope_table.put(identifier_node.name, new NightingaleCompiler.VariableMetaData(type_node.name, false));
             // Mark as invalid if collison
-            if (hasCollision && !this.invalid_semantic_programs.includes(this._current_ast.program)) {
-                this.invalid_semantic_programs.push(this._current_ast.program);
+            if (!noCollision) {
+                if (!this.invalid_semantic_programs.includes(this._current_ast.program)) {
+                    this.invalid_semantic_programs.push(this._current_ast.program);
+                } // if
+                this.output[this.output.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, ERROR, `Duplicate variable declaration at ${cst_current_node.getToken().lineNumber}:${cst_current_node.getToken().linePosition}`));
+                this.errors += 1;
             } // if
             // Add root node for variable declaration subtree
-            this._current_ast.add_node(cst_current_node.name, NODE_TYPE_BRANCH, !hasCollision);
+            this._current_ast.add_node(cst_current_node.name, NODE_TYPE_BRANCH, noCollision, cst_current_node.getToken());
             // Add children to ast subtree at the SAME LEVEL
             //
             // Meaning, climb up the tree ONE level after each insertion 
             // (since tree.addNode() inserts a new node at a new, increased, depth)
-            this._current_ast.add_node(type_node.name, NODE_TYPE_BRANCH, !hasCollision);
+            this._current_ast.add_node(type_node.name, NODE_TYPE_BRANCH, noCollision, cst_current_node.getToken());
             this._climb_ast_one_level();
-            this._current_ast.add_node(identifier_node.name, NODE_TYPE_BRANCH, !hasCollision);
-            this._climb_ast_one_level();
-            // Point back to the parent of root node of the variable declaration subtree
+            this._current_ast.add_node(identifier_node.name, NODE_TYPE_BRANCH, noCollision, cst_current_node.getToken());
             this._climb_ast_one_level();
         } // _add_variable_declaration_subtree_to_ast
         /**
@@ -208,7 +227,7 @@ var NightingaleCompiler;
          */
         _add_assignment_statement_subtree_to_ast(cst_current_node) {
             // Add root Node(Assignment Statement) for asignment statement subtree
-            this._current_ast.add_node(cst_current_node.name, NODE_TYPE_BRANCH);
+            this._current_ast.add_node(cst_current_node.name, NODE_TYPE_BRANCH, true);
             // Remember, if you built your tree correctly..
             //
             //   Node(Assignment Statement).children[0] --> Node(Identifier)
@@ -225,7 +244,7 @@ var NightingaleCompiler;
             //
             // Add the identifier to assignment statement subtree
             let identifier_node = cst_current_node.children_nodes[0].children_nodes[0];
-            this._current_ast.add_node(identifier_node.name, NODE_TYPE_LEAF);
+            this._current_ast.add_node(identifier_node.name, NODE_TYPE_LEAF, true, cst_current_node.getToken());
             // Ignore the assignment operator: Node(=)
             // let assignment_op = cst_current_node.children_nodes[1]
             // Add the expression node to assignment statement subtree at the SAME LEVEL
@@ -253,7 +272,7 @@ var NightingaleCompiler;
                     break;
                 case NODE_NAME_IDENTIFIER:
                     // Add identifier to ast subtree at the SAME Level
-                    this._current_ast.add_node(expression_node.children_nodes[0].children_nodes[0].name, NODE_TYPE_LEAF);
+                    this._current_ast.add_node(expression_node.children_nodes[0].children_nodes[0].name, NODE_TYPE_LEAF, true, expression_node.children_nodes[0].children_nodes[0].getToken());
                     break;
                 default:
                     throw Error(`Semantic Analysis Failed: [${expression_node.name}] does not have a valid child [INT EXPRESSION, STRING EXPRESSION, BOOLEAN EXPRESSION, IDENTIFIER]`);
@@ -280,20 +299,21 @@ var NightingaleCompiler;
             //   
             //   Check this recurisvely:
             //     Node(Expression)
+            //
             // Integer expression is DIGIT--INTOP--EXPRESSION
             if (integer_expression_node.children_nodes.length > 1) {
                 let integer_operation_lexeme_node = integer_expression_node.children_nodes[1].children_nodes[0];
                 let expression_node = integer_expression_node.children_nodes[2];
                 // Add INT_OP to the assignment statement subtree at SAME LEVEL as identifier
-                this._current_ast.add_node(integer_operation_lexeme_node.name, NODE_TYPE_BRANCH);
+                this._current_ast.add_node(integer_operation_lexeme_node.name, NODE_TYPE_BRANCH, true, integer_operation_lexeme_node.getToken());
                 // Add DIGIT to ast subtree
-                this._current_ast.add_node(integer_expression_node.children_nodes[0].children_nodes[0].name, NODE_TYPE_LEAF);
+                this._current_ast.add_node(integer_expression_node.children_nodes[0].children_nodes[0].name, NODE_TYPE_LEAF, true, integer_expression_node.children_nodes[0].children_nodes[0].getToken());
                 // Add Expression to the assignment statement subtree
                 this._add_expression_subtree(expression_node);
             } // if
             else if (integer_expression_node.children_nodes.length === 1) {
                 // Add DIGIT to ast subtree
-                this._current_ast.add_node(integer_expression_node.children_nodes[0].children_nodes[0].name, NODE_TYPE_LEAF);
+                this._current_ast.add_node(integer_expression_node.children_nodes[0].children_nodes[0].name, NODE_TYPE_LEAF, true, integer_expression_node.children_nodes[0].children_nodes[0].getToken());
             } // else if 
             else {
                 // This should never happen based on our language
@@ -375,7 +395,7 @@ var NightingaleCompiler;
                 // Add the Boolean Operator First
                 let boolean_operator_node = boolean_expression_node.children_nodes[2];
                 let boolean_operator_value_node = boolean_operator_node.children_nodes[0];
-                this._current_ast.add_node(boolean_operator_value_node.name, NODE_TYPE_BRANCH);
+                this._current_ast.add_node(boolean_operator_value_node.name, NODE_TYPE_BRANCH, true, boolean_operator_value_node.getToken());
                 // Add Expressions as children of the Boolean Operator
                 let left_expression_node = boolean_expression_node.children_nodes[1];
                 this._add_expression_subtree(left_expression_node);
@@ -414,7 +434,7 @@ var NightingaleCompiler;
             //   Node(Print).children[3] --> Open Parenthesis [)]
             //
             // Add Print Statment
-            this._current_ast.add_node(print_node.name, NODE_TYPE_BRANCH);
+            this._current_ast.add_node(print_node.name, NODE_TYPE_BRANCH, true, print_node.getToken());
             // Ignore: 
             //   - let keyword_print_node = print_node.children_nodes[0]
             //   - let open_argument_node = print_node.children_nodes[1]
@@ -437,7 +457,7 @@ var NightingaleCompiler;
             //   Node(While).children[2] --> Node(Block)
             //
             // Add While Statment
-            this._current_ast.add_node(while_node.children_nodes[0].name, NODE_TYPE_BRANCH);
+            this._current_ast.add_node(while_node.children_nodes[0].name, NODE_TYPE_BRANCH, true, while_node.children_nodes[0].getToken());
             // Add boolean expression node to subtree
             let node_name = this._add_boolean_expression_subtree_to_ast(while_node.children_nodes[1]);
             // Add the Block subtree directly under the While Statement Keyword
@@ -459,7 +479,7 @@ var NightingaleCompiler;
             //   Node(If).children[2] --> Node(Block)
             //
             // Add If Statment
-            this._current_ast.add_node(if_node.children_nodes[0].name, NODE_TYPE_BRANCH);
+            this._current_ast.add_node(if_node.children_nodes[0].name, NODE_TYPE_BRANCH, true, if_node.children_nodes[0].getToken());
             // Add boolean expression node to subtree
             let node_name = this._add_boolean_expression_subtree_to_ast(if_node.children_nodes[1]);
             // Add the Block subtree directly under the While Statement Keyword

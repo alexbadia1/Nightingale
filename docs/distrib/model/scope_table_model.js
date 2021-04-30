@@ -44,7 +44,10 @@ var NightingaleCompiler;
                 return this._map.get(key);
             } // if
             return null;
-        } // put
+        } // get
+        entries() {
+            return Array.from(this._map.entries());
+        } // entries
     } // class
     NightingaleCompiler.ScopeTableModel = ScopeTableModel;
 })(NightingaleCompiler || (NightingaleCompiler = {})); // module

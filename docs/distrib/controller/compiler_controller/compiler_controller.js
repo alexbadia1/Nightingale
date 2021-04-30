@@ -37,7 +37,7 @@ var NightingaleCompiler;
             // Step 3: Semantic Analysis
             this.semantic_analysis = new NightingaleCompiler.SemanticAnalysis(this.parser.concrete_syntax_trees, this.parser.invalid_parsed_programs);
             let ast_controller = new NightingaleCompiler.AbstractSyntaxTreeController(this.semantic_analysis.abstract_syntax_trees);
-            let scope_tree_controller = new NightingaleCompiler.ScopeTreeController(this.semantic_analysis._scope_trees);
+            let scope_tree_controller = new NightingaleCompiler.ScopeTreeController(this.semantic_analysis.scope_trees);
             // Final output
             let output_console_model = new NightingaleCompiler.OutputConsoleModel(this.lexer.output, cst_controller, ast_controller, scope_tree_controller, this.parser.output, this.semantic_analysis.output, this.parser.invalid_parsed_programs);
             let debug_console_model = new NightingaleCompiler.DebugConsoleModel(this.lexer.debug_token_stream, this.parser.debug);
@@ -55,17 +55,20 @@ var NightingaleCompiler;
          * @param program_num program number that the cst belongs to.
          * @param node_id unique id to keep track of each node in the tree.
          */
-        static compilerControllerBtnLightUpTree_click(program_num, node_id, cst_or_ast /* This is crude, i know */) {
+        static compilerControllerBtnLightUpTree_click(program_num, node_id, cst_or_ast_or_scope_tree /* This is crude, i know */) {
             // To simulate recursion, iteratively, use a stack.
             let stack = [];
             // Get the starting node from DOM
             let current_node;
             // TODO: Change this curde implementation of abstracting the button!
-            if (cst_or_ast === "CST") {
+            if (cst_or_ast_or_scope_tree === "CST") {
                 current_node = document.getElementById(`cst_p${program_num}_li_node_id_${node_id}`);
             } // if
-            else if (cst_or_ast === "AST") {
+            else if (cst_or_ast_or_scope_tree === "AST") {
                 current_node = document.getElementById(`ast_p${program_num}_li_node_id_${node_id}`);
+            } // else if
+            else if (cst_or_ast_or_scope_tree === "SCOPETREE") {
+                current_node = document.getElementById(`scope-tree_p${program_num}_li_node_id_${node_id}`);
             } // else if
             else {
                 return;

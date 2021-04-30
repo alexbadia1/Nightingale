@@ -46,11 +46,12 @@ var NightingaleCompiler;
          * @param new_name Name of the node, could be a string or lexeme
          * @param kind Root, Branch, or Leaf Node?
          */
-        add_node(new_name, kind, isValid = true) {
+        add_node(new_name, kind, isValid = true, lex_token = null) {
             this._node_count++;
             // Construct the node object.
             let new_node = new NightingaleCompiler.Node(new_name, this._node_count, kind);
-            new_node._isValid = isValid;
+            new_node.isValid = isValid;
+            new_node.setToken(lex_token);
             // Check to see if it needs to be the root node.
             if ((this.root == null) || (!this.root)) {
                 this.root = new_node;
@@ -164,28 +165,36 @@ var NightingaleCompiler;
                     } // if
                     // Node is the first node of the parent
                     else if (curr.parent_node.children_nodes[0] == curr) {
-                        console.log(`Current: ${curr.name} | ${curr.id}, Parent: ${curr.parent_node.id}, 1st child`);
                         let ul = document.createElement("ul");
                         ul.id = `ast_p${this.program}_ul_node_id_${curr.id}`;
                         let li = document.createElement("li");
                         li.id = `ast_p${this.program}_li_node_id_${curr.id}`;
                         ul.appendChild(li);
-                        li.innerHTML = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this.program}, ${curr.id}, 'AST');" name = "node-anchor-tag" >${curr.name}</a>`;
+                        let innerHtml = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this.program}, ${curr.id}, 'AST');" name = "node-anchor-tag" >${curr.name}</a>`;
+                        li.innerHTML = innerHtml;
                         // Single characters alignment are off... Add padding to the left.
                         if (curr.name.length >= 1 || curr.name.length <= 3) {
                             li.style.paddingLeft = "1.5rem";
+                        } // if
+                        // Make red if invalid
+                        if (!curr.isValid) {
+                            li.style.color = "red";
                         } // if
                         document.getElementById(`ast_p${this.program}_li_node_id_${curr.parent_node.id}`).appendChild(ul);
                     } // if
                     // Node is 2nd or 3rd or nth child of parent
                     else {
-                        console.log(`Current: ${curr.name} | ${curr.id}, Parent: ${curr.parent_node.id}, ul ${curr.parent_node.children_nodes[0].id}`);
                         let li = document.createElement("li");
                         li.id = `ast_p${this.program}_li_node_id_${curr.id}`;
-                        li.innerHTML = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this.program}, ${curr.id}, 'AST');" name = "node-anchor-tag">${curr.name}</a>`;
+                        let innerHtml = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this.program}, ${curr.id}, 'AST');" name = "node-anchor-tag">${curr.name}</a>`;
+                        li.innerHTML = innerHtml;
                         // Single characters alignment are off... Add padding to the left.
                         if (curr.name.length >= 1 || curr.name.length <= 3) {
                             li.style.paddingLeft = "1.5rem";
+                        } // if
+                        // Make red if invalid
+                        if (!curr.isValid) {
+                            li.style.color = "red";
                         } // if
                         document.getElementById(`ast_p${this.program}_ul_node_id_${curr.parent_node.children_nodes[0].id}`).appendChild(li);
                     } // else

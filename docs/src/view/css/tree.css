@@ -99,6 +99,7 @@ right connector from last child*/
 	-moz-transition: all 0.5s;
 }
 
+
 /*Time for some hover effects*/
 /*We will apply the hover effect the the lineage of the element also*/
 /* .tree li a:hover, .tree li a:hover+ul li a {

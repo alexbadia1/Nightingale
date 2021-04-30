@@ -28,13 +28,23 @@ var NightingaleCompiler;
             this.parent_node = parent_node;
             this.children_nodes = children_nodes;
             this._scope_table = null;
-            this._isValid = true;
+            this._token = null;
+            this.isValid = true;
         } // constructor
-        setData(new_scope_table) {
+        setScopeTable(new_scope_table) {
             this._scope_table = new_scope_table;
         } // setData
-        getData() {
+        getScopeTable() {
             return this._scope_table;
+        } // getData
+        setToken(new_token) {
+            this._token = new_token;
+        } // setData
+        getToken() {
+            if (this._token === null) {
+                console.log("Null token!");
+            }
+            return this._token;
         } // getData
     } //class
     NightingaleCompiler.Node = Node;

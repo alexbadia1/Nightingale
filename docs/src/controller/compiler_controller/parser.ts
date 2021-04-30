@@ -109,7 +109,7 @@ module NightingaleCompiler {
             );// this.output[this._current_program_number].push
 
             // Add the root node for CST
-            this._current_cst.add_node(NODE_NAME_PROGRAM, NODE_TYPE_BRANCH);
+            this._current_cst.add_node(NODE_NAME_PROGRAM, NODE_TYPE_BRANCH, this._current_token);
 
             // Now the recursive descent part
             this.parse_block();
@@ -117,7 +117,7 @@ module NightingaleCompiler {
         }// parse_program
 
         private parse_block(): void {
-            this._current_cst.add_node(NODE_NAME_BLOCK, NODE_TYPE_BRANCH);
+            this._current_cst.add_node(NODE_NAME_BLOCK, NODE_TYPE_BRANCH, this._current_token);
             this.match_token([SYMBOL_OPEN_BLOCK]);
             this.parse_statement_list();
 
@@ -129,7 +129,7 @@ module NightingaleCompiler {
 
         private parse_statement_list(): void {
             if (this.is_current_token_statement()) {
-                this._current_cst.add_node(NODE_NAME_STATEMENT_LIST, NODE_TYPE_BRANCH);
+                this._current_cst.add_node(NODE_NAME_STATEMENT_LIST, NODE_TYPE_BRANCH, this._current_token);
                 // console.log(`Parse Statement List: ${this._current_token.name} -> true`);
                 this.parse_statement();
                 this.parse_statement_list();
@@ -142,7 +142,7 @@ module NightingaleCompiler {
         }// parse_statement_list
 
         private parse_statement(): void {
-            this._current_cst.add_node(NODE_NAME_STATEMENT, NODE_TYPE_BRANCH);
+            this._current_cst.add_node(NODE_NAME_STATEMENT, NODE_TYPE_BRANCH, this._current_token);
             switch (this._current_token.name) {
                 case KEYWORD_PRINT:
                     this.parse_print_statement();
@@ -199,7 +199,7 @@ module NightingaleCompiler {
         }// parse_statement
 
         private parse_print_statement(): void {
-            this._current_cst.add_node(NODE_NAME_PRINT_STATEMENT, NODE_TYPE_BRANCH);
+            this._current_cst.add_node(NODE_NAME_PRINT_STATEMENT, NODE_TYPE_BRANCH, this._current_token);
             this.match_token([KEYWORD_PRINT]);
             this.match_token([SYMBOL_OPEN_ARGUMENT]);
             this.parse_expression();
@@ -208,7 +208,7 @@ module NightingaleCompiler {
         }// parse_print_statement
 
         private parse_assignment_statement(): void {
-            this._current_cst.add_node(NODE_NAME_ASSIGNMENT_STATEMENT, NODE_TYPE_BRANCH);
+            this._current_cst.add_node(NODE_NAME_ASSIGNMENT_STATEMENT, NODE_TYPE_BRANCH, this._current_token);
             this.parse_identifier();
             this.match_token([SYMBOL_ASSIGNMENT_OP]);
             this.parse_expression();
@@ -216,14 +216,14 @@ module NightingaleCompiler {
         }// parse_assignment_statement
 
         private parse_variable_declaration(): void {
-            this._current_cst.add_node(NODE_NAME_VARIABLE_DECLARATION, NODE_TYPE_BRANCH);
+            this._current_cst.add_node(NODE_NAME_VARIABLE_DECLARATION, NODE_TYPE_BRANCH, this._current_token);
             this.parse_type();
             this.parse_identifier();
             this._current_cst.climb_one_level();
         }// parse_variable_declaration
 
         private parse_while_statement(): void {
-            this._current_cst.add_node(NODE_NAME_WHILE_STATEMENT, NODE_TYPE_BRANCH);
+            this._current_cst.add_node(NODE_NAME_WHILE_STATEMENT, NODE_TYPE_BRANCH, this._current_token);
             this.match_token([KEYWORD_WHILE]);
             this.parse_boolean_expression();
             this.parse_block();
@@ -231,7 +231,7 @@ module NightingaleCompiler {
         }// parse_while_statement
 
         private parse_if_statement(): void {
-            this._current_cst.add_node(NODE_NAME_IF_STATEMENT, NODE_TYPE_BRANCH);
+            this._current_cst.add_node(NODE_NAME_IF_STATEMENT, NODE_TYPE_BRANCH, this._current_token);
             this.match_token([KEYWORD_IF]);
             this.parse_boolean_expression();
             this.parse_block();
@@ -239,7 +239,7 @@ module NightingaleCompiler {
         }// parse_if_statement
 
         private parse_expression(): void {
-            this._current_cst.add_node(NODE_NAME_EXPRESSION, NODE_TYPE_BRANCH);
+            this._current_cst.add_node(NODE_NAME_EXPRESSION, NODE_TYPE_BRANCH, this._current_token);
             switch (this._current_token.name) {
                 // Int expressions must start with a DIGIT
                 case DIGIT:
@@ -288,7 +288,7 @@ module NightingaleCompiler {
         }//parse_expression
 
         private parse_int_expression(): void {
-            this._current_cst.add_node(NODE_NAME_INT_EXPRESSION, NODE_TYPE_BRANCH);
+            this._current_cst.add_node(NODE_NAME_INT_EXPRESSION, NODE_TYPE_BRANCH, this._current_token);
             this.parse_digit();
 
             if (this._current_token.name == SYMBOL_INT_OP) {
@@ -299,7 +299,7 @@ module NightingaleCompiler {
         }//parse_int_expression
 
         private parse_string_expression(): void {
-            this._current_cst.add_node(NODE_NAME_STRING_EXPRESSION, NODE_TYPE_BRANCH);
+            this._current_cst.add_node(NODE_NAME_STRING_EXPRESSION, NODE_TYPE_BRANCH, this._current_token);
             this.match_token([STRING_EXPRESSION_BOUNDARY]);
             this.parse_character_list();
             this.match_token([STRING_EXPRESSION_BOUNDARY]);
@@ -307,7 +307,7 @@ module NightingaleCompiler {
         }//parse_string_expression
 
         private parse_boolean_expression(): void {
-            this._current_cst.add_node(NODE_NAME_BOOLEAN_EXPRESSION, NODE_TYPE_BRANCH);
+            this._current_cst.add_node(NODE_NAME_BOOLEAN_EXPRESSION, NODE_TYPE_BRANCH, this._current_token);
 
             if (this._current_token.name == SYMBOL_OPEN_ARGUMENT) {
                 this.match_token([SYMBOL_OPEN_ARGUMENT]);
@@ -351,21 +351,21 @@ module NightingaleCompiler {
              * so skipping to matching the token instead...
              */
 
-            this._current_cst.add_node(NODE_NAME_IDENTIFIER, NODE_TYPE_BRANCH);
+            this._current_cst.add_node(NODE_NAME_IDENTIFIER, NODE_TYPE_BRANCH, this._current_token);
             this.match_token([IDENTIFIER]);
             this._current_cst.climb_one_level();
         }// parse_identifier
 
         private parse_character_list(): void {
             if (this._current_token.name == CHARACTER) {
-                this._current_cst.add_node(NODE_NAME_CHARACTER_LIST, NODE_TYPE_BRANCH);
+                this._current_cst.add_node(NODE_NAME_CHARACTER_LIST, NODE_TYPE_BRANCH, this._current_token);
                 this.parse_character();
                 this.parse_character_list();
                 this._current_cst.climb_one_level();
             }// if
 
             else if (this._current_token.name == SPACE_SINGLE || this._current_token.name == SPACE_TAB) {
-                this._current_cst.add_node(NODE_NAME_CHARACTER_LIST, NODE_TYPE_BRANCH);
+                this._current_cst.add_node(NODE_NAME_CHARACTER_LIST, NODE_TYPE_BRANCH, this._current_token);
                 this.parse_space();
                 this.parse_character_list();
                 this._current_cst.climb_one_level();
@@ -377,44 +377,44 @@ module NightingaleCompiler {
         }// parse_character_list
 
         private parse_type(): void {
-            this._current_cst.add_node(NODE_NAME_TYPE, NODE_TYPE_BRANCH);
+            this._current_cst.add_node(NODE_NAME_TYPE, NODE_TYPE_BRANCH, this._current_token);
             this.match_token([KEYWORD_INT, KEYWORD_STRING, KEYWORD_BOOLEAN]);
             this._current_cst.climb_one_level();
         }// parse_type
 
         private parse_character(): void {
-            this._current_cst.add_node(NODE_NAME_CHARACTER, NODE_TYPE_BRANCH);
+            this._current_cst.add_node(NODE_NAME_CHARACTER, NODE_TYPE_BRANCH, this._current_token);
             this.match_token([CHARACTER]);
             this._current_cst.climb_one_level();
         }// parse_character
 
         private parse_space(): void {
-            this._current_cst.add_node(NODE_NAME_SPACE, NODE_TYPE_BRANCH);
+            this._current_cst.add_node(NODE_NAME_SPACE, NODE_TYPE_BRANCH, this._current_token);
             this.match_token([SPACE_SINGLE, SPACE_TAB]);
             this._current_cst.climb_one_level();
         }// parse_space
 
         private parse_digit(): void {
-            this._current_cst.add_node(NODE_NAME_DIGIT, NODE_TYPE_BRANCH);
+            this._current_cst.add_node(NODE_NAME_DIGIT, NODE_TYPE_BRANCH, this._current_token);
             this.match_token([DIGIT]);
             this._current_cst.climb_one_level();
         }// parse_digit
 
         private parse_boolean_operation(): void {
-            this._current_cst.add_node(NODE_NAME_BOOLEAN_OPERATION, NODE_TYPE_BRANCH);
+            this._current_cst.add_node(NODE_NAME_BOOLEAN_OPERATION, NODE_TYPE_BRANCH, this._current_token);
             this.match_token([SYMBOL_BOOL_OP_EQUALS, SYMBOL_BOOL_OP_NOT_EQUALS]);
             this._current_cst.climb_one_level();
         }// parse_boolean_operation
 
         private parse_boolean_value(): void {
-            this._current_cst.add_node(NODE_NAME_BOOLEAN_VALUE, NODE_TYPE_BRANCH);
+            this._current_cst.add_node(NODE_NAME_BOOLEAN_VALUE, NODE_TYPE_BRANCH, this._current_token);
             this.match_token([KEYWORD_TRUE, KEYWORD_FALSE]);
             this._current_cst.climb_one_level();
         }// parse_boolean_operation
 
         private parse_int_operation(): void {
             if (this._current_token.name == SYMBOL_INT_OP) {
-                this._current_cst.add_node(NODE_NAME_INT_OPERATION, NODE_TYPE_BRANCH);
+                this._current_cst.add_node(NODE_NAME_INT_OPERATION, NODE_TYPE_BRANCH, this._current_token);
                 this.match_token([SYMBOL_INT_OP]);
                 this._current_cst.climb_one_level();
             }// if
@@ -449,7 +449,7 @@ module NightingaleCompiler {
                 )// OutputConsoleMessage
             );// this.debug.push
 
-            this._current_cst.add_node(this._current_token.lexeme, NODE_TYPE_LEAF);
+            this._current_cst.add_node(this._current_token.lexeme, NODE_TYPE_LEAF, this._current_token);
             this.consume_token();
             this.get_next_token();
         }// match_token

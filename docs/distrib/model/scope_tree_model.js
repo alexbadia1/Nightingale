@@ -100,7 +100,7 @@ var NightingaleCompiler;
                 console.log(entries);
                 for (let index = 0; index < entries.length; ++index) {
                     traversalResult += tempDepth;
-                    traversalResult += ` ${entries[index][0]} | Type: ${entries[index][1].type} Used: ${entries[index][1].isUsed}, Line: ${entries[index][1].lineNumber}, Pos:${entries[index][1].linePosition}`;
+                    traversalResult += ` ${entries[index][0]} | Type: ${entries[index][1].type}, Used: ${entries[index][1].isUsed}, Line: ${entries[index][1].lineNumber}, Pos:${entries[index][1].linePosition}`;
                     traversalResult += "\n";
                 } // for
                 return traversalResult;
@@ -112,7 +112,7 @@ var NightingaleCompiler;
                 let entries = node.getScopeTable().entries();
                 for (let index = 0; index < entries.length; ++index) {
                     traversalResult += tempDepth;
-                    traversalResult += ` ${entries[index][0]} | Type: ${entries[index][1].type} Used: ${entries[index][1].isUsed}, Line: ${entries[index][1].lineNumber}, Pos:${entries[index][1].linePosition}`;
+                    traversalResult += ` ${entries[index][0]} | Type: ${entries[index][1].type}, Used: ${entries[index][1].isUsed}, Line: ${entries[index][1].lineNumber}, Pos:${entries[index][1].linePosition}`;
                     traversalResult += "\n";
                 } // for
                 // .. recursively expand them.
@@ -145,7 +145,7 @@ var NightingaleCompiler;
             innerHtml += `${this.root.name}`;
             let entries = this.root.getScopeTable().entries();
             for (let index = 0; index < entries.length; ++index) {
-                innerHtml += `<br> ${entries[index][0]} | Type: ${entries[index][1].type} Used: ${entries[index][1].isUsed}, Line: ${entries[index][1].lineNumber}, Pos:${entries[index][1].linePosition}`;
+                innerHtml += `<br> ${entries[index][0]} | Type: ${entries[index][1].type}, Used: ${entries[index][1].isUsed}, Line: ${entries[index][1].lineNumber}, Pos:${entries[index][1].linePosition}`;
             } // for
             innerHtml += `</a>`;
             li.innerHTML = innerHtml;
@@ -191,7 +191,7 @@ var NightingaleCompiler;
                         // Add scope table
                         let entries = curr.getScopeTable().entries();
                         for (let index = 0; index < entries.length; ++index) {
-                            innerHtml += `<br> ${entries[index][0]} | Type: ${entries[index][1].type} Used: ${entries[index][1].isUsed}, Line: ${entries[index][1].lineNumber}, Pos:${entries[index][1].linePosition}`;
+                            innerHtml += `<br> ${entries[index][0]} | Type: ${entries[index][1].type}, Used: ${entries[index][1].isUsed}, Line: ${entries[index][1].lineNumber}, Pos:${entries[index][1].linePosition}`;
                         } // for
                         innerHtml += `</a>`;
                         li.innerHTML = innerHtml;
@@ -209,7 +209,7 @@ var NightingaleCompiler;
                         // Add scope table
                         let entries = curr.getScopeTable().entries();
                         for (let index = 0; index < entries.length; ++index) {
-                            innerHtml += `<br> ${entries[index][0]} | Type: ${entries[index][1].type} Used: ${entries[index][1].isUsed}, Line: ${entries[index][1].lineNumber}, Pos:${entries[index][1].linePosition}`;
+                            innerHtml += `<br> ${entries[index][0]} | Type: ${entries[index][1].type}, Used: ${entries[index][1].isUsed}, Line: ${entries[index][1].lineNumber}, Pos:${entries[index][1].linePosition}`;
                         } // for
                         innerHtml += `</a>`;
                         li.innerHTML = innerHtml;

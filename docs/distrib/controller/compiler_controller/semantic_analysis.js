@@ -32,19 +32,23 @@ var NightingaleCompiler;
             this._current_scope_tree = null;
             this.scope_trees = Array();
             this.output = [];
+            this.verbose = [];
             this.errors = 0;
             this.warnings = 0;
             this.main();
         } // constructor 
         main() {
             for (var cstIndex = 0; cstIndex < this.concrete_syntax_trees.length; ++cstIndex) {
+                // Capture messages from lexer for each program
                 this.output.push(new Array());
+                this.verbose.push(new Array());
                 // Skips invalid parsed programs
                 //
                 // Probably shouldn't be passing invalid parse trees around, though
                 // It'd be cool to show visually, where exactly the parse tree messed up
                 if (!this.invalid_parsed_programs.includes(this.concrete_syntax_trees[cstIndex].program)) {
-                    this.output[cstIndex].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, INFO, `Perfomring Semantic Analysis on program ${this.concrete_syntax_trees[cstIndex].program}...`));
+                    this.output[cstIndex].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, INFO, `Perfomring Semantic Analysis on program ${this.concrete_syntax_trees[cstIndex].program + 1}...`) // OutputConsoleMessage
+                    ); // this.output[cstIndex].push
                     // Create a scope tree
                     this._current_scope_tree = new NightingaleCompiler.ScopeTreeModel();
                     this._current_scope_tree.program = this.concrete_syntax_trees[cstIndex].program;
@@ -52,13 +56,17 @@ var NightingaleCompiler;
                     // Traverse the CST and create the AST while also doing type and scope checking
                     this.generate_abstract_syntax_tree(this.concrete_syntax_trees[cstIndex]);
                     this.abstract_syntax_trees.push(this._current_ast);
-                    this.output[cstIndex].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, INFO, `Semantic Analysis on program ${this.concrete_syntax_trees[cstIndex].program + 1} completed with ${this.warnings} warning(s) and ${this.errors} error(s)`));
+                    this.output[cstIndex].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, INFO, `Semantic Analysis on program ${this.concrete_syntax_trees[cstIndex].program + 1} completed with ${this.warnings} warning(s) and ${this.errors} error(s)`) // OutputConsoleMessage
+                    ); // this.output[cstIndex].push
+                    this.verbose[cstIndex].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, INFO, `Semantic Analysis on program ${this.concrete_syntax_trees[cstIndex].program + 1} completed with ${this.warnings} warning(s) and ${this.errors} error(s)`) // OutputConsoleMessage
+                    ); // this.verbose[cstIndex].push
                     this.warnings = 0;
                     this.errors = 0;
                 } // if
                 // Tell user, skipped the program
                 else {
                     this.output[cstIndex].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, WARNING, `Skipping program ${this.concrete_syntax_trees[cstIndex].program + 1} due to parse errors.`));
+                    this.verbose[cstIndex].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, WARNING, `Skipping program ${this.concrete_syntax_trees[cstIndex].program + 1} due to parse errors.`));
                 }
             } // for
         } // main
@@ -70,6 +78,7 @@ var NightingaleCompiler;
          *
          */
         generate_abstract_syntax_tree(cst) {
+            this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, WARNING, `Generating Abstract Syntax Tree...`));
             // Make new ast
             this._current_ast = new NightingaleCompiler.AbstractSyntaxTree();
             // Get program number from CST
@@ -78,6 +87,7 @@ var NightingaleCompiler;
             this.add_subtree_to_ast(cst.root.children_nodes[0]);
         } // generate_abstract_syntax_trees
         add_subtree_to_ast(cst_current_node) {
+            this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, WARNING, `Attempting to add ${cst_current_node.name} subtree to abstract syntax tree.`));
             switch (cst_current_node.name) {
                 case NODE_NAME_BLOCK:
                     this._add_block_subtree_to_ast(cst_current_node);
@@ -103,6 +113,8 @@ var NightingaleCompiler;
             this._climb_ast_to_block();
         } // add_subtree_to_ast
         _skip_node_for_ast(cst_current_node) {
+            this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, WARNING, `Traversing over ${cst_current_node.name} concrete syntax tree node.`) // OutputConsoleMessage
+            ); // this.verbose[this.verbose.length - 1].push
             switch (cst_current_node.name) {
                 case NODE_NAME_STATEMENT:
                     this._skip_statement(cst_current_node);
@@ -122,6 +134,8 @@ var NightingaleCompiler;
          * @param cst_current_node current node in the cst
          */
         _add_block_subtree_to_ast(cst_current_node) {
+            this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, WARNING, `Adding ${cst_current_node.name} subtree to abstract syntax tree.`) // OutputConsoleMessage
+            ); // this.verbose[this.verbose.length - 1].push
             // Add new BLOCK node
             this._current_ast.add_node(cst_current_node.name, NODE_TYPE_BRANCH, true, cst_current_node.getToken());
             // Remember, if you built your tree correctly..
@@ -185,6 +199,8 @@ var NightingaleCompiler;
          * @param cst_current_node current node in the cst
          */
         _add_variable_declaration_subtree_to_ast(cst_current_node) {
+            this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, WARNING, `Adding variable declaration subtree to abstract syntax tree.`) // OutputConsoleMessage
+            ); // this.verbose[this.verbose.length - 1].push
             // Remember, if you built your tree correctly..
             //
             //   Node(Variable Declaration).children[0] --> Node(Type)
@@ -226,6 +242,8 @@ var NightingaleCompiler;
          * @param cst_current_node current node in the cst
          */
         _add_assignment_statement_subtree_to_ast(cst_current_node) {
+            this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, WARNING, `Adding assignment statement subtree to abstract syntax tree.`) // OutputConsoleMessage
+            ); // this.verbose[this.verbose.length - 1].push
             // Add root Node(Assignment Statement) for asignment statement subtree
             this._current_ast.add_node(cst_current_node.name, NODE_TYPE_BRANCH, true);
             // Remember, if you built your tree correctly..
@@ -260,6 +278,8 @@ var NightingaleCompiler;
          *   - Identifier
          */
         _add_expression_subtree(expression_node) {
+            this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, WARNING, `Attempting to add ${expression_node.children_nodes[0].name} subtree to abstract syntax tree.`) // OutputConsoleMessage
+            ); // this.verbose[this.verbose.length - 1].push
             switch (expression_node.children_nodes[0].name) {
                 case NODE_NAME_INT_EXPRESSION:
                     this._add_integer_expression_subtree_to_ast(expression_node.children_nodes[0]);
@@ -286,6 +306,8 @@ var NightingaleCompiler;
          *   - Digit
          */
         _add_integer_expression_subtree_to_ast(integer_expression_node) {
+            this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, WARNING, `Adding ${integer_expression_node.name} subtree to abstract syntax tree.`) // OutputConsoleMessage
+            ); // this.verbose[this.verbose.length - 1].push
             // Remember, if you built your tree correctly...
             //
             //   Node(Integer Expression).children[0] --> Node(Digit)
@@ -326,6 +348,8 @@ var NightingaleCompiler;
          *   - " CharList "
          */
         _add_string_expression_subtree_to_ast(string_expression_node) {
+            this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, WARNING, `Adding ${string_expression_node.name} subtree to abstract syntax tree.`) // OutputConsoleMessage
+            ); // this.verbose[this.verbose.length - 1].push
             // Remember, if you built your tree correctly...
             //
             //   Node(String Expression).children[0] --> Open String Expression boundary ["]
@@ -376,6 +400,8 @@ var NightingaleCompiler;
          *   - Boolean Value [true | false]
          */
         _add_boolean_expression_subtree_to_ast(boolean_expression_node) {
+            this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, WARNING, `Adding ${boolean_expression_node.name} subtree to abstract syntax tree.`) // OutputConsoleMessage
+            ); // this.verbose[this.verbose.length - 1].push
             // Remember, if you built your tree correctly...
             //
             //   Node(Boolean Expression).children[0] --> Open String Expression boundary [(]
@@ -426,6 +452,8 @@ var NightingaleCompiler;
          *   - Expression
          */
         _add_print_subtree_to_ast(print_node) {
+            this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, WARNING, `Adding ${print_node.name} subtree to abstract syntax tree.`) // OutputConsoleMessage
+            ); // this.verbose[this.verbose.length - 1].push
             // Remember, if you built your tree correctly...
             //
             //   Node(Print).children[0] --> Keyword Print [print]
@@ -450,6 +478,8 @@ var NightingaleCompiler;
          *   - Block
          */
         _add_while_subtree_to_ast(while_node) {
+            this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, WARNING, `Adding ${while_node.name} subtree to abstract syntax tree.`) // OutputConsoleMessage
+            ); // this.verbose[this.verbose.length - 1].push
             // Remember, if you built your tree correctly...
             //
             //   Node(While).children[0] --> Keyword While [while]
@@ -472,6 +502,8 @@ var NightingaleCompiler;
          *   - Block
          */
         _add_if_subtree_to_ast(if_node) {
+            this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, WARNING, `Adding ${if_node.name} subtree to abstract syntax tree.`) // OutputConsoleMessage
+            ); // this.verbose[this.verbose.length - 1].push
             // Remember, if you built your tree correctly...
             //
             //   Node(If).children[0] --> Keyword If [If]

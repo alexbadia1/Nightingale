@@ -81,7 +81,10 @@ module NightingaleCompiler {
                                                                 this.semantic_analysis.output,
                                                                 this.parser.invalid_parsed_programs,
                                                             );
-             let debug_console_model: DebugConsoleModel = new DebugConsoleModel(this.lexer.debug_token_stream, this.parser.debug);
+             let debug_console_model: DebugConsoleModel = new DebugConsoleModel(
+                 this.lexer.debug_token_stream, 
+                 this.parser.debug,
+                 this.semantic_analysis.verbose);
              let stacktrace_console_model: StacktraceConsoleModel = new StacktraceConsoleModel(this.lexer.stacktrace_stack);
              let footer_model: FooterModel = new FooterModel(this.lexer.errors_stream.length, this.lexer.warnings_stream.length);
         }// compilerControllerBtnCompile_click

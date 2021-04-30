@@ -59,7 +59,7 @@ const TRICKY_ASSIGNMENT_STATEMENTS = `
 	a = 1 + (true == false)
 }$
 
-/* This is a valid parse as well..
+/* This is a valid parse as well.. */
 {
     a = 1 + "hmmmmmmmm"
 }$

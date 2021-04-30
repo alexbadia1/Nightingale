@@ -71,7 +71,7 @@ const ULTIMATE_ASSIGNMENT_TEST = `/* Semantically incorrect, but make sure your 
         p = 1 + true
         w = "qrstuvwxyz"
 
-        /* How 'bout another scope?*/
+        /* How 'bout another scope? */
         {
             x = 1 + 2 + 3
             y = 6 + 7

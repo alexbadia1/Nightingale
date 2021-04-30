@@ -12,6 +12,8 @@ module NightingaleCompiler {
         constructor(
             public type: string,
             public isUsed: boolean,
+            public lineNumber: number,
+            public linePosition: number,
         ){}
     }// class
 
@@ -55,5 +57,9 @@ module NightingaleCompiler {
         public entries(): Array<Array<any>> {
             return Array.from(this._map.entries());
         }// entries
+
+        public isEmpty(): boolean {
+            return this._map.size === 0;
+        }// isEmpty
     }// class
 }// module

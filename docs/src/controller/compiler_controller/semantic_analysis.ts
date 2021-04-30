@@ -203,6 +203,7 @@ module NightingaleCompiler {
             );// this.verbose[this.verbose.length - 1].push
 
             // Add new BLOCK node
+            // SYMBOL_OPEN_BLOCK Token
             this._current_ast.add_node(cst_current_node.name, NODE_TYPE_BRANCH, true, cst_current_node.getToken());
 
             // Remember, if you built your tree correctly..
@@ -224,7 +225,7 @@ module NightingaleCompiler {
             }// if
             else {
                 // Do nothing, it's an empty block
-            }
+            }// else
         }// _add_block_subtree_to_ast
 
         private _skip_statement_list(cst_current_node: Node): void {
@@ -296,7 +297,15 @@ module NightingaleCompiler {
             let identifier_node: Node = cst_current_node.children_nodes[1].children_nodes[0];
 
             // Check current scope table
-            let noCollision: boolean = this._current_scope_table.put(identifier_node.name, new VariableMetaData(type_node.name, false));
+            let noCollision: boolean = this._current_scope_table.put(
+                identifier_node.name, 
+                new VariableMetaData(
+                    type_node.name, 
+                    false,
+                    cst_current_node.getToken().lineNumber,
+                    cst_current_node.getToken().linePosition
+                )// VariableMetaData
+            );// this._current_scope_table.put
 
             // Mark as invalid if collison
             if (!noCollision) {
@@ -313,6 +322,7 @@ module NightingaleCompiler {
             }// if
 
             // Add root node for variable declaration subtree
+            // Token is: KEYWORD_INT, KEYWORD_BOOLEAN or KEYWORD_STRING
             this._current_ast.add_node(cst_current_node.name, NODE_TYPE_BRANCH, noCollision, cst_current_node.getToken());
 
             // Add children to ast subtree at the SAME LEVEL

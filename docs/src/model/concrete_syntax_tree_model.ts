@@ -100,7 +100,7 @@ module NightingaleCompiler {
             // If there are no children (i.e., leaf nodes)...
             if (!node.children_nodes || node.children_nodes.length === 0) {
                 // ... note the leaf node.
-                traversalResult += "[" + node.name + "]";
+                traversalResult += " [" + node.name + "]";
                 traversalResult += "\n";
 
                 return traversalResult;
@@ -108,7 +108,7 @@ module NightingaleCompiler {
 
             else {
                 // There are children_nodes, so note these interior/branch nodes and ...
-                traversalResult += "(" + node.name + ") \n";
+                traversalResult += " (" + node.name + ") \n";
 
                 // .. recursively expand them.
                 for (var h = 0; h < node.children_nodes.length; h++) {
@@ -188,6 +188,7 @@ module NightingaleCompiler {
 
                         li.innerHTML = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this.program}, ${curr.id}, 'CST');" name = "node-anchor-tag" >${curr.name}</a>`;
 
+                        // TODO: Fix more alignments
                         // Single characters alignment are off... Add padding to the left.
                         if (curr.name.length  >= 1 || curr.name.length  <= 3) {
                             li.style.paddingLeft = "1.5rem";
@@ -202,6 +203,7 @@ module NightingaleCompiler {
                         li.id = `cst_p${this.program}_li_node_id_${curr.id}`;
                         li.innerHTML = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this.program}, ${curr.id}, 'CST');" name = "node-anchor-tag">${curr.name}</a>`;
 
+                        // TODO: Fix more alignments
                         // Single characters alignment are off... Add padding to the left.
                         if (curr.name.length  >= 1 || curr.name.length  <= 3) {
                             li.style.paddingLeft = "1.5rem";

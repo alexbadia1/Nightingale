@@ -18,6 +18,23 @@
             let index: number = 0;
             while (index < this._abstract_syntax_trees.length) {
                 if (this._abstract_syntax_trees[index].program === program_number) {
+
+                    let listHeader: HTMLLIElement = document.createElement("li");
+                    listHeader.style.listStyle = "none";
+                    listHeader.style.fontSize = "1rem";
+                    listHeader.style.marginTop = "15px";
+                    listHeader.style.marginLeft = "15px";
+                    listHeader.style.color = "white";
+                    listHeader.innerHTML += `Program ${program_number + 1}: Abstract Syntax Tree`;
+                    output_console.appendChild(listHeader);
+
+                    let divider: HTMLLIElement = document.createElement("li");
+                    divider.style.listStyle = "none";
+                    divider.style.fontSize = "1rem";
+                    divider.style.marginLeft = "15px";
+                    divider.style.color = "white";
+                    divider.innerHTML += `--------------------------------------------`;
+                    output_console.appendChild(divider);
                     
                     traversalResults = this._abstract_syntax_trees[index].toString().split("\n");
 

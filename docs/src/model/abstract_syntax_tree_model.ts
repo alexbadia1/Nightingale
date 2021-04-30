@@ -110,7 +110,7 @@
             // If there are no children (i.e., leaf nodes)...
             if (!node.children_nodes || node.children_nodes.length === 0) {
                 // ... note the leaf node.
-                traversalResult += "[" + node.name + "]";
+                traversalResult += " [" + node.name + "]";
                 traversalResult += "\n";
 
                 return traversalResult;
@@ -118,7 +118,7 @@
 
             else {
                 // There are children_nodes, so note these interior/branch nodes and ...
-                traversalResult += "(" + node.name + ") \n";
+                traversalResult += " (" + node.name + ") \n";
 
                 // .. recursively expand them.
                 for (var h = 0; h < node.children_nodes.length; h++) {

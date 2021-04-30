@@ -9,9 +9,11 @@
 var NightingaleCompiler;
 (function (NightingaleCompiler) {
     class VariableMetaData {
-        constructor(type, isUsed) {
+        constructor(type, isUsed, lineNumber, linePosition) {
             this.type = type;
             this.isUsed = isUsed;
+            this.lineNumber = lineNumber;
+            this.linePosition = linePosition;
         }
     } // class
     NightingaleCompiler.VariableMetaData = VariableMetaData;
@@ -48,6 +50,9 @@ var NightingaleCompiler;
         entries() {
             return Array.from(this._map.entries());
         } // entries
+        isEmpty() {
+            return this._map.size === 0;
+        } // isEmpty
     } // class
     NightingaleCompiler.ScopeTableModel = ScopeTableModel;
 })(NightingaleCompiler || (NightingaleCompiler = {})); // module

@@ -96,22 +96,37 @@
         public expand(node: Node, depth: number, traversalResult: string): string {
             // Space out based on the current depth so
             // this looks at least a little tree-like.
+            var tempDepth = "*";
+
             for (var i = 0; i < depth; i++) {
+                tempDepth += "*";
                 traversalResult += "-";
             }// for
 
             // If there are no children (i.e., leaf nodes)...
             if (!node.children_nodes || node.children_nodes.length === 0) {
                 // ... note the leaf node.
-                traversalResult += "[" + node.name + "]";
+                traversalResult += ` [node.name]`;
                 traversalResult += "\n";
+
+                for (let entry of this.root.getScopeTable().entries()) {
+                    traversalResult += tempDepth;
+                    traversalResult += ` ${entry[0]} | Type: ${entry[1].type}, Used: ${entry[1].isUsed}, Line: ${entry[1].lineNumber}, Pos:${entry[1].linePosition}`;
+                    traversalResult += "\n";
+                }// for
 
                 return traversalResult;
             }// if
 
             else {
                 // There are children_nodes, so note these interior/branch nodes and ...
-                traversalResult += "(" + node.name + ") \n";
+                traversalResult += ` (node.name)`;
+                traversalResult += `\n`;
+                for (let entry of this.root.getScopeTable().entries()) {
+                    traversalResult += tempDepth;
+                    traversalResult += ` ${entry[0]} | Type: ${entry[1].type} Used: ${entry[1].isUsed}, Line: ${entry[1].lineNumber}, Pos:${entry[1].linePosition}`;
+                    traversalResult += "\n";
+                }// for
 
                 // .. recursively expand them.
                 for (var h = 0; h < node.children_nodes.length; h++) {
@@ -149,7 +164,7 @@
             innerHtml += `${this.root.name}`;
 
             for (let entry of this.root.getScopeTable().entries()) {
-                innerHtml += `<br> ${entry[0]} | [Type: ${entry[1].type} Used: ${entry[1].isUsed}]`;
+                innerHtml += `<br> ${entry[0]} | Type: ${entry[1].type} Used: ${entry[1].isUsed}, Line: ${entry[1].lineNumber}, Pos:${entry[1].linePosition}`;
             }// for
             
             innerHtml += `</a>`;
@@ -201,14 +216,14 @@
 
                         let innerHtml = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this.program}, ${curr.id}, 'SCOPETREE');" name = "node-anchor-tag" >${curr.name}`;
 
-                        // Single characters alignment are off... Add padding to the left.
-                        if (curr.name.length  >= 1 || curr.name.length  <= 3) {
-                            li.style.paddingLeft = "1.5rem";
+                        // Fix empty scope table alignment
+                        if (curr.getScopeTable().isEmpty() && !curr.parent_node.getScopeTable().isEmpty()) {
+                            li.style.paddingLeft = "32.5%";
                         }// if
 
                         // Add scope table
                         for (let entry of curr.getScopeTable().entries()) {
-                            innerHtml += `<br> ${entry[0]} | [Type: ${entry[1].type}, Used: ${entry[1].isUsed}]`;
+                            innerHtml += `<br> ${entry[0]} | Type: ${entry[1].type} Used: ${entry[1].isUsed}, Line: ${entry[1].lineNumber}, Pos:${entry[1].linePosition}`;
                         }// for
                         
                         innerHtml += `</a>`;
@@ -223,14 +238,14 @@
                         li.id = `scope-tree_p${this.program}_li_node_id_${curr.id}`;
                         let innerHtml = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this.program}, ${curr.id}, 'SCOPETREE');" name = "node-anchor-tag">${curr.name}`;
 
-                        // Single characters alignment are off... Add padding to the left.
-                        if (curr.name.length  >= 1 || curr.name.length  <= 3) {
-                            li.style.paddingLeft = "1.5rem";
+                        // Fix empty scope table alignment
+                        if (curr.getScopeTable().isEmpty() && !curr.parent_node.getScopeTable().isEmpty()) {
+                            li.style.paddingLeft = "32.5%";
                         }// if
 
                         // Add scope table
                         for (let entry of curr.getScopeTable().entries()) {
-                            innerHtml += `<br> ${entry[0]} | [Type: ${entry[1].type}, Used: ${entry[1].isUsed}]`;
+                            innerHtml += `<br> ${entry[0]} | Type: ${entry[1].type} Used: ${entry[1].isUsed}, Line: ${entry[1].lineNumber}, Pos:${entry[1].linePosition}`;
                         }// for
                         
                         innerHtml += `</a>`;

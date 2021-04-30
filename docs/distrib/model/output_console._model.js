@@ -50,6 +50,9 @@ var NightingaleCompiler;
                     listItem.style.fontSize = "1rem";
                     listItem.style.marginLeft = "15px";
                     listItem.style.color = "white";
+                    if (i == 0) {
+                        listItem.style.marginTop = "15px";
+                    } // if
                     if (this.lexer_output[program_number][i].type == INFO) {
                         listItem.innerHTML =
                             `${this.lexer_output[program_number][i].source} `
@@ -79,6 +82,9 @@ var NightingaleCompiler;
                         listItem.style.fontSize = "1rem";
                         listItem.style.marginLeft = "15px";
                         listItem.style.color = "white";
+                        if (i == 0) {
+                            listItem.style.marginTop = "15px";
+                        } // if
                         if (this.parser_output[program_number][i].type == INFO) {
                             listItem.innerHTML =
                                 `${this.parser_output[program_number][i].source} `
@@ -99,42 +105,45 @@ var NightingaleCompiler;
                         } // else-if
                         output_console.appendChild(listItem);
                     } // for: add new children
-                    // Semantic Analysis Output
-                    if (this.semantic_output[program_number] !== null || this.semantic_output[program_number] !== null) {
-                        for (let i = 0; i < this.semantic_output[program_number].length; ++i) {
-                            let listItem = document.createElement("li");
-                            listItem.className = `token_${i}`;
-                            listItem.style.listStyle = "none";
-                            listItem.style.fontSize = "1rem";
-                            listItem.style.marginLeft = "15px";
-                            listItem.style.color = "white";
-                            if (this.semantic_output[program_number][i].type == INFO) {
-                                listItem.innerHTML =
-                                    `${this.semantic_output[program_number][i].source} `
-                                        + `<span  style = "color: white;">${this.semantic_output[program_number][i].type}</span>`
-                                        + ` - ${this.semantic_output[program_number][i].message}`;
-                            } // if
-                            else if (this.semantic_output[program_number][i].type == WARNING) {
-                                listItem.innerHTML =
-                                    `${this.semantic_output[program_number][i].source} `
-                                        + `<span  style = "color: yellow;">${this.semantic_output[program_number][i].type}</span>`
-                                        + ` - ${this.semantic_output[program_number][i].message}`;
-                            } // else-if
-                            else if (this.semantic_output[program_number][i].type == ERROR) {
-                                listItem.innerHTML =
-                                    `${this.semantic_output[program_number][i].source} `
-                                        + `<span  style = "color: red;">${this.semantic_output[program_number][i].type}</span>`
-                                        + ` - ${this.semantic_output[program_number][i].message}`;
-                            } // else-if
-                            output_console.appendChild(listItem);
-                        } // for: add new children
-                    } // if
-                    // Concrete Syntax Tree
-                    // Skip invalidy parsed programs
                     if (!this.invalid_parsed_programs.includes(program_number)) {
-                        console.log("Not Invalid Parsed Program Number: " + program_number);
                         this.cst_controller.add_tree_to_output_console(output_console, program_number);
                         this.cst_controller.add_tree_to_gui(cst_output, program_number);
+                    } // if
+                } // if
+                // Semantic Analysis Output
+                if (this.semantic_output[program_number] !== null || this.semantic_output[program_number] !== null) {
+                    for (let i = 0; i < this.semantic_output[program_number].length; ++i) {
+                        let listItem = document.createElement("li");
+                        listItem.className = `token_${i}`;
+                        listItem.style.listStyle = "none";
+                        listItem.style.fontSize = "1rem";
+                        listItem.style.marginLeft = "15px";
+                        listItem.style.color = "white";
+                        if (i == 0) {
+                            listItem.style.marginTop = "15px";
+                        } // if
+                        if (this.semantic_output[program_number][i].type == INFO) {
+                            listItem.innerHTML =
+                                `${this.semantic_output[program_number][i].source} `
+                                    + `<span  style = "color: white;">${this.semantic_output[program_number][i].type}</span>`
+                                    + ` - ${this.semantic_output[program_number][i].message}`;
+                        } // if
+                        else if (this.semantic_output[program_number][i].type == WARNING) {
+                            listItem.innerHTML =
+                                `${this.semantic_output[program_number][i].source} `
+                                    + `<span  style = "color: yellow;">${this.semantic_output[program_number][i].type}</span>`
+                                    + ` - ${this.semantic_output[program_number][i].message}`;
+                        } // else-if
+                        else if (this.semantic_output[program_number][i].type == ERROR) {
+                            listItem.innerHTML =
+                                `${this.semantic_output[program_number][i].source} `
+                                    + `<span  style = "color: red;">${this.semantic_output[program_number][i].type}</span>`
+                                    + ` - ${this.semantic_output[program_number][i].message}`;
+                        } // else-if
+                        output_console.appendChild(listItem);
+                    } // for: add new children
+                    // Abstract Syntax Trees
+                    if (!this.invalid_parsed_programs.includes(program_number)) {
                         // Yes, this will show invalid ast's but not passed to code gen
                         this.ast_controller.add_tree_to_output_console(output_console, program_number);
                         this.ast_controller.add_tree_to_gui(ast_output, program_number);

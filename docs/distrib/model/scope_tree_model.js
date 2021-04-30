@@ -94,22 +94,25 @@ var NightingaleCompiler;
             // If there are no children (i.e., leaf nodes)...
             if (!node.children_nodes || node.children_nodes.length === 0) {
                 // ... note the leaf node.
-                traversalResult += ` [node.name]`;
+                traversalResult += ` [${node.name}]`;
                 traversalResult += "\n";
-                for (let entry of this.root.getScopeTable().entries()) {
+                let entries = node.getScopeTable().entries();
+                console.log(entries);
+                for (let index = 0; index < entries.length; ++index) {
                     traversalResult += tempDepth;
-                    traversalResult += ` ${entry[0]} | Type: ${entry[1].type}, Used: ${entry[1].isUsed}, Line: ${entry[1].lineNumber}, Pos:${entry[1].linePosition}`;
+                    traversalResult += ` ${entries[index][0]} | Type: ${entries[index][1].type} Used: ${entries[index][1].isUsed}, Line: ${entries[index][1].lineNumber}, Pos:${entries[index][1].linePosition}`;
                     traversalResult += "\n";
                 } // for
                 return traversalResult;
             } // if
             else {
                 // There are children_nodes, so note these interior/branch nodes and ...
-                traversalResult += ` (node.name)`;
+                traversalResult += ` (${node.name})`;
                 traversalResult += `\n`;
-                for (let entry of this.root.getScopeTable().entries()) {
+                let entries = node.getScopeTable().entries();
+                for (let index = 0; index < entries.length; ++index) {
                     traversalResult += tempDepth;
-                    traversalResult += ` ${entry[0]} | Type: ${entry[1].type} Used: ${entry[1].isUsed}, Line: ${entry[1].lineNumber}, Pos:${entry[1].linePosition}`;
+                    traversalResult += ` ${entries[index][0]} | Type: ${entries[index][1].type} Used: ${entries[index][1].isUsed}, Line: ${entries[index][1].lineNumber}, Pos:${entries[index][1].linePosition}`;
                     traversalResult += "\n";
                 } // for
                 // .. recursively expand them.
@@ -140,8 +143,9 @@ var NightingaleCompiler;
             li.id = `scope-tree_p${this.program}_li_node_id_0`;
             let innerHtml = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this.program}, 0, 'SCOPETREE');" name = "node-anchor-tag">`;
             innerHtml += `${this.root.name}`;
-            for (let entry of this.root.getScopeTable().entries()) {
-                innerHtml += `<br> ${entry[0]} | Type: ${entry[1].type} Used: ${entry[1].isUsed}, Line: ${entry[1].lineNumber}, Pos:${entry[1].linePosition}`;
+            let entries = this.root.getScopeTable().entries();
+            for (let index = 0; index < entries.length; ++index) {
+                innerHtml += `<br> ${entries[index][0]} | Type: ${entries[index][1].type} Used: ${entries[index][1].isUsed}, Line: ${entries[index][1].lineNumber}, Pos:${entries[index][1].linePosition}`;
             } // for
             innerHtml += `</a>`;
             li.innerHTML = innerHtml;
@@ -182,11 +186,12 @@ var NightingaleCompiler;
                         let innerHtml = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this.program}, ${curr.id}, 'SCOPETREE');" name = "node-anchor-tag" >${curr.name}`;
                         // Fix empty scope table alignment
                         if (curr.getScopeTable().isEmpty() && !curr.parent_node.getScopeTable().isEmpty()) {
-                            li.style.paddingLeft = "32.5%";
+                            // li.style.paddingLeft = "30.5%";
                         } // if
                         // Add scope table
-                        for (let entry of curr.getScopeTable().entries()) {
-                            innerHtml += `<br> ${entry[0]} | Type: ${entry[1].type} Used: ${entry[1].isUsed}, Line: ${entry[1].lineNumber}, Pos:${entry[1].linePosition}`;
+                        let entries = curr.getScopeTable().entries();
+                        for (let index = 0; index < entries.length; ++index) {
+                            innerHtml += `<br> ${entries[index][0]} | Type: ${entries[index][1].type} Used: ${entries[index][1].isUsed}, Line: ${entries[index][1].lineNumber}, Pos:${entries[index][1].linePosition}`;
                         } // for
                         innerHtml += `</a>`;
                         li.innerHTML = innerHtml;
@@ -199,11 +204,12 @@ var NightingaleCompiler;
                         let innerHtml = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this.program}, ${curr.id}, 'SCOPETREE');" name = "node-anchor-tag">${curr.name}`;
                         // Fix empty scope table alignment
                         if (curr.getScopeTable().isEmpty() && !curr.parent_node.getScopeTable().isEmpty()) {
-                            li.style.paddingLeft = "32.5%";
+                            // li.style.paddingLeft = "32.5%";
                         } // if
                         // Add scope table
-                        for (let entry of curr.getScopeTable().entries()) {
-                            innerHtml += `<br> ${entry[0]} | Type: ${entry[1].type} Used: ${entry[1].isUsed}, Line: ${entry[1].lineNumber}, Pos:${entry[1].linePosition}`;
+                        let entries = curr.getScopeTable().entries();
+                        for (let index = 0; index < entries.length; ++index) {
+                            innerHtml += `<br> ${entries[index][0]} | Type: ${entries[index][1].type} Used: ${entries[index][1].isUsed}, Line: ${entries[index][1].lineNumber}, Pos:${entries[index][1].linePosition}`;
                         } // for
                         innerHtml += `</a>`;
                         li.innerHTML = innerHtml;

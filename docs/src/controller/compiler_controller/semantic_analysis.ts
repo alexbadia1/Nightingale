@@ -25,7 +25,6 @@ module NightingaleCompiler {
         public abstract_syntax_trees: Array<AbstractSyntaxTree> = Array<AbstractSyntaxTree>();
         public invalid_semantic_programs: Array<number> = [];
         private _current_ast: AbstractSyntaxTree = null;
-        private _current_scope_table: ScopeTableModel = null;
         private _current_scope_tree: ScopeTreeModel = null;
         public scope_trees: Array<ScopeTreeModel> =  Array<ScopeTreeModel>();
         public output: Array<Array<OutputConsoleMessage>> = [];
@@ -133,7 +132,7 @@ module NightingaleCompiler {
             this.add_subtree_to_ast(cst.root.children_nodes[0]);
         }// generate_abstract_syntax_trees
 
-        private add_subtree_to_ast(cst_current_node: Node): void {
+        private add_subtree_to_ast(cst_current_node: Node, current_scope_table: ScopeTableModel = null): void {
             this.verbose[this.verbose.length - 1].push(
                 new OutputConsoleMessage(
                     SEMANTIC_ANALYSIS, 
@@ -146,7 +145,7 @@ module NightingaleCompiler {
                     this._add_block_subtree_to_ast(cst_current_node);
                     break;
                 case NODE_NAME_VARIABLE_DECLARATION:
-                    this._add_variable_declaration_subtree_to_ast(cst_current_node);
+                    this._add_variable_declaration_subtree_to_ast(cst_current_node, current_scope_table);
                     break;
                 case NODE_NAME_ASSIGNMENT_STATEMENT:
                     this._add_assignment_statement_subtree_to_ast(cst_current_node);
@@ -166,7 +165,7 @@ module NightingaleCompiler {
             this._climb_ast_to_block();
         }// add_subtree_to_ast
 
-        private _skip_node_for_ast(cst_current_node: Node): void {
+        private _skip_node_for_ast(cst_current_node: Node, current_scope_table: ScopeTableModel): void {
             this.verbose[this.verbose.length - 1].push(
                 new OutputConsoleMessage(
                     SEMANTIC_ANALYSIS, 
@@ -176,10 +175,10 @@ module NightingaleCompiler {
             );// this.verbose[this.verbose.length - 1].push
             switch (cst_current_node.name) {
                 case NODE_NAME_STATEMENT:
-                    this._skip_statement(cst_current_node);
+                    this._skip_statement(cst_current_node, current_scope_table);
                     break;
                 case NODE_NAME_STATEMENT_LIST:
-                    this._skip_statement_list(cst_current_node);
+                    this._skip_statement_list(cst_current_node, current_scope_table);
                     break;
                 default:
                     throw Error(`Semantic Analysis Failed: [${cst_current_node.name}] does not have a valid child [STATEMENT, STATEMENT_LIST]`);
@@ -216,12 +215,12 @@ module NightingaleCompiler {
             let statement_list_node = cst_current_node.children_nodes[1];
 
             // Add a new scope node to the scope tree
-            this._current_scope_table = new ScopeTableModel();
-            this._current_scope_tree.add_node(NODE_NAME_SCOPE, NODE_TYPE_BRANCH, this._current_scope_table);
+            let scope_table: ScopeTableModel = new ScopeTableModel();
+            this._current_scope_tree.add_node(NODE_NAME_SCOPE, NODE_TYPE_BRANCH, scope_table);
 
             // Skip the statement list node
             if (cst_current_node.children_nodes.length === 3) {
-                this._skip_node_for_ast(statement_list_node);
+                this._skip_node_for_ast(statement_list_node, scope_table);
                 this._current_scope_tree.climb_one_level();
             }// if
             else {
@@ -230,7 +229,7 @@ module NightingaleCompiler {
             }// else
         }// _add_block_subtree_to_ast
 
-        private _skip_statement_list(cst_current_node: Node): void {
+        private _skip_statement_list(cst_current_node: Node, current_scope_table: ScopeTableModel): void {
             // Remember, if you built your tree correctly..
             //
             //   Node(Statement List).children[0] --> Node(Statement)
@@ -240,7 +239,7 @@ module NightingaleCompiler {
             let statement_node: Node = cst_current_node.children_nodes[0];
 
             // Skip over statement node
-            this._skip_node_for_ast(statement_node);
+            this._skip_node_for_ast(statement_node, current_scope_table);
 
             // If statement list follows, traverse and skip over it
             if (cst_current_node.children_nodes.length > 1) {
@@ -248,11 +247,11 @@ module NightingaleCompiler {
                 let statement_list_node: Node = cst_current_node.children_nodes[1];
 
                 // Skip statement list node
-                this._skip_node_for_ast(statement_list_node);
+                this._skip_node_for_ast(statement_list_node, current_scope_table);
             }// if
         }// _skip_statement_list
 
-        private _skip_statement(cst_current_node: Node): void {
+        private _skip_statement(cst_current_node: Node, current_scope_table: ScopeTableModel): void {
             // Remember, if you built your tree correctly..
             //
             //   Node(Statement).children[0] --> Node(Print Statement)
@@ -266,7 +265,7 @@ module NightingaleCompiler {
             let statement_val: Node = cst_current_node.children_nodes[0];
 
             // Add the statements (right-hand) value
-            this.add_subtree_to_ast(statement_val);
+            this.add_subtree_to_ast(statement_val, current_scope_table);
         }// _skip_statement_list
 
         /**
@@ -277,7 +276,7 @@ module NightingaleCompiler {
          * 
          * @param cst_current_node current node in the cst
          */
-        private _add_variable_declaration_subtree_to_ast(cst_current_node: Node): void {
+        private _add_variable_declaration_subtree_to_ast(cst_current_node: Node, current_scope_table: ScopeTableModel): void {
             this.verbose[this.verbose.length - 1].push(
                 new OutputConsoleMessage(
                     SEMANTIC_ANALYSIS, 
@@ -299,7 +298,7 @@ module NightingaleCompiler {
             let identifier_node: Node = cst_current_node.children_nodes[1].children_nodes[0];
 
             // Check current scope table
-            let noCollision: boolean = this._current_scope_table.put(
+            let noCollision: boolean = current_scope_table.put(
                 identifier_node.name, 
                 new VariableMetaData(
                     type_node.name, 
@@ -307,7 +306,7 @@ module NightingaleCompiler {
                     cst_current_node.getToken().lineNumber,
                     cst_current_node.getToken().linePosition
                 )// VariableMetaData
-            );// this._current_scope_table.put
+            );// current_scope_table.put
 
             // Mark as invalid if collison
             if (!noCollision) {

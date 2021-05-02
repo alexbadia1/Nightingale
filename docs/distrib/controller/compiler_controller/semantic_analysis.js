@@ -263,26 +263,7 @@ var NightingaleCompiler;
             //                                --> Node(Id)
             let identifier_node = cst_current_node.children_nodes[0].children_nodes[0];
             // Check scope tree if the variable exists and get its type
-            let isDeclared = false;
-            let var_metadata = null;
-            let curr_scope_table_node = this._current_scope_tree.current_node;
-            while (curr_scope_table_node !== undefined && curr_scope_table_node !== null && !isDeclared) {
-                let scope_table = curr_scope_table_node.getScopeTable();
-                isDeclared = scope_table.has(identifier_node.name);
-                // Variable exists in current scope table
-                if (isDeclared) {
-                    var_metadata = scope_table.get(identifier_node.name);
-                    var_metadata.isUsed = true;
-                } // if
-                // Check parent
-                else {
-                    curr_scope_table_node = curr_scope_table_node.parent_node;
-                } // else
-            } // while
-            if (!isDeclared) {
-                this.output[this.output.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, ERROR, `missing variable declaration [${identifier_node.name}] at ${identifier_node.getToken().lineNumber}:${identifier_node.getToken().linePosition}`) // OutputConsoleMessage
-                ); // this.output[this.verbose.length - 1].push
-            } // if
+            let isDeclared = this.is_variable_declared(identifier_node);
             // Add root Node(Assignment Statement) for asignment statement subtree
             this._current_ast.add_node(cst_current_node.name, NODE_TYPE_BRANCH, isDeclared);
             // Add the identifier to assignment statement subtree
@@ -315,8 +296,11 @@ var NightingaleCompiler;
                     this._add_boolean_expression_subtree_to_ast(expression_node.children_nodes[0]);
                     break;
                 case NODE_NAME_IDENTIFIER:
+                    // TODO: Make sure identifier was declared
+                    let isDeclared = this.is_variable_declared(expression_node.children_nodes[0].children_nodes[0]);
+                    // TODO: Make sure identifier is the same type
                     // Add identifier to ast subtree at the SAME Level
-                    this._current_ast.add_node(expression_node.children_nodes[0].children_nodes[0].name, NODE_TYPE_LEAF, true, expression_node.children_nodes[0].children_nodes[0].getToken());
+                    this._current_ast.add_node(expression_node.children_nodes[0].children_nodes[0].name, NODE_TYPE_LEAF, isDeclared, expression_node.children_nodes[0].children_nodes[0].getToken());
                     break;
                 default:
                     throw Error(`Semantic Analysis Failed: [${expression_node.name}] does not have a valid child [INT EXPRESSION, STRING EXPRESSION, BOOLEAN EXPRESSION, IDENTIFIER]`);
@@ -543,6 +527,29 @@ var NightingaleCompiler;
             } // if
             this._add_block_subtree_to_ast(if_node.children_nodes[2]);
         } // _add_if_subtree_to_ast
+        is_variable_declared(identifier_node) {
+            let isDeclared = false;
+            let var_metadata = null;
+            let curr_scope_table_node = this._current_scope_tree.current_node;
+            while (curr_scope_table_node !== undefined && curr_scope_table_node !== null && !isDeclared) {
+                let scope_table = curr_scope_table_node.getScopeTable();
+                isDeclared = scope_table.has(identifier_node.name);
+                // Variable exists in current scope table
+                if (isDeclared) {
+                    var_metadata = scope_table.get(identifier_node.name);
+                    var_metadata.isUsed = true;
+                } // if
+                // Check parent
+                else {
+                    curr_scope_table_node = curr_scope_table_node.parent_node;
+                } // else
+            } // while
+            if (!isDeclared) {
+                this.output[this.output.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, ERROR, `Missing variable declaration [${identifier_node.name}] at ${identifier_node.getToken().lineNumber}:${identifier_node.getToken().linePosition}`) // OutputConsoleMessage
+                ); // this.output[this.verbose.length - 1].push
+            } // if
+            return isDeclared;
+        } // is_variable_declared
         /**
          * Moves the AST's current node pointer up one level in the tree (to the parent node)
          */

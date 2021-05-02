@@ -2,7 +2,8 @@ module NightingaleCompiler {
     export class Node {
         private _scope_table: ScopeTableModel = null;
         private _token: LexicalToken = null;
-        public isValid: boolean = true;
+        public errorFlag: boolean = false;
+        public warningFlag: boolean = false;
 
         constructor(
             /**

@@ -8,8 +8,33 @@
 
 module NightingaleCompiler {
     export class Parser {
-        constructor(
+        /**
+         * Current program in the token stream.
+         */
+        private _current_program_number: number = 0;
 
+        /**
+         * Current index in the current program's token stream.
+         */
+        private _current_token_index: number = -1;
+
+        /**
+         * Current token in the current program's token stream.
+         */
+        private _current_token: LexicalToken = null;
+        private _current_cst: ConcreteSyntaxTree = new ConcreteSyntaxTree(null, null, 0);
+        public output: Array<Array<OutputConsoleMessage>> = [[]];
+
+        /**
+         * An array of tokens in the order that they are consumed
+         */
+        public debug: Array<Array<OutputConsoleMessage>> = [[]];
+        public invalid_parsed_programs: Array<number> = [];
+        public concrete_syntax_trees: Array<ConcreteSyntaxTree> = [];
+        private _error_count: number = 0;
+        private _warning_count: number = 0;
+
+        constructor(
             /**
              * A two-dimensional array of programs and their valid lexical tokens.
              */
@@ -19,36 +44,6 @@ module NightingaleCompiler {
              * Lexically invalid programs. These programs should be skipped.
              */
             private _lexically_invalid_programs: Array<number> = [],
-
-            /**
-             * Current program in the token stream.
-             */
-            private _current_program_number: number = 0,
-
-            /**
-             * Current index in the current program's token stream.
-             */
-            private _current_token_index: number = -1,
-
-            /**
-             * Current token in the current program's token stream.
-             */
-            private _current_token: LexicalToken = null,
-
-            private _current_cst: ConcreteSyntaxTree = new ConcreteSyntaxTree(null, null, 0),
-
-            public output: Array<Array<OutputConsoleMessage>> = [[]],
-
-            /**
-             * An array of tokens in the order that they are consumed
-             */
-            public debug: Array<Array<OutputConsoleMessage>> = [[]],
-
-            public invalid_parsed_programs: Array<number> = [],
-            public concrete_syntax_trees: Array<ConcreteSyntaxTree> = [],
-
-            private _error_count: number = 0,
-            private _warning_count: number = 0,
         ) {
             for (this._current_program_number; this._current_program_number < this._token_stream.length; ++this._current_program_number) {
                 // Try parsing the program
@@ -95,7 +90,7 @@ module NightingaleCompiler {
         public parse_program(): void {
             // Skips invalid lex programs and throws an error message
             this.is_current_program_lexically_valid();
-            
+
             // Get first token
             this.get_next_token();
 
@@ -123,7 +118,7 @@ module NightingaleCompiler {
 
             // Parse Statement Error falls through into match
             this.match_token(["STATEMENT", SYMBOL_CLOSE_BLOCK]);
-            
+
             this._current_cst.climb_one_level();
         }// parse_block
 
@@ -253,11 +248,11 @@ module NightingaleCompiler {
 
                 // Boolean expression can start with true
                 case KEYWORD_TRUE:
-                    // Fall through
+                // Fall through
 
                 // Boolean expression can start with false
                 case KEYWORD_FALSE:
-                    // Fall through
+                // Fall through
 
                 // Boolean expression can start with (
                 case SYMBOL_OPEN_ARGUMENT:
@@ -432,7 +427,7 @@ module NightingaleCompiler {
                 throw new OutputConsoleMessage(
                     PARSER,
                     ERROR,
-                    `Expected [${expected_token_names.toString()}], but got [${this._current_token.name}]. ` 
+                    `Expected [${expected_token_names.toString()}], but got [${this._current_token.name}]. `
                     + `|${this._current_token.lexeme}| `
                     + `at ${this._current_token.lineNumber}:${this._current_token.linePosition}.`
                 );
@@ -514,5 +509,13 @@ module NightingaleCompiler {
             }// for
             return false;
         }// token_is_statement
+
+        public getErrorCount(): number {
+            return this._error_count;
+        }// getErrorCount
+
+        public getWarningCount(): number {
+            return this._warning_count;
+        }// getWarningCount
     }// class
 }// module

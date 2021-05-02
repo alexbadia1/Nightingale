@@ -29,7 +29,8 @@ var NightingaleCompiler;
             this.children_nodes = children_nodes;
             this._scope_table = null;
             this._token = null;
-            this.isValid = true;
+            this.errorFlag = false;
+            this.warningFlag = false;
         } // constructor
         setScopeTable(new_scope_table) {
             this._scope_table = new_scope_table;

@@ -97,10 +97,9 @@ var NightingaleCompiler;
                 traversalResult += ` [${node.name}]`;
                 traversalResult += "\n";
                 let entries = node.getScopeTable().entries();
-                console.log(entries);
                 for (let index = 0; index < entries.length; ++index) {
                     traversalResult += tempDepth;
-                    traversalResult += ` ${entries[index][0]} | Type: ${entries[index][1].type}, Used: ${entries[index][1].isUsed}, Line: ${entries[index][1].lineNumber}, Pos:${entries[index][1].linePosition}`;
+                    traversalResult += ` ${entries[index][0]} | Type: ${entries[index][1].type}, Used: ${entries[index][1].isUsed}, isInitialized: ${entries[index][1].isInitialized}, Line: ${entries[index][1].lineNumber}, Pos:${entries[index][1].linePosition}`;
                     traversalResult += "\n";
                 } // for
                 return traversalResult;
@@ -112,7 +111,7 @@ var NightingaleCompiler;
                 let entries = node.getScopeTable().entries();
                 for (let index = 0; index < entries.length; ++index) {
                     traversalResult += tempDepth;
-                    traversalResult += ` ${entries[index][0]} | Type: ${entries[index][1].type}, Used: ${entries[index][1].isUsed}, Line: ${entries[index][1].lineNumber}, Pos:${entries[index][1].linePosition}`;
+                    traversalResult += ` ${entries[index][0]} | Type: ${entries[index][1].type}, Used: ${entries[index][1].isUsed}, isInitialized: ${entries[index][1].isInitialized}, Line: ${entries[index][1].lineNumber}, Pos:${entries[index][1].linePosition}`;
                     traversalResult += "\n";
                 } // for
                 // .. recursively expand them.
@@ -145,7 +144,7 @@ var NightingaleCompiler;
             innerHtml += `${this.root.name}`;
             let entries = this.root.getScopeTable().entries();
             for (let index = 0; index < entries.length; ++index) {
-                innerHtml += `<br> ${entries[index][0]} | Type: ${entries[index][1].type}, Used: ${entries[index][1].isUsed}, Line: ${entries[index][1].lineNumber}, Pos:${entries[index][1].linePosition}`;
+                innerHtml += `<br> ${entries[index][0]} | Type: ${entries[index][1].type}, Used: ${entries[index][1].isUsed}, isInitialized: ${entries[index][1].isInitialized}, Line: ${entries[index][1].lineNumber}, Pos:${entries[index][1].linePosition}`;
             } // for
             innerHtml += `</a>`;
             li.innerHTML = innerHtml;
@@ -186,12 +185,16 @@ var NightingaleCompiler;
                         let innerHtml = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this.program}, ${curr.id}, 'SCOPETREE');" name = "node-anchor-tag" >${curr.name}`;
                         // Fix empty scope table alignment
                         if (curr.getScopeTable().isEmpty() && !curr.parent_node.getScopeTable().isEmpty()) {
-                            // li.style.paddingLeft = "30.5%";
+                            if (curr.parent_node.children_nodes.length === 2) {
+                                if (curr.parent_node.children_nodes[0].getScopeTable().isEmpty() && curr.parent_node.children_nodes[1].getScopeTable().isEmpty()) {
+                                    li.style.paddingLeft = "32.5%";
+                                } // if
+                            } // if
                         } // if
                         // Add scope table
                         let entries = curr.getScopeTable().entries();
                         for (let index = 0; index < entries.length; ++index) {
-                            innerHtml += `<br> ${entries[index][0]} | Type: ${entries[index][1].type}, Used: ${entries[index][1].isUsed}, Line: ${entries[index][1].lineNumber}, Pos:${entries[index][1].linePosition}`;
+                            innerHtml += `<br> ${entries[index][0]} | Type: ${entries[index][1].type}, Used: ${entries[index][1].isUsed}, isInitialized: ${entries[index][1].isInitialized}, Line: ${entries[index][1].lineNumber}, Pos:${entries[index][1].linePosition}`;
                         } // for
                         innerHtml += `</a>`;
                         li.innerHTML = innerHtml;
@@ -204,12 +207,16 @@ var NightingaleCompiler;
                         let innerHtml = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this.program}, ${curr.id}, 'SCOPETREE');" name = "node-anchor-tag">${curr.name}`;
                         // Fix empty scope table alignment
                         if (curr.getScopeTable().isEmpty() && !curr.parent_node.getScopeTable().isEmpty()) {
-                            // li.style.paddingLeft = "32.5%";
+                            if (curr.parent_node.children_nodes.length === 2) {
+                                if (curr.parent_node.children_nodes[0].getScopeTable().isEmpty() && curr.parent_node.children_nodes[1].getScopeTable().isEmpty()) {
+                                    li.style.paddingLeft = "32.5%";
+                                } // if
+                            } // if
                         } // if
                         // Add scope table
                         let entries = curr.getScopeTable().entries();
                         for (let index = 0; index < entries.length; ++index) {
-                            innerHtml += `<br> ${entries[index][0]} | Type: ${entries[index][1].type}, Used: ${entries[index][1].isUsed}, Line: ${entries[index][1].lineNumber}, Pos:${entries[index][1].linePosition}`;
+                            innerHtml += `<br> ${entries[index][0]} | Type: ${entries[index][1].type}, Used: ${entries[index][1].isUsed}, isInitialized: ${entries[index][1].isInitialized}, Line: ${entries[index][1].lineNumber}, Pos:${entries[index][1].linePosition}`;
                         } // for
                         innerHtml += `</a>`;
                         li.innerHTML = innerHtml;

@@ -46,11 +46,12 @@ var NightingaleCompiler;
          * @param new_name Name of the node, could be a string or lexeme
          * @param kind Root, Branch, or Leaf Node?
          */
-        add_node(new_name, kind, isValid = true, lex_token = null) {
+        add_node(new_name, kind, hasError = false, hasWarning = false, lex_token = null) {
             this._node_count++;
             // Construct the node object.
             let new_node = new NightingaleCompiler.Node(new_name, this._node_count, kind);
-            new_node.isValid = isValid;
+            new_node.errorFlag = hasError;
+            new_node.warningFlag = hasWarning;
             new_node.setToken(lex_token);
             // Check to see if it needs to be the root node.
             if ((this.root == null) || (!this.root)) {
@@ -70,6 +71,7 @@ var NightingaleCompiler;
                 // ... update the CURrent node pointer to ourselves.
                 this.current_node = new_node;
             } // if
+            return this.current_node;
         } // add_node
         /**
          * Sets the current node to the parent node
@@ -176,8 +178,11 @@ var NightingaleCompiler;
                         if (curr.name.length >= 1 || curr.name.length <= 3) {
                             li.style.paddingLeft = "1.5rem";
                         } // if
-                        // Make red if invalid
-                        if (!curr.isValid) {
+                        // Yellow for warnings, overriden with red for errors
+                        if (curr.warningFlag) {
+                            li.style.color = "yellow";
+                        } // if
+                        if (curr.errorFlag) {
                             li.style.color = "red";
                         } // if
                         document.getElementById(`ast_p${this.program}_li_node_id_${curr.parent_node.id}`).appendChild(ul);
@@ -192,8 +197,11 @@ var NightingaleCompiler;
                         if (curr.name.length >= 1 || curr.name.length <= 3) {
                             li.style.paddingLeft = "1.5rem";
                         } // if
-                        // Make red if invalid
-                        if (!curr.isValid) {
+                        // Yellow for warnings, overriden with red for errors
+                        if (curr.warningFlag) {
+                            li.style.color = "yellow";
+                        } // if
+                        if (curr.errorFlag) {
                             li.style.color = "red";
                         } // if
                         document.getElementById(`ast_p${this.program}_ul_node_id_${curr.parent_node.children_nodes[0].id}`).appendChild(li);

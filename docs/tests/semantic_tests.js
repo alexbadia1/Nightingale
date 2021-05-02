@@ -252,3 +252,125 @@ Scope tree test.
         a = 3
     }
 }$`;
+
+const SIMPLE_MISSING_VARIABLES = `/* Unintialized identifiers, with some missing identifiers too and type checking too... */
+{
+    int a
+    string b
+    string c
+    boolean e
+    int f /* f is never read */
+
+    /* Missing initializations */
+
+    print(a)
+    print(b)
+    print(c)
+    print(d) /* Missing declaration */
+
+    if (d == d) {} /* Missing declaration */
+    while((b == e) != (a == 2)) {} /* Type mismatch error */
+}$
+`;
+
+/**
+ * Legacy Tests
+ */
+const CHRONOS_NESTED_EVERYTHING = `/* This project used significantly different languages than ours, let's see what happens... */
+{
+    int i
+    i = 0
+    
+    int j
+    j = 0
+    
+    while (j == 0) {
+        i = 1 + i
+        
+        if (i == 3) {
+            j = 1
+        }
+        
+        int g
+        g = 0
+        
+        int h
+        h = 0
+        
+        while (h == 0) {
+            g = 1 + g
+            
+            if (g == 2) {
+                h = 1
+            }
+            
+            print("i")
+            print(g)
+        }
+        
+        print("o")
+        print(i)
+        print(" ")
+    }
+} $
+`;
+const ANDREW_B_INFINTIE_LOOP = `/* Andrew B's Compiler Inifinite Loop*/
+{
+	int x
+	x = 0
+
+	while true {
+		x = 1 + x
+		print(x)
+	}
+} $`;
+
+const ROB_WHITAKER_TEST_THREE = `/* Rob Whitaker's Test 3, modified to at least make it to semantic analysis... */
+{
+    int a
+    a = 0
+    
+    int m
+    m = 2 + 1
+    
+    boolean b
+    b = true
+
+    string s
+    s = "int a equals "
+
+    print("begin loop ") /* Modifed to "begin loop" to pass lex due to capital letters*/
+
+    while(b != false) {
+        print(s)
+        print(a)
+        print(" ")
+        a = 1+a
+
+        if(a == 2+m) {
+            b = false
+        }
+    }
+
+    print("end of loop")/* Modifed to "end of loop" to pass lex due to capital letters*/
+}$`;
+
+const JUICE_COMPILER_BOOLEAN_HELL = `/* Juice Compiler's boolean hell, who they credit "TIEN" for */
+{
+    int a
+    a = 0
+    boolean b
+    b = false
+    boolean c
+    c = true
+    while(((a!=9) == ("test" != "alan")) == ((5==5) != (b == c))) {
+        print("a")
+        string d
+        d = "yes"
+        print(d)
+        {
+            int a
+            a = 5
+        }
+    }
+}$`;

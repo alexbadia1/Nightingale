@@ -16,35 +16,31 @@ var NightingaleCompiler;
         /**
          * Lexically invalid programs. These programs should be skipped.
          */
-        _lexically_invalid_programs = [], 
-        /**
-         * Current program in the token stream.
-         */
-        _current_program_number = 0, 
-        /**
-         * Current index in the current program's token stream.
-         */
-        _current_token_index = -1, 
-        /**
-         * Current token in the current program's token stream.
-         */
-        _current_token = null, _current_cst = new NightingaleCompiler.ConcreteSyntaxTree(null, null, 0), output = [[]], 
-        /**
-         * An array of tokens in the order that they are consumed
-         */
-        debug = [[]], invalid_parsed_programs = [], concrete_syntax_trees = [], _error_count = 0, _warning_count = 0) {
+        _lexically_invalid_programs = []) {
             this._token_stream = _token_stream;
             this._lexically_invalid_programs = _lexically_invalid_programs;
-            this._current_program_number = _current_program_number;
-            this._current_token_index = _current_token_index;
-            this._current_token = _current_token;
-            this._current_cst = _current_cst;
-            this.output = output;
-            this.debug = debug;
-            this.invalid_parsed_programs = invalid_parsed_programs;
-            this.concrete_syntax_trees = concrete_syntax_trees;
-            this._error_count = _error_count;
-            this._warning_count = _warning_count;
+            /**
+             * Current program in the token stream.
+             */
+            this._current_program_number = 0;
+            /**
+             * Current index in the current program's token stream.
+             */
+            this._current_token_index = -1;
+            /**
+             * Current token in the current program's token stream.
+             */
+            this._current_token = null;
+            this._current_cst = new NightingaleCompiler.ConcreteSyntaxTree(null, null, 0);
+            this.output = [[]];
+            /**
+             * An array of tokens in the order that they are consumed
+             */
+            this.debug = [[]];
+            this.invalid_parsed_programs = [];
+            this.concrete_syntax_trees = [];
+            this._error_count = 0;
+            this._warning_count = 0;
             for (this._current_program_number; this._current_program_number < this._token_stream.length; ++this._current_program_number) {
                 // Try parsing the program
                 try {
@@ -402,6 +398,12 @@ var NightingaleCompiler;
             } // for
             return false;
         } // token_is_statement
+        getErrorCount() {
+            return this._error_count;
+        } // getErrorCount
+        getWarningCount() {
+            return this._warning_count;
+        } // getWarningCount
     } // class
     NightingaleCompiler.Parser = Parser;
 })(NightingaleCompiler || (NightingaleCompiler = {})); // module

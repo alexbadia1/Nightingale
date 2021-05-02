@@ -1,21 +1,19 @@
 /**
- * abstract_syntax_tree_model.ts
+ * concrete_syntax_tree_model.ts
  *
- * Author: Alex Badia
- *
- * The logical model of a Abstract Syntax Tree.
+ * The logical model of an Concrete Syntax Tree.
  *
  * By Alan G. Labouseur, based on the 2009
  * work by Michael Ardizzone and Tim Smith.
  *
- * Enhanced by Alex Badia
+ * Enhanced by Alex Badia.
  *
  * TODO: Learn how inheritance and polymorphism work in typescript and
  *       refactor the cst, ast, and scope tree using them...
  */
 var NightingaleCompiler;
 (function (NightingaleCompiler) {
-    class AbstractSyntaxTree {
+    class ScopeTreeModel {
         constructor(
         /**
          * Root node of the tree.
@@ -38,20 +36,13 @@ var NightingaleCompiler;
             this.program = program;
             this._node_count = _node_count;
         } //constructor
-        /**
-         *
-         * Adds a node to the n-array tree.
-         * Updates the current node to the newly added node.
-         *
-         * @param new_name Name of the node, could be a string or lexeme
-         * @param kind Root, Branch, or Leaf Node?
-         */
-        add_node(new_name, kind, isValid = true, lex_token = null) {
+        // Add a node: kind in {branch, leaf}.
+        add_node(new_name, kind, scope_table = null) {
             this._node_count++;
             // Construct the node object.
             let new_node = new NightingaleCompiler.Node(new_name, this._node_count, kind);
-            new_node.isValid = isValid;
-            new_node.setToken(lex_token);
+            // Set new node's metadata
+            new_node.setScopeTable(scope_table);
             // Check to see if it needs to be the root node.
             if ((this.root == null) || (!this.root)) {
                 this.root = new_node;
@@ -85,7 +76,7 @@ var NightingaleCompiler;
             } // else
         } // root_node
         /**
-         * Recursively adds dashes "-" to show depth in the tree
+         *
          *
          * @param node current node in the treeE
          * @param depth current level of the tree
@@ -95,19 +86,35 @@ var NightingaleCompiler;
         expand(node, depth, traversalResult) {
             // Space out based on the current depth so
             // this looks at least a little tree-like.
+            var tempDepth = "*";
             for (var i = 0; i < depth; i++) {
+                tempDepth += "*";
                 traversalResult += "-";
             } // for
             // If there are no children (i.e., leaf nodes)...
             if (!node.children_nodes || node.children_nodes.length === 0) {
                 // ... note the leaf node.
-                traversalResult += " [" + node.name + "]";
+                traversalResult += ` [${node.name}]`;
                 traversalResult += "\n";
+                let entries = node.getScopeTable().entries();
+                console.log(entries);
+                for (let index = 0; index < entries.length; ++index) {
+                    traversalResult += tempDepth;
+                    traversalResult += ` ${entries[index][0]} | Type: ${entries[index][1].type}, Used: ${entries[index][1].isUsed}, Line: ${entries[index][1].lineNumber}, Pos:${entries[index][1].linePosition}`;
+                    traversalResult += "\n";
+                } // for
                 return traversalResult;
             } // if
             else {
                 // There are children_nodes, so note these interior/branch nodes and ...
-                traversalResult += " (" + node.name + ") \n";
+                traversalResult += ` (${node.name})`;
+                traversalResult += `\n`;
+                let entries = node.getScopeTable().entries();
+                for (let index = 0; index < entries.length; ++index) {
+                    traversalResult += tempDepth;
+                    traversalResult += ` ${entries[index][0]} | Type: ${entries[index][1].type}, Used: ${entries[index][1].isUsed}, Line: ${entries[index][1].lineNumber}, Pos:${entries[index][1].linePosition}`;
+                    traversalResult += "\n";
+                } // for
                 // .. recursively expand them.
                 for (var h = 0; h < node.children_nodes.length; h++) {
                     traversalResult = this.expand(node.children_nodes[h], depth + 1, traversalResult);
@@ -123,22 +130,29 @@ var NightingaleCompiler;
         } // toString
         toHtml() {
             // Initialize the result string.
-            var cst = document.getElementById('ast');
+            var cst = document.getElementById('scope-tree');
             var tree_div = document.createElement(`div`);
             tree_div.className = `tree`;
-            tree_div.id = `ast_p${this.program} `;
+            tree_div.id = `scope-tree_p${this.program} `;
             cst.appendChild(tree_div);
             // Make the initial call to expand from the root
             // Create root first
             let ul = document.createElement("ul");
-            ul.id = `ast_p${this.program}_ul_node_id_0`;
+            ul.id = `scope-tree_p${this.program}_ul_node_id_0`;
             let li = document.createElement("li");
-            li.id = `ast_p${this.program}_li_node_id_0`;
-            li.innerHTML = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this.program}, 0, 'AST');" name = "node-anchor-tag">${this.root.name}</a>`;
+            li.id = `scope-tree_p${this.program}_li_node_id_0`;
+            let innerHtml = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this.program}, 0, 'SCOPETREE');" name = "node-anchor-tag">`;
+            innerHtml += `${this.root.name}`;
+            let entries = this.root.getScopeTable().entries();
+            for (let index = 0; index < entries.length; ++index) {
+                innerHtml += `<br> ${entries[index][0]} | Type: ${entries[index][1].type}, Used: ${entries[index][1].isUsed}, Line: ${entries[index][1].lineNumber}, Pos:${entries[index][1].linePosition}`;
+            } // for
+            innerHtml += `</a>`;
+            li.innerHTML = innerHtml;
             ul.appendChild(li);
             tree_div.appendChild(ul);
             this.traverse_tree(this.root);
-        } // toHtml
+        } // toString
         /**
          * Depth first traversal, to translate the tree into a series of <ul> and <li>.
          *
@@ -161,42 +175,45 @@ var NightingaleCompiler;
                     // Root node
                     if (curr.parent_node == null) {
                         // Root node already created
-                        ///console.log(`Current: ${curr.name} | ${curr.id}, Parent: ${curr.parent_node.id}`);
                     } // if
                     // Node is the first node of the parent
                     else if (curr.parent_node.children_nodes[0] == curr) {
                         let ul = document.createElement("ul");
-                        ul.id = `ast_p${this.program}_ul_node_id_${curr.id}`;
+                        ul.id = `scope-tree_p${this.program}_ul_node_id_${curr.id}`;
                         let li = document.createElement("li");
-                        li.id = `ast_p${this.program}_li_node_id_${curr.id}`;
+                        li.id = `scope-tree_p${this.program}_li_node_id_${curr.id}`;
                         ul.appendChild(li);
-                        let innerHtml = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this.program}, ${curr.id}, 'AST');" name = "node-anchor-tag" >${curr.name}</a>`;
+                        let innerHtml = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this.program}, ${curr.id}, 'SCOPETREE');" name = "node-anchor-tag" >${curr.name}`;
+                        // Fix empty scope table alignment
+                        if (curr.getScopeTable().isEmpty() && !curr.parent_node.getScopeTable().isEmpty()) {
+                            // li.style.paddingLeft = "30.5%";
+                        } // if
+                        // Add scope table
+                        let entries = curr.getScopeTable().entries();
+                        for (let index = 0; index < entries.length; ++index) {
+                            innerHtml += `<br> ${entries[index][0]} | Type: ${entries[index][1].type}, Used: ${entries[index][1].isUsed}, Line: ${entries[index][1].lineNumber}, Pos:${entries[index][1].linePosition}`;
+                        } // for
+                        innerHtml += `</a>`;
                         li.innerHTML = innerHtml;
-                        // Single characters alignment are off... Add padding to the left.
-                        if (curr.name.length >= 1 || curr.name.length <= 3) {
-                            li.style.paddingLeft = "1.5rem";
-                        } // if
-                        // Make red if invalid
-                        if (!curr.isValid) {
-                            li.style.color = "red";
-                        } // if
-                        document.getElementById(`ast_p${this.program}_li_node_id_${curr.parent_node.id}`).appendChild(ul);
+                        document.getElementById(`scope-tree_p${this.program}_li_node_id_${curr.parent_node.id}`).appendChild(ul);
                     } // if
                     // Node is 2nd or 3rd or nth child of parent
                     else {
                         let li = document.createElement("li");
-                        li.id = `ast_p${this.program}_li_node_id_${curr.id}`;
-                        let innerHtml = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this.program}, ${curr.id}, 'AST');" name = "node-anchor-tag">${curr.name}</a>`;
+                        li.id = `scope-tree_p${this.program}_li_node_id_${curr.id}`;
+                        let innerHtml = `<a onclick="NightingaleCompiler.CompilerController.compilerControllerBtnLightUpTree_click(${this.program}, ${curr.id}, 'SCOPETREE');" name = "node-anchor-tag">${curr.name}`;
+                        // Fix empty scope table alignment
+                        if (curr.getScopeTable().isEmpty() && !curr.parent_node.getScopeTable().isEmpty()) {
+                            // li.style.paddingLeft = "32.5%";
+                        } // if
+                        // Add scope table
+                        let entries = curr.getScopeTable().entries();
+                        for (let index = 0; index < entries.length; ++index) {
+                            innerHtml += `<br> ${entries[index][0]} | Type: ${entries[index][1].type}, Used: ${entries[index][1].isUsed}, Line: ${entries[index][1].lineNumber}, Pos:${entries[index][1].linePosition}`;
+                        } // for
+                        innerHtml += `</a>`;
                         li.innerHTML = innerHtml;
-                        // Single characters alignment are off... Add padding to the left.
-                        if (curr.name.length >= 1 || curr.name.length <= 3) {
-                            li.style.paddingLeft = "1.5rem";
-                        } // if
-                        // Make red if invalid
-                        if (!curr.isValid) {
-                            li.style.color = "red";
-                        } // if
-                        document.getElementById(`ast_p${this.program}_ul_node_id_${curr.parent_node.children_nodes[0].id}`).appendChild(li);
+                        document.getElementById(`scope-tree_p${this.program}_ul_node_id_${curr.parent_node.children_nodes[0].id}`).appendChild(li);
                     } // else
                     // Store all the children of 
                     // current node from right to left.
@@ -207,6 +224,6 @@ var NightingaleCompiler;
             } // while
         } // traverse tree
     } // class
-    NightingaleCompiler.AbstractSyntaxTree = AbstractSyntaxTree;
+    NightingaleCompiler.ScopeTreeModel = ScopeTreeModel;
 })(NightingaleCompiler || (NightingaleCompiler = {})); // module
-//# sourceMappingURL=abstract_syntax_tree_model.js.map
+//# sourceMappingURL=scope_tree_model.js.map

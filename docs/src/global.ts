@@ -13,6 +13,7 @@ const CODE_EDITOR_TAB_LENGTH = 4;
 
 const LEXER = "LEXER";
 const PARSER = "PARSER";
+const SEMANTIC_ANALYSIS = "SEMANTIC ANALYSIS";
 const ERROR = "ERROR";
 const WARNING = "WARNING";
 const INFO = "INFO";
@@ -88,8 +89,36 @@ const WARNING_TOKEN = "WARNING_TOKEN";
 const MISSING_TOKEN = "MISSING_TOKEN";
 
 /**
- * Abstract Syntax Tree Types of Nodes
+ * Syntax Trees Types of Nodes
  */
+const NODE_TYPE_BRANCH = "BRANCH";
+const NODE_TYPE_LEAF = "LEAF";
 
-const BRANCH = "BRANCH";
-const LEAF = "LEAF";
+/**
+ * Syntax Tree Names of Nodes
+ */
+const NODE_NAME_PROGRAM = "Program";
+const NODE_NAME_BLOCK = "Block";
+const NODE_NAME_STATEMENT_LIST = "Statement List";
+const NODE_NAME_STATEMENT = "Statement";
+const NODE_NAME_PRINT_STATEMENT = "Print Statement";
+const NODE_NAME_ASSIGNMENT_STATEMENT = "Assignment Statement";
+const NODE_NAME_VARIABLE_DECLARATION = "Variable Declaration";
+const NODE_NAME_WHILE_STATEMENT = "While Statement";
+const NODE_NAME_IF_STATEMENT = "If Statement";
+const NODE_NAME_EXPRESSION = "Expression";
+const NODE_NAME_INT_EXPRESSION = "Int Expression";
+const NODE_NAME_STRING_EXPRESSION = "String Expression";
+const NODE_NAME_BOOLEAN_EXPRESSION = "Boolean Expression";
+const NODE_NAME_IDENTIFIER = "Identifier";
+const NODE_NAME_TYPE = "Type";
+const NODE_NAME_CHARACTER_LIST = "Character List";
+const NODE_NAME_CHARACTER = "Character";
+const NODE_NAME_SPACE = "Space";
+const NODE_NAME_DIGIT = "Digit";
+const NODE_NAME_BOOLEAN_OPERATION = "Boolean Operation";
+const NODE_NAME_BOOLEAN_VALUE = "Boolean Value";
+const NODE_NAME_INT_OPERATION = "Int Operation";
+
+// Scope Tree Node Names
+const NODE_NAME_SCOPE = "Scope";

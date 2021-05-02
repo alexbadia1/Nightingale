@@ -1,38 +1,38 @@
 /**
- * abstract_syntax_tree_controller.ts
+ * scope_tree_controller.ts
  *
  * Author: Alex Badia
  *
- * The Abstract Syntax Tree Controller will use the Abstract Syntax Tree Model
- * to render final Abstract Syntax Tree Model output in its corresponding view in index.html.
+ * The Scope Tree Controller will use the Concrete Syntax Tree Model
+ * to render final Concrete Syntax Tree Model output in its corresponding view in index.html.
  */
 var NightingaleCompiler;
 (function (NightingaleCompiler) {
-    class AbstractSyntaxTreeController {
-        constructor(_abstract_syntax_trees) {
-            this._abstract_syntax_trees = _abstract_syntax_trees;
+    class ScopeTreeController {
+        constructor(_scope_trees) {
+            this._scope_trees = _scope_trees;
         } // constuctor
         add_tree_to_output_console(output_console, program_number) {
             let traversalResults;
             let index = 0;
-            while (index < this._abstract_syntax_trees.length) {
-                if (this._abstract_syntax_trees[index].program === program_number) {
+            while (index < this._scope_trees.length) {
+                if (this._scope_trees[index].program === program_number) {
                     let listHeader = document.createElement("li");
                     listHeader.style.listStyle = "none";
                     listHeader.style.fontSize = "1rem";
                     listHeader.style.marginTop = "15px";
                     listHeader.style.marginLeft = "15px";
                     listHeader.style.color = "white";
-                    listHeader.innerHTML += `Program ${program_number + 1}: Abstract Syntax Tree`;
+                    listHeader.innerHTML += `Program ${program_number + 1}: Scope Tree`;
                     output_console.appendChild(listHeader);
                     let divider = document.createElement("li");
                     divider.style.listStyle = "none";
                     divider.style.fontSize = "1rem";
                     divider.style.marginLeft = "15px";
                     divider.style.color = "white";
-                    divider.innerHTML += `--------------------------------------------`;
+                    divider.innerHTML += `--------------------------------`;
                     output_console.appendChild(divider);
-                    traversalResults = this._abstract_syntax_trees[index].toString().split("\n");
+                    traversalResults = this._scope_trees[index].toString().split("\n");
                     for (let result of traversalResults) {
                         let listItem = document.createElement("li");
                         listItem.style.listStyle = "none";
@@ -49,14 +49,14 @@ var NightingaleCompiler;
                 } // else
             } // while
         } // show_trees_cmd
-        add_tree_to_gui(ast_output, program_number) {
+        add_tree_to_gui(cst_output, program_number) {
             let index = 0;
-            while (index < this._abstract_syntax_trees.length) {
-                if (this._abstract_syntax_trees[index].program === program_number) {
-                    this._abstract_syntax_trees[index].toHtml();
+            while (index < this._scope_trees.length) {
+                if (this._scope_trees[index].program === program_number) {
+                    this._scope_trees[index].toHtml();
                     let bottomMargin = document.createElement("div");
                     bottomMargin.style.height = "10vh";
-                    ast_output.appendChild(bottomMargin);
+                    cst_output.appendChild(bottomMargin);
                     break;
                 } // if
                 else {
@@ -65,6 +65,6 @@ var NightingaleCompiler;
             } // while
         } // show_trees_gui
     } // class
-    NightingaleCompiler.AbstractSyntaxTreeController = AbstractSyntaxTreeController;
+    NightingaleCompiler.ScopeTreeController = ScopeTreeController;
 })(NightingaleCompiler || (NightingaleCompiler = {})); // module
-//# sourceMappingURL=abstract_syntax_tree_controller.js.map
+//# sourceMappingURL=scope_tree_controller.js.map

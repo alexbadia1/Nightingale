@@ -222,7 +222,11 @@
 
                         // Fix empty scope table alignment
                         if (curr.getScopeTable().isEmpty() && !curr.parent_node.getScopeTable().isEmpty()) {
-                            // li.style.paddingLeft = "30.5%";
+                            if (curr.parent_node.children_nodes.length === 2) {
+                                if (curr.parent_node.children_nodes[0].getScopeTable().isEmpty() && curr.parent_node.children_nodes[1]. getScopeTable().isEmpty()) {
+                                    li.style.paddingLeft = "32.5%";
+                                }// if
+                            }// if
                         }// if
 
                         // Add scope table
@@ -245,7 +249,11 @@
 
                         // Fix empty scope table alignment
                         if (curr.getScopeTable().isEmpty() && !curr.parent_node.getScopeTable().isEmpty()) {
-                            // li.style.paddingLeft = "32.5%";
+                            if (curr.parent_node.children_nodes.length === 2) {
+                                if (curr.parent_node.children_nodes[0].getScopeTable().isEmpty() && curr.parent_node.children_nodes[1]. getScopeTable().isEmpty()) {
+                                    li.style.paddingLeft = "32.5%";
+                                }// if
+                            }// if
                         }// if
 
                         // Add scope table

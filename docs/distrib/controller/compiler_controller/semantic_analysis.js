@@ -246,6 +246,7 @@ var NightingaleCompiler;
          * @param cst_current_node current node in the cst
          */
         _add_assignment_statement_subtree_to_ast(cst_current_node) {
+            var _a;
             this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, WARNING, `Adding assignment statement subtree to abstract syntax tree.`) // OutputConsoleMessage
             ); // this.verbose[this.verbose.length - 1].push
             // Remember, if you built your tree correctly..
@@ -263,16 +264,17 @@ var NightingaleCompiler;
             //                                --> Node(Id)
             let identifier_node = cst_current_node.children_nodes[0].children_nodes[0];
             // Check scope tree if the variable exists and get its type
-            let isDeclared = this.is_variable_declared(identifier_node);
+            let var_matadata = this.is_variable_declared(identifier_node);
             // Add root Node(Assignment Statement) for asignment statement subtree
-            this._current_ast.add_node(cst_current_node.name, NODE_TYPE_BRANCH, isDeclared);
+            this._current_ast.add_node(cst_current_node.name, NODE_TYPE_BRANCH, (var_matadata !== null));
             // Add the identifier to assignment statement subtree
-            this._current_ast.add_node(identifier_node.name, NODE_TYPE_LEAF, isDeclared, cst_current_node.getToken());
+            this._current_ast.add_node(identifier_node.name, NODE_TYPE_LEAF, (var_matadata !== null), cst_current_node.getToken());
             // Ignore the assignment operator: Node(=)
             // let assignment_op = cst_current_node.children_nodes[1]
             // Add the expression node to assignment statement subtree at the SAME LEVEL
             let expression_node = cst_current_node.children_nodes[2];
-            this._add_expression_subtree(expression_node);
+            // I've used null-aware operators in Dart, apparently Typescript has them too, damn...
+            this._add_expression_subtree(expression_node, (_a = var_matadata === null || var_matadata === void 0 ? void 0 : var_matadata.type) !== null && _a !== void 0 ? _a : UNDEFINED);
         } // _add_assignment_statement_subtree_to_ast
         /**
          * Construct a subtree in the abstract syntax tree
@@ -282,26 +284,34 @@ var NightingaleCompiler;
          *   - Boolean Expression
          *   - Identifier
          */
-        _add_expression_subtree(expression_node) {
-            this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, WARNING, `Attempting to add ${expression_node.children_nodes[0].name} subtree to abstract syntax tree.`) // OutputConsoleMessage
+        _add_expression_subtree(expression_node, parent_var_type) {
+            this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, INFO, `Attempting to add ${expression_node.children_nodes[0].name} subtree to abstract syntax tree.`) // OutputConsoleMessage
             ); // this.verbose[this.verbose.length - 1].push
             switch (expression_node.children_nodes[0].name) {
                 case NODE_NAME_INT_EXPRESSION:
-                    this._add_integer_expression_subtree_to_ast(expression_node.children_nodes[0]);
-                    break;
+                    this._add_integer_expression_subtree_to_ast(expression_node.children_nodes[0], parent_var_type);
+                    return INT;
                 case NODE_NAME_STRING_EXPRESSION:
-                    this._add_string_expression_subtree_to_ast(expression_node.children_nodes[0]);
-                    break;
+                    this._add_string_expression_subtree_to_ast(expression_node.children_nodes[0], parent_var_type);
+                    return STRING;
                 case NODE_NAME_BOOLEAN_EXPRESSION:
-                    this._add_boolean_expression_subtree_to_ast(expression_node.children_nodes[0]);
-                    break;
+                    this._add_boolean_expression_subtree_to_ast(expression_node.children_nodes[0], parent_var_type);
+                    return BOOLEAN;
                 case NODE_NAME_IDENTIFIER:
-                    // TODO: Make sure identifier was declared
-                    let isDeclared = this.is_variable_declared(expression_node.children_nodes[0].children_nodes[0]);
-                    // TODO: Make sure identifier is the same type
+                    // Make sure identifier was declared
+                    let var_metadata = this.is_variable_declared(expression_node.children_nodes[0].children_nodes[0]);
+                    let curr_var_type = UNDEFINED;
+                    if (var_metadata !== null) {
+                        curr_var_type = var_metadata.type;
+                        // If parent data type wasn't specified make it equal to the current datatype
+                        if (parent_var_type === UNDEFINED) {
+                            parent_var_type = curr_var_type;
+                        } // if
+                        this.check_type(parent_var_type, expression_node.children_nodes[0], curr_var_type);
+                    } // if
                     // Add identifier to ast subtree at the SAME Level
-                    this._current_ast.add_node(expression_node.children_nodes[0].children_nodes[0].name, NODE_TYPE_LEAF, isDeclared, expression_node.children_nodes[0].children_nodes[0].getToken());
-                    break;
+                    this._current_ast.add_node(expression_node.children_nodes[0].children_nodes[0].name, NODE_TYPE_LEAF, (var_metadata !== null), expression_node.children_nodes[0].children_nodes[0].getToken());
+                    return curr_var_type;
                 default:
                     throw Error(`Semantic Analysis Failed: [${expression_node.name}] does not have a valid child [INT EXPRESSION, STRING EXPRESSION, BOOLEAN EXPRESSION, IDENTIFIER]`);
             } // switch
@@ -313,7 +323,7 @@ var NightingaleCompiler;
          *  OR...
          *   - Digit
          */
-        _add_integer_expression_subtree_to_ast(integer_expression_node) {
+        _add_integer_expression_subtree_to_ast(integer_expression_node, parent_var_type) {
             this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, WARNING, `Adding ${integer_expression_node.name} subtree to abstract syntax tree.`) // OutputConsoleMessage
             ); // this.verbose[this.verbose.length - 1].push
             // Remember, if you built your tree correctly...
@@ -331,19 +341,28 @@ var NightingaleCompiler;
             //     Node(Expression)
             //
             // Integer expression is DIGIT--INTOP--EXPRESSION
+            let digit_value_node = integer_expression_node.children_nodes[0].children_nodes[0];
+            // If there's no parent variable type to compare to, make the type an int
+            let valid_type = true;
+            if (parent_var_type === UNDEFINED) {
+                parent_var_type = INT;
+            } // if
+            else {
+                valid_type = this.check_type(parent_var_type, digit_value_node, INT);
+            } // else
             if (integer_expression_node.children_nodes.length > 1) {
                 let integer_operation_lexeme_node = integer_expression_node.children_nodes[1].children_nodes[0];
                 let expression_node = integer_expression_node.children_nodes[2];
                 // Add INT_OP to the assignment statement subtree at SAME LEVEL as identifier
-                this._current_ast.add_node(integer_operation_lexeme_node.name, NODE_TYPE_BRANCH, true, integer_operation_lexeme_node.getToken());
+                this._current_ast.add_node(integer_operation_lexeme_node.name, NODE_TYPE_BRANCH, valid_type, integer_operation_lexeme_node.getToken());
                 // Add DIGIT to ast subtree
-                this._current_ast.add_node(integer_expression_node.children_nodes[0].children_nodes[0].name, NODE_TYPE_LEAF, true, integer_expression_node.children_nodes[0].children_nodes[0].getToken());
+                this._current_ast.add_node(digit_value_node.name, NODE_TYPE_LEAF, valid_type, digit_value_node.getToken());
                 // Add Expression to the assignment statement subtree
-                this._add_expression_subtree(expression_node);
+                this._add_expression_subtree(expression_node, parent_var_type);
             } // if
             else if (integer_expression_node.children_nodes.length === 1) {
                 // Add DIGIT to ast subtree
-                this._current_ast.add_node(integer_expression_node.children_nodes[0].children_nodes[0].name, NODE_TYPE_LEAF, true, integer_expression_node.children_nodes[0].children_nodes[0].getToken());
+                this._current_ast.add_node(digit_value_node.name, NODE_TYPE_LEAF, valid_type, digit_value_node.getToken());
             } // else if 
             else {
                 // This should never happen based on our language
@@ -355,7 +374,7 @@ var NightingaleCompiler;
          * rooted with an String Expression adds:
          *   - " CharList "
          */
-        _add_string_expression_subtree_to_ast(string_expression_node) {
+        _add_string_expression_subtree_to_ast(string_expression_node, parent_var_type) {
             this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, WARNING, `Adding ${string_expression_node.name} subtree to abstract syntax tree.`) // OutputConsoleMessage
             ); // this.verbose[this.verbose.length - 1].push
             // Remember, if you built your tree correctly...
@@ -375,6 +394,15 @@ var NightingaleCompiler;
             //   
             //   Check recurisvely:
             //     Node(Character List)
+            let open_string_expression_node = string_expression_node.children_nodes[0];
+            // Check current string type to parent type
+            let valid_type = true;
+            if (parent_var_type === UNDEFINED) {
+                parent_var_type = STRING;
+            } // if
+            else {
+                valid_type = this.check_type(parent_var_type, open_string_expression_node, STRING);
+            } // else
             let string = "\"";
             // Not an empty string, iteratively add each character.
             if (string_expression_node.children_nodes.length > 2) {
@@ -398,7 +426,7 @@ var NightingaleCompiler;
                 } // while
             } // else
             string += "\"";
-            this._current_ast.add_node(string, NODE_TYPE_LEAF);
+            this._current_ast.add_node(string, NODE_TYPE_LEAF, valid_type);
         } // add_string_expression_subtree_to_ast
         /**
          * Construct a subtree in the abstract syntax tree
@@ -407,7 +435,7 @@ var NightingaleCompiler;
          * OR...
          *   - Boolean Value [true | false]
          */
-        _add_boolean_expression_subtree_to_ast(boolean_expression_node) {
+        _add_boolean_expression_subtree_to_ast(boolean_expression_node, parent_var_type) {
             this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, WARNING, `Adding ${boolean_expression_node.name} subtree to abstract syntax tree.`) // OutputConsoleMessage
             ); // this.verbose[this.verbose.length - 1].push
             // Remember, if you built your tree correctly...
@@ -423,30 +451,39 @@ var NightingaleCompiler;
             //   Node(Boolean Expression).children[0] --> Node(Boolean Value)
             //
             // Boolean expression is: ( Expr BoolOp Expr )
+            let boolean_value_node = boolean_expression_node.children_nodes[0];
+            let boolean_node = boolean_value_node.children_nodes[0];
+            // Check type
+            let valid_type = true;
+            if (parent_var_type === UNDEFINED) {
+                parent_var_type = BOOLEAN;
+            } // if
+            else {
+                valid_type = this.check_type(parent_var_type, boolean_node, BOOLEAN);
+            } // else
             if (boolean_expression_node.children_nodes.length > 1) {
                 // Ignore Open Parenthesis
                 // let open_parenthisis_node = boolean_expression_node.children_nodes[0];
-                // Add the Boolean Operator First
                 let boolean_operator_node = boolean_expression_node.children_nodes[2];
                 let boolean_operator_value_node = boolean_operator_node.children_nodes[0];
-                this._current_ast.add_node(boolean_operator_value_node.name, NODE_TYPE_BRANCH, true, boolean_operator_value_node.getToken());
-                // Add Expressions as children of the Boolean Operator
                 let left_expression_node = boolean_expression_node.children_nodes[1];
-                this._add_expression_subtree(left_expression_node);
+                let right_expression_node = boolean_expression_node.children_nodes[3];
+                // Add the Boolean Operator First
+                this._current_ast.add_node(boolean_operator_value_node.name, NODE_TYPE_BRANCH, valid_type, boolean_operator_value_node.getToken());
+                // Make sure left and right expression are of the same type
+                // Add Expressions as children of the Boolean Operator
+                let left_expression_type = this._add_expression_subtree(left_expression_node, UNDEFINED);
                 if (left_expression_node.children_nodes[0].children_nodes[0].name == "(") {
                     this._climb_ast_one_level();
                 } // if
-                let right_expression_node = boolean_expression_node.children_nodes[3];
-                this._add_expression_subtree(right_expression_node);
+                let right_expression_type = this._add_expression_subtree(right_expression_node, left_expression_type);
                 // Ignore End Parenthesis
                 // let open_parenthisis_node = boolean_expression_node.children_nodes[4];
                 return NODE_NAME_BOOLEAN_EXPRESSION;
             } // if
             // Boolean expression is just a boolean value...
             else if (boolean_expression_node.children_nodes.length === 1) {
-                let boolean_value_node = boolean_expression_node.children_nodes[0];
-                let boolean_node = boolean_value_node.children_nodes[0];
-                this._current_ast.add_node(boolean_node.name, NODE_TYPE_LEAF);
+                this._current_ast.add_node(boolean_node.name, NODE_TYPE_LEAF, valid_type);
                 return NODE_NAME_BOOLEAN_VALUE;
             } // else if
             // This should never happen...
@@ -477,7 +514,7 @@ var NightingaleCompiler;
             //
             // Add Expression Node
             let expression_node = print_node.children_nodes[2];
-            this._add_expression_subtree(expression_node);
+            this._add_expression_subtree(expression_node, UNDEFINED);
         } // _add_print_subtree_to_ast
         /**
          * Construct a subtree in the abstract syntax tree rooted with the Keyword While and adds:
@@ -496,7 +533,7 @@ var NightingaleCompiler;
             // Add While Statment
             this._current_ast.add_node(while_node.children_nodes[0].name, NODE_TYPE_BRANCH, true, while_node.children_nodes[0].getToken());
             // Add boolean expression node to subtree
-            let node_name = this._add_boolean_expression_subtree_to_ast(while_node.children_nodes[1]);
+            let node_name = this._add_boolean_expression_subtree_to_ast(while_node.children_nodes[1], BOOLEAN);
             // Add the Block subtree directly under the While Statement Keyword
             if (node_name === NODE_NAME_BOOLEAN_EXPRESSION) {
                 this._climb_ast_one_level();
@@ -520,7 +557,7 @@ var NightingaleCompiler;
             // Add If Statment
             this._current_ast.add_node(if_node.children_nodes[0].name, NODE_TYPE_BRANCH, true, if_node.children_nodes[0].getToken());
             // Add boolean expression node to subtree
-            let node_name = this._add_boolean_expression_subtree_to_ast(if_node.children_nodes[1]);
+            let node_name = this._add_boolean_expression_subtree_to_ast(if_node.children_nodes[1], BOOLEAN);
             // Add the Block subtree directly under the While Statement Keyword
             if (node_name === NODE_NAME_BOOLEAN_EXPRESSION) {
                 this._climb_ast_one_level();
@@ -528,6 +565,7 @@ var NightingaleCompiler;
             this._add_block_subtree_to_ast(if_node.children_nodes[2]);
         } // _add_if_subtree_to_ast
         is_variable_declared(identifier_node) {
+            console.log(`Searching for ${identifier_node.name}`);
             let isDeclared = false;
             let var_metadata = null;
             let curr_scope_table_node = this._current_scope_tree.current_node;
@@ -547,9 +585,20 @@ var NightingaleCompiler;
             if (!isDeclared) {
                 this.output[this.output.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, ERROR, `Missing variable declaration [${identifier_node.name}] at ${identifier_node.getToken().lineNumber}:${identifier_node.getToken().linePosition}`) // OutputConsoleMessage
                 ); // this.output[this.verbose.length - 1].push
+                return null;
             } // if
-            return isDeclared;
+            return var_metadata;
         } // is_variable_declared
+        check_type(parent_var_type, node, curr_type) {
+            if (parent_var_type !== curr_type) {
+                this.output[this.output.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, ERROR, `Type mismatch error: tried to perform an operation on [${curr_type}] with [${parent_var_type}] at ${node.getToken().lineNumber}:${node.getToken().linePosition}`) // OutputConsoleMessage
+                ); // this.verbose[this.verbose.length - 1].push
+                this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, ERROR, `Type mismatch error: tried to perform an operation on [${curr_type}] with [${parent_var_type}] at ${node.getToken().lineNumber}:${node.getToken().linePosition}`) // OutputConsoleMessage
+                ); // this.verbose[this.verbose.length - 1].push
+                return false;
+            } // if
+            return true;
+        } // check_type
         /**
          * Moves the AST's current node pointer up one level in the tree (to the parent node)
          */

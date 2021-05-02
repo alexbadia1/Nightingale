@@ -93,6 +93,13 @@ module NightingaleCompiler {
                             `Finished semantic analysis on program ${cstIndex + 1}.`
                         )// OutputConsoleMessage
                     );// this.output[cstIndex].push
+                    this.verbose[this.verbose.length -1].push(
+                        new OutputConsoleMessage(
+                            SEMANTIC_ANALYSIS, 
+                            INFO, 
+                            `Finished semantic analysis on program ${cstIndex + 1}.`
+                        )// OutputConsoleMessage
+                    );// this.verbose[cstIndex].push
                 }// if
 
                 // Tell user, skipped the program
@@ -128,6 +135,21 @@ module NightingaleCompiler {
                     `Semantic Analysis completed with  ${this._error_count} error(s)`
                 )// OutputConsoleMessage
             );// this.output[cstIndex].push
+
+            this.verbose[this.verbose.length -1].push(
+                new OutputConsoleMessage(
+                    SEMANTIC_ANALYSIS, 
+                    INFO, 
+                    `Semantic Analysis completed with ${this._warning_count} warning(s)`
+                )// OutputConsoleMessage
+            );// this.verbose[cstIndex].push
+            this.verbose[this.verbose.length -1].push(
+                new OutputConsoleMessage(
+                    SEMANTIC_ANALYSIS, 
+                    INFO, 
+                    `Semantic Analysis completed with  ${this._error_count} error(s)`
+                )// OutputConsoleMessage
+            );// this.verbose[cstIndex].push
         }// main
 
         /**
@@ -336,7 +358,16 @@ module NightingaleCompiler {
                         SEMANTIC_ANALYSIS,
                         ERROR,
                         `Cannot redeclare block-scoped variable '${cst_current_node.getToken().lexeme}' at ${cst_current_node.getToken().lineNumber}:${cst_current_node.getToken().linePosition}`
-                        ));
+                    )// OutputConsoleMessage
+                );// this.output[this.output.length - 1].push
+
+                this.verbose[this.verbose.length - 1].push(
+                    new OutputConsoleMessage(
+                        SEMANTIC_ANALYSIS,
+                        ERROR,
+                        `Cannot redeclare block-scoped variable '${cst_current_node.getToken().lexeme}' at ${cst_current_node.getToken().lineNumber}:${cst_current_node.getToken().linePosition}`
+                    )// OutputConsoleMessage
+                );// this.verbose[this.verbose.length - 1].push
                 this._error_count += 1;
             }// if
 
@@ -488,6 +519,14 @@ module NightingaleCompiler {
                                     `'${identifier_node.name}' is being read but its value is never initialized (${identifier_node.getToken().lineNumber}:${identifier_node.getToken().linePosition})`
                                 )// OutputConsoleMessage
                             );// this.output[this.output.length - 1].push
+
+                            this.verbose[this.verbose.length - 1].push(
+                                new OutputConsoleMessage(
+                                    SEMANTIC_ANALYSIS, 
+                                    WARNING, 
+                                    `'${identifier_node.name}' is being read but its value is never initialized (${identifier_node.getToken().lineNumber}:${identifier_node.getToken().linePosition})`
+                                )// OutputConsoleMessage
+                            );// this.verbose[this.verbose.length - 1].push
                             this._warning_count += 1;
                         }// if
                     }// if
@@ -628,6 +667,8 @@ module NightingaleCompiler {
                 valid_type = !this.check_type(parent_var_type, open_string_expression_node, STRING);
             }// else
 
+            // Due to size limitations of my already huge AST, I will be appending string characters into a single node.
+            //
             // Append a STRING_EXPRESSION_BOUNDARY to start string
             let string: string = "\"";
 
@@ -704,7 +745,6 @@ module NightingaleCompiler {
 
             // Else, there is a parent type to enforce type matching with.
             else {
-                console.log(`Boolean_node: ${open_parenthesis_or_boolean_value_node.getToken().lexeme}`);
                 valid_type = !this.check_type(parent_var_type, open_parenthesis_or_boolean_value_node, BOOLEAN);
             }// else
 
@@ -898,7 +938,14 @@ module NightingaleCompiler {
                         ERROR, 
                         `Missing variable declaration [${identifier_node.name}] at ${identifier_node.getToken().lineNumber}:${identifier_node.getToken().linePosition}`
                     )// OutputConsoleMessage
-                );// this.output[this.verbose.length - 1].push
+                );// this.output[this.output.length - 1].push
+                this.verbose[this.verbose.length - 1].push(
+                    new OutputConsoleMessage(
+                        SEMANTIC_ANALYSIS, 
+                        ERROR, 
+                        `Missing variable declaration [${identifier_node.name}] at ${identifier_node.getToken().lineNumber}:${identifier_node.getToken().linePosition}`
+                    )// OutputConsoleMessage
+                );// this.verbose[this.verbose.length - 1].push
                 this._error_count += 1;
                 return null;
             }// if
@@ -973,6 +1020,14 @@ module NightingaleCompiler {
                                     `'${key}' is declared but its value is never initialized nor read (${value.lineNumber}:${value.linePosition})`
                                 )// OutputConsoleMessage
                             );// this.output[this.output.length - 1].push
+
+                            this.verbose[this.verbose.length - 1].push(
+                                new OutputConsoleMessage(
+                                    SEMANTIC_ANALYSIS, 
+                                    WARNING, 
+                                    `'${key}' is declared but its value is never initialized nor read (${value.lineNumber}:${value.linePosition})`
+                                )// OutputConsoleMessage
+                            );// this.verbose[this.verbose.length - 1].push
                             this._warning_count += 1;
                             value.node.warningFlag = true;
                         }// if
@@ -985,6 +1040,14 @@ module NightingaleCompiler {
                                 )// OutputConsoleMessage
                             );// this.output[this.output.length - 1].push
 
+                            this.verbose[this.verbose.length - 1].push(
+                                new OutputConsoleMessage(
+                                    SEMANTIC_ANALYSIS, 
+                                    WARNING, 
+                                    `'${key}' is declared and read but its value is never initialized (${value.lineNumber}:${value.linePosition})`
+                                )// OutputConsoleMessage
+                            );// this.verbose[this.verbose.length - 1].push
+
                             this._warning_count += 1;
                             value.node.warningFlag = true;
                         }// else if
@@ -996,6 +1059,14 @@ module NightingaleCompiler {
                                     `'${key}' is declared and intialized but its value is never read (${value.lineNumber}:${value.linePosition})`
                                 )// OutputConsoleMessage
                             );// this.output[this.output.length - 1].push
+
+                            this.verbose[this.verbose.length - 1].push(
+                                new OutputConsoleMessage(
+                                    SEMANTIC_ANALYSIS, 
+                                    WARNING, 
+                                    `'${key}' is declared and intialized but its value is never read (${value.lineNumber}:${value.linePosition})`
+                                )// OutputConsoleMessage
+                            );// this.verbose[this.verbose.length - 1].push
 
                             this._warning_count += 1;
                             value.node.warningFlag = true;

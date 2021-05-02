@@ -72,6 +72,8 @@ var NightingaleCompiler;
                     this.check_for_warnings();
                     this.output[this.output.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, INFO, `Finished semantic analysis on program ${cstIndex + 1}.`) // OutputConsoleMessage
                     ); // this.output[cstIndex].push
+                    this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, INFO, `Finished semantic analysis on program ${cstIndex + 1}.`) // OutputConsoleMessage
+                    ); // this.verbose[cstIndex].push
                 } // if
                 // Tell user, skipped the program
                 else {
@@ -83,6 +85,10 @@ var NightingaleCompiler;
             ); // this.output[cstIndex].push
             this.output[this.output.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, INFO, `Semantic Analysis completed with  ${this._error_count} error(s)`) // OutputConsoleMessage
             ); // this.output[cstIndex].push
+            this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, INFO, `Semantic Analysis completed with ${this._warning_count} warning(s)`) // OutputConsoleMessage
+            ); // this.verbose[cstIndex].push
+            this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, INFO, `Semantic Analysis completed with  ${this._error_count} error(s)`) // OutputConsoleMessage
+            ); // this.verbose[cstIndex].push
         } // main
         /**
          * All valid concrete syntax trees can be turned into an abstract syntax tree.
@@ -237,7 +243,10 @@ var NightingaleCompiler;
                 if (!this.invalid_semantic_programs.includes(this._current_ast.program)) {
                     this.invalid_semantic_programs.push(this._current_ast.program);
                 } // if
-                this.output[this.output.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, ERROR, `Cannot redeclare block-scoped variable '${cst_current_node.getToken().lexeme}' at ${cst_current_node.getToken().lineNumber}:${cst_current_node.getToken().linePosition}`));
+                this.output[this.output.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, ERROR, `Cannot redeclare block-scoped variable '${cst_current_node.getToken().lexeme}' at ${cst_current_node.getToken().lineNumber}:${cst_current_node.getToken().linePosition}`) // OutputConsoleMessage
+                ); // this.output[this.output.length - 1].push
+                this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, ERROR, `Cannot redeclare block-scoped variable '${cst_current_node.getToken().lexeme}' at ${cst_current_node.getToken().lineNumber}:${cst_current_node.getToken().linePosition}`) // OutputConsoleMessage
+                ); // this.verbose[this.verbose.length - 1].push
                 this._error_count += 1;
             } // if
             let ast_node = this._current_ast.add_node(cst_current_node.name, NODE_TYPE_BRANCH, hasCollision, false, cst_current_node.getToken());
@@ -342,6 +351,8 @@ var NightingaleCompiler;
                             hasWarning = true;
                             this.output[this.output.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, WARNING, `'${identifier_node.name}' is being read but its value is never initialized (${identifier_node.getToken().lineNumber}:${identifier_node.getToken().linePosition})`) // OutputConsoleMessage
                             ); // this.output[this.output.length - 1].push
+                            this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, WARNING, `'${identifier_node.name}' is being read but its value is never initialized (${identifier_node.getToken().lineNumber}:${identifier_node.getToken().linePosition})`) // OutputConsoleMessage
+                            ); // this.verbose[this.verbose.length - 1].push
                             this._warning_count += 1;
                         } // if
                     } // if
@@ -435,6 +446,8 @@ var NightingaleCompiler;
             else {
                 valid_type = !this.check_type(parent_var_type, open_string_expression_node, STRING);
             } // else
+            // Due to size limitations of my already huge AST, I will be appending string characters into a single node.
+            //
             // Append a STRING_EXPRESSION_BOUNDARY to start string
             let string = "\"";
             // Not an empty string, iteratively add each character.
@@ -488,7 +501,6 @@ var NightingaleCompiler;
             } // if
             // Else, there is a parent type to enforce type matching with.
             else {
-                console.log(`Boolean_node: ${open_parenthesis_or_boolean_value_node.getToken().lexeme}`);
                 valid_type = !this.check_type(parent_var_type, open_parenthesis_or_boolean_value_node, BOOLEAN);
             } // else
             // Boolean expression ::== ( Expr BoolOp Expr )
@@ -630,7 +642,9 @@ var NightingaleCompiler;
             } // while
             if (!isDeclared) {
                 this.output[this.output.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, ERROR, `Missing variable declaration [${identifier_node.name}] at ${identifier_node.getToken().lineNumber}:${identifier_node.getToken().linePosition}`) // OutputConsoleMessage
-                ); // this.output[this.verbose.length - 1].push
+                ); // this.output[this.output.length - 1].push
+                this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, ERROR, `Missing variable declaration [${identifier_node.name}] at ${identifier_node.getToken().lineNumber}:${identifier_node.getToken().linePosition}`) // OutputConsoleMessage
+                ); // this.verbose[this.verbose.length - 1].push
                 this._error_count += 1;
                 return null;
             } // if
@@ -680,18 +694,24 @@ var NightingaleCompiler;
                         if (!value.isUsed && !value.isInitialized) {
                             this.output[this.output.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, WARNING, `'${key}' is declared but its value is never initialized nor read (${value.lineNumber}:${value.linePosition})`) // OutputConsoleMessage
                             ); // this.output[this.output.length - 1].push
+                            this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, WARNING, `'${key}' is declared but its value is never initialized nor read (${value.lineNumber}:${value.linePosition})`) // OutputConsoleMessage
+                            ); // this.verbose[this.verbose.length - 1].push
                             this._warning_count += 1;
                             value.node.warningFlag = true;
                         } // if
                         else if (value.isUsed && !value.isInitialized) {
                             this.output[this.output.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, WARNING, `'${key}' is declared and read but its value is never initialized (${value.lineNumber}:${value.linePosition})`) // OutputConsoleMessage
                             ); // this.output[this.output.length - 1].push
+                            this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, WARNING, `'${key}' is declared and read but its value is never initialized (${value.lineNumber}:${value.linePosition})`) // OutputConsoleMessage
+                            ); // this.verbose[this.verbose.length - 1].push
                             this._warning_count += 1;
                             value.node.warningFlag = true;
                         } // else if
                         else if (!value.isUsed && value.isInitialized) {
                             this.output[this.output.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, WARNING, `'${key}' is declared and intialized but its value is never read (${value.lineNumber}:${value.linePosition})`) // OutputConsoleMessage
                             ); // this.output[this.output.length - 1].push
+                            this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, WARNING, `'${key}' is declared and intialized but its value is never read (${value.lineNumber}:${value.linePosition})`) // OutputConsoleMessage
+                            ); // this.verbose[this.verbose.length - 1].push
                             this._warning_count += 1;
                             value.node.warningFlag = true;
                         } // else if

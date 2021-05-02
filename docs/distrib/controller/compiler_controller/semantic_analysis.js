@@ -458,26 +458,25 @@ var NightingaleCompiler;
             console.log("Adding string value: " + string);
         } // add_string_expression_subtree_to_ast
         /**
-         * Construct a subtree in the abstract syntax tree
-         * rooted with an Boolean Expression adds:
+         * Constructs a subtree in the abstract syntax tree rooted with a Boolean Expression, adding:
          *   - (Expression BoolOp Expression)
-         * OR...
          *   - Boolean Value [true | false]
+         *
+         * Remember, if you built your concrete syntax tree correctly...
+         *
+         *   - For BoolExpr ::== ( Expr BoolOp Expr )
+         *     - Node(Boolean Expression).children[0] --> Open String Expression boundary [(]
+         *     - Node(Boolean Expression).children[1] --> Node(Expression)
+         *     - Node(Boolean Expression).children[2] --> Node(Boolean Operator).children[0] --> != | ==
+         *     - Node(Boolean Expression).children[3] --> Node(Expression)
+         *     - Node(Boolean Expression).children[4] --> Close String Expression boundary [)]
+         *
+         *   - For BoolExpr ::== boolval
+         *     - Node(Boolean Expression).children[0] --> Node(Boolean Value)
          */
         _add_boolean_expression_subtree_to_ast(boolean_expression_node, parent_var_type) {
             this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, INFO, `Adding ${boolean_expression_node.name} subtree to abstract syntax tree.`) // OutputConsoleMessage
             ); // this.verbose[this.verbose.length - 1].push
-            // Remember, if you built your tree correctly...
-            //
-            //   Node(Boolean Expression).children[0] --> Open String Expression boundary [(]
-            //   Node(Boolean Expression).children[1] --> Node(Expression)
-            //   Node(Boolean Expression).children[2] --> Node(Boolean Operator)
-            //   Node(Boolean Expression).children[3] --> Node(Expression)
-            //   Node(Boolean Expression).children[4] --> Close String Expression boundary [)]
-            //
-            //   OR...
-            //
-            //   Node(Boolean Expression).children[0] --> Node(Boolean Value)
             let boolean_value_node = boolean_expression_node.children_nodes[0];
             let boolean_node = boolean_value_node.children_nodes[0];
             // Enforce type matching in boolean expressions
@@ -491,7 +490,7 @@ var NightingaleCompiler;
             else {
                 valid_type = this.check_type(parent_var_type, boolean_node, BOOLEAN);
             } // else
-            // Boolean expression is: ( Expr BoolOp Expr )
+            // Boolean expression ::== ( Expr BoolOp Expr )
             if (boolean_expression_node.children_nodes.length > 1) {
                 // Ignore Symbol Open Argument [(] and Symbol Close Argument [)]
                 //   let open_parenthisis_node = boolean_expression_node.children_nodes[0];
@@ -528,88 +527,93 @@ var NightingaleCompiler;
             } // else if
             // Boolean expression is neither: ( Expr BoolOp Expr ) NOR boolval...
             else {
-                // Given a valid parse tree, this should never happen
+                // Given a valid parse tree, this should never happen...
                 throw Error("You messed up Parse: Boolean expression has no children, or negative children.");
             } // else 
         } // add_boolean_expression_subtree_to_ast
         /**
-         * Construct a subtree in the abstract syntax tree rooted with the Keyword Print and adds:
-         *   - Expression
+         * Constructs a subtree in the abstract syntax tree rooted with the Keyword Print, adding:
+         *   - ( Expr )
+         *
+         * Remember, if you built your concrete syntax tree correctly...
+         *
+         *   - For PrintStatement ::== print ( Expr )
+         *     - Node(Print).children[0] --> Keyword Print [print]
+         *     - Node(Print).children[1] --> Open Parenthesis [(]
+         *     - Node(Print).children[2] --> Node(Expression)
+         *     - Node(Print).children[3] --> Open Parenthesis [)]
          */
         _add_print_subtree_to_ast(print_node) {
             this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, INFO, `Adding ${print_node.name} subtree to abstract syntax tree.`) // OutputConsoleMessage
             ); // this.verbose[this.verbose.length - 1].push
-            // Remember, if you built your tree correctly...
-            //
-            //   Node(Print).children[0] --> Keyword Print [print]
-            //   Node(Print).children[1] --> Open Parenthesis [(]
-            //   Node(Print).children[2] --> Node(Expression)
-            //   Node(Print).children[3] --> Open Parenthesis [)]
-            //
             // Add Print Statment
             this._current_ast.add_node(print_node.name, NODE_TYPE_BRANCH, true, print_node.getToken());
             // Ignore: 
-            //   - let keyword_print_node = print_node.children_nodes[0]
-            //   - let open_argument_node = print_node.children_nodes[1]
-            //   - let close_argument_node = print_node.children_nodes[3]
+            //   let keyword_print_node = print_node.children_nodes[0]
+            //   let open_argument_node = print_node.children_nodes[1]
+            //   let close_argument_node = print_node.children_nodes[3]
             //
             // Add Expression Node
             let expression_node = print_node.children_nodes[2];
             this._add_expression_subtree(expression_node, UNDEFINED);
         } // _add_print_subtree_to_ast
         /**
-         * Construct a subtree in the abstract syntax tree rooted with the Keyword While and adds:
-         *   - Boolean Expression
+         * Constructs a subtree in the abstract syntax tree rooted with the Keyword While, adding:
+         *   - BooleanExpr
          *   - Block
+         *
+         * Remember, if you built your concrete syntax tree correctly...
+         *
+         *   - For WhileStatement ::== while BooleanExpr Block
+         *     - Node(While).children[0] --> Keyword While [while]
+         *     - Node(While).children[1] --> Node(Boolean Expression)
+         *     - Node(While).children[2] --> Node(Block)
          */
         _add_while_subtree_to_ast(while_node) {
             this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, INFO, `Adding ${while_node.name} subtree to abstract syntax tree.`) // OutputConsoleMessage
             ); // this.verbose[this.verbose.length - 1].push
-            // Remember, if you built your tree correctly...
-            //
-            //   Node(While).children[0] --> Keyword While [while]
-            //   Node(While).children[1] --> Node(Boolean Expression)
-            //   Node(While).children[2] --> Node(Block)
-            //
-            // Add While Statment
-            console.log("Added while statement node");
+            // Add Node(WhileStatement) to AST
             this._current_ast.add_node(while_node.children_nodes[0].name, NODE_TYPE_BRANCH, true, while_node.children_nodes[0].getToken());
-            // Add boolean expression node to subtree
+            // Recursively add boolean expression subtree
             let node_name = this._add_boolean_expression_subtree_to_ast(while_node.children_nodes[1], BOOLEAN);
-            /**
-             * Add the Block subtree directly under the While Statement Keyword
-             *
-             * Move the AST's current node pointer up one level at a time and stops on a Node(If) when reached.
-             */
+            // Add the Block subtree directly under the While Statement Keyword by moving the AST's 
+            // current node pointer up one level at a time and stopping when the nearest (first) Node(While).
             this._climb_ast_to_nearest_node(while_node.children_nodes[0].name);
+            // Recursively add the while's block
             this._add_block_subtree_to_ast(while_node.children_nodes[2]);
         } // _add_while_subtree_to_ast
         /**
-         * Construct a subtree in the abstract syntax tree rooted with the Keyword If and adds:
-         *   - Boolean Expression
+         * Constructs a subtree in the abstract syntax tree rooted with the Keyword If, adding:
+         *   - BooleanExpr
          *   - Block
+         *
+         * Remember, if you built your concrete syntax tree correctly...
+         *
+         *   - For IfStatement ::== if BooleanExpr Block
+         *     - Node(If).children[0] --> Keyword If [If]
+         *     - Node(If).children[1] --> Node(Boolean Expression)
+         *     - Node(If).children[2] --> Node(Block)
          */
         _add_if_subtree_to_ast(if_node) {
             this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, INFO, `Adding ${if_node.name} subtree to abstract syntax tree.`) // OutputConsoleMessage
             ); // this.verbose[this.verbose.length - 1].push
-            // Remember, if you built your tree correctly...
-            //
-            //   Node(If).children[0] --> Keyword If [If]
-            //   Node(If).children[1] --> Node(Boolean Expression)
-            //   Node(If).children[2] --> Node(Block)
-            //
             // Add If Statment
             this._current_ast.add_node(if_node.children_nodes[0].name, NODE_TYPE_BRANCH, true, if_node.children_nodes[0].getToken());
-            // Add boolean expression node to subtree
+            // Recursively add boolean expression subtree
             let node_name = this._add_boolean_expression_subtree_to_ast(if_node.children_nodes[1], BOOLEAN);
-            /**
-             * Add the Block subtree directly under the If Statement Keyword
-             *
-             * Move the AST's current node pointer up one level at a time and stops on a Node(If) when reached.
-             */
+            // Add the Block subtree directly under the If Statement Keyword by moving the AST's 
+            // current node pointer up one level at a time and stopping when the nearest (first) Node(If).
             this._climb_ast_to_nearest_node(if_node.children_nodes[0].name);
+            // Recursively add the if's block
             this._add_block_subtree_to_ast(if_node.children_nodes[2]);
         } // _add_if_subtree_to_ast
+        /**
+         * Validates that the identifier node being read is declared in the current scope table, parents' scope tables.
+         * Outputs a console semantic analysis error if the the identifer is not declared and increases the error count by 1.
+         *
+         * @param identifier_node identifier being tested for declaration.
+         * @returns identifier metadata if the identifier is declared, null if not.
+         */
         is_variable_declared(identifier_node) {
             let isDeclared = false;
             let var_metadata = null;
@@ -617,11 +621,11 @@ var NightingaleCompiler;
             while (curr_scope_table_node !== undefined && curr_scope_table_node !== null && !isDeclared) {
                 let scope_table = curr_scope_table_node.getScopeTable();
                 isDeclared = scope_table.has(identifier_node.name);
-                // Variable exists in current scope table
+                // Identifier exists in current scope table.
                 if (isDeclared) {
                     var_metadata = scope_table.get(identifier_node.name);
                 } // if
-                // Check parent
+                // Identifier doesn't exist in current scope table, check parent.
                 else {
                     curr_scope_table_node = curr_scope_table_node.parent_node;
                 } // else
@@ -634,17 +638,31 @@ var NightingaleCompiler;
             } // if
             return var_metadata;
         } // is_variable_declared
-        check_type(parent_var_type, node, curr_type) {
-            if (parent_var_type !== curr_type) {
-                this.output[this.output.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, ERROR, `Type mismatch error: tried to perform an operation on [${curr_type}] with [${parent_var_type}] at ${node.getToken().lineNumber}:${node.getToken().linePosition}`) // OutputConsoleMessage
+        /**
+         * Validates that the current type matches the parent type. Outputs a console semantic analysis
+         * error if the parent type does not match the current type and increases the error count by 1.
+         *
+         * @param parent_var_type type used to enforce matching rule.
+         * @param node node in tree where the type enforcing is being applied.
+         * @param curr_var_type type tested for matching rule.
+         * @returns true on matching types, false if not.
+         */
+        check_type(parent_var_type, node, curr_var_type) {
+            if (parent_var_type !== curr_var_type) {
+                this.output[this.output.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, ERROR, `Type mismatch error: tried to perform an operation on [${curr_var_type}] with [${parent_var_type}] at ${node.getToken().lineNumber}:${node.getToken().linePosition}`) // OutputConsoleMessage
                 ); // this.output[this.output.length - 1].push
-                this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, ERROR, `Type mismatch error: tried to perform an operation on [${curr_type}] with [${parent_var_type}] at ${node.getToken().lineNumber}:${node.getToken().linePosition}`) // OutputConsoleMessage
+                this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, ERROR, `Type mismatch error: tried to perform an operation on [${curr_var_type}] with [${parent_var_type}] at ${node.getToken().lineNumber}:${node.getToken().linePosition}`) // OutputConsoleMessage
                 ); // this.verbose[this.verbose.length - 1].push
                 this._error_count += 1;
                 return false;
             } // if
             return true;
         } // check_type
+        /**
+         * Traverses the scope table, looking for a warning, or combination of warnings, including but not limited to:
+         *   - Identifier declared but never initialized.
+         *   - Identifier declared but never read.
+         */
         check_for_warnings() {
             // Stack to store the nodes
             let nodes = [];
@@ -677,8 +695,7 @@ var NightingaleCompiler;
                             this._warning_count += 1;
                         } // else if
                     } // for
-                    // Store all the children of 
-                    // current node from right to left.
+                    // Store all the children of current node from right to left.
                     for (let i = curr_scope_tree_node.children_nodes.length - 1; i >= 0; --i) {
                         nodes.push(curr_scope_tree_node.children_nodes[i]);
                     } // for
@@ -686,16 +703,21 @@ var NightingaleCompiler;
             } // for
         } // check_for_warnings
         /**
-         * Moves the AST's current node pointer up one level in the tree (to the parent node)
+         * Moves the AST's current node pointer up one level in the tree (to the parent node) starting from
+         * the specified node, unless no argument is given, in which the current node is chosen as the start.
+         *
+         * @param starting_node relative starting position in the ast.
          */
         _climb_ast_one_level(starting_node = this._current_ast.current_node) {
             if (this._current_ast.current_node !== undefined || this._current_ast.current_node !== null) {
                 this._current_ast.climb_one_level();
             } // if
-        } // climb_ast_one
+        } // _climb_ast_one_level
         /**
-         * Moves the AST's current node pointer up one level
-         * at a time and stops on a Node(Block) when reached.
+         * Moves the AST's current node pointer up one level at a time
+         * and stops on the first occurence of the specified node's name.
+         *
+         * @param node_name name of the node to climb too.
          */
         _climb_ast_to_nearest_node(node_name) {
             // Climbs to the nearest parent Node(Block)

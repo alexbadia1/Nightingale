@@ -62,7 +62,7 @@
 
     <!-- Models -->
     <script type="text/javascript" src="../../distrib/model/lexical_token_model.js"></script>
-    <script type="text/javascript" src="../../distrib/model/output_console._model.js"></script>
+    <script type="text/javascript" src="../../distrib/model/output_console_model.js"></script>
     <script type="text/javascript" src="../../distrib/model/output_console_message_model.js"></script>
     <script type="text/javascript" src="../../distrib/model/debug_console_model.js"></script>
     <script type="text/javascript" src="../../distrib/model/stacktrace_console_model.js"></script>
@@ -221,62 +221,94 @@
                                 <span style="color: white; font-size: 1.2rem;">Semantic Analysis</span>
                             </a>
                             <ul class="nested">
-                                <li>
-                                    <div class="treeview-animated-element" onclick="myCodeMirror.setValue(TRICKY_ASSIGNMENT_STATEMENTS)"><a id="sidebar__link--tests"
-                                            onclick="myCodeMirror.setValue(TRICKY_ASSIGNMENT_STATEMENTS)">tricky_assignment_statements.gle</a>
-                                    </div>
-                                </li>
-                            </ul>
-                            <ul class="nested">
-                                <li>
-                                    <div class="treeview-animated-element" onclick="myCodeMirror.setValue(INTEGER_ASSIGNMENTS)"><a id="sidebar__link--tests"
-                                            onclick="myCodeMirror.setValue(INTEGER_ASSIGNMENTS)">blocks_and_integer_assignments.gle</a>
-                                    </div>
-                                </li>
-                            </ul>
-                            <ul class="nested">
-                                <li>
-                                    <div class="treeview-animated-element" onclick="myCodeMirror.setValue(STRING_ASSIGNMENTS)"><a id="sidebar__link--tests"
-                                            onclick="myCodeMirror.setValue(STRING_ASSIGNMENTS)">blocks_and_string_assignments.gle</a>
-                                    </div>
-                                </li>
-                            </ul>
-                            <ul class="nested">
-                                <li>
-                                    <div class="treeview-animated-element" onclick="myCodeMirror.setValue(ULTIMATE_ASSIGNMENT_TEST)"><a id="sidebar__link--tests"
-                                            onclick="myCodeMirror.setValue(ULTIMATE_ASSIGNMENT_TEST)">ultimate_assignments_test.gle</a>
-                                    </div>
-                                </li>
-                            </ul>
-                            <ul class="nested">
-                                <li>
-                                    <div class="treeview-animated-element" onclick="myCodeMirror.setValue(PRINT_STATEMENTS_TESTS)"><a id="sidebar__link--tests"
-                                            onclick="myCodeMirror.setValue(PRINT_STATEMENTS_TESTS)">print_statements_test.gle</a>
-                                    </div>
-                                </li>
-                            </ul>
-                            <ul class="nested">
-                                <li>
-                                    <div class="treeview-animated-element" onclick="myCodeMirror.setValue(WHILE_STATEMENTS_TEST)"><a id="sidebar__link--tests"
-                                            onclick="myCodeMirror.setValue(WHILE_STATEMENTS_TEST)">while_statements_test.gle</a>
-                                    </div>
-                                </li>
-                            </ul>
+                                <li class="treeview-animated-items">
+                                    <a class="closed">
+                                        <i class="fas fa-angle-right"></i>
+                                        <span style="color: white; font-size: 1.2rem;">AST Tests</span>
+                                    </a>
 
-                            <ul class="nested">
-                                <li>
-                                    <div class="treeview-animated-element" onclick="myCodeMirror.setValue(IF_STATEMENTS_TEST)"><a id="sidebar__link--tests"
-                                            onclick="myCodeMirror.setValue(IF_STATEMENTS_TEST)">if_statements_test.gle</a>
-                                    </div>
+                                    <ul class="nested">
+                                        <li>
+                                            <div class="treeview-animated-element" onclick="myCodeMirror.setValue(TRICKY_ASSIGNMENT_STATEMENTS)"><a id="sidebar__link--tests"
+                                                    onclick="myCodeMirror.setValue(TRICKY_ASSIGNMENT_STATEMENTS)">tricky_assignment_statements.gle</a>
+                                            </div>
+                                        </li>
+                                    </ul>
+
+                                    <ul class="nested">
+                                        <li>
+                                            <div class="treeview-animated-element" onclick="myCodeMirror.setValue(INTEGER_ASSIGNMENTS)"><a id="sidebar__link--tests"
+                                                    onclick="myCodeMirror.setValue(INTEGER_ASSIGNMENTS)">blocks_and_integer_assignments.gle</a>
+                                            </div>
+                                        </li>
+                                    </ul>
+
+                                    <ul class="nested">
+                                        <li>
+                                            <div class="treeview-animated-element" onclick="myCodeMirror.setValue(STRING_ASSIGNMENTS)"><a id="sidebar__link--tests"
+                                                    onclick="myCodeMirror.setValue(STRING_ASSIGNMENTS)">blocks_and_string_assignments.gle</a>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                    <ul class="nested">
+                                        <li>
+                                            <div class="treeview-animated-element" onclick="myCodeMirror.setValue(ULTIMATE_ASSIGNMENT_TEST)"><a id="sidebar__link--tests"
+                                                    onclick="myCodeMirror.setValue(ULTIMATE_ASSIGNMENT_TEST)">ultimate_assignments_test.gle</a>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                    <ul class="nested">
+                                        <li>
+                                            <div class="treeview-animated-element" onclick="myCodeMirror.setValue(PRINT_STATEMENTS_TESTS)"><a id="sidebar__link--tests"
+                                                    onclick="myCodeMirror.setValue(PRINT_STATEMENTS_TESTS)">print_statements_test.gle</a>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                    <ul class="nested">
+                                        <li>
+                                            <div class="treeview-animated-element" onclick="myCodeMirror.setValue(WHILE_STATEMENTS_TEST)"><a id="sidebar__link--tests"
+                                                    onclick="myCodeMirror.setValue(WHILE_STATEMENTS_TEST)">while_statements_test.gle</a>
+                                            </div>
+                                        </li>
+                                    </ul>
+        
+                                    <ul class="nested">
+                                        <li>
+                                            <div class="treeview-animated-element" onclick="myCodeMirror.setValue(IF_STATEMENTS_TEST)"><a id="sidebar__link--tests"
+                                                    onclick="myCodeMirror.setValue(IF_STATEMENTS_TEST)">if_statements_test.gle</a>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                    <ul class="nested">
+                                        <li>
+                                            <div class="treeview-animated-element" onclick="myCodeMirror.setValue(SCOPE_TREE_TEST)"><a id="sidebar__link--tests"
+                                                    onclick="myCodeMirror.setValue(SCOPE_TREE_TEST)">scope_tree_test.gle</a>
+                                            </div>
+                                        </li>
+                                    </ul>
                                 </li>
                             </ul>
                             <ul class="nested">
-                                <li>
-                                    <div class="treeview-animated-element" onclick="myCodeMirror.setValue(SCOPE_TREE_TEST)"><a id="sidebar__link--tests"
-                                            onclick="myCodeMirror.setValue(SCOPE_TREE_TEST)">scope_tree_test.gle</a>
-                                    </div>
+                                <li class="treeview-animated-items">
+                                    <a class="closed">
+                                        <i class="fas fa-angle-right"></i>
+                                        <span style="color: white; font-size: 1.2rem;">Semantic Tests</span>
+                                    </a>
+                                    <ul class="nested">
+                                        <li>
+                                            <div class="treeview-animated-element" onclick="myCodeMirror.setValue(ALANS_PROJECT_TWO_TEST)"><a id="sidebar__link--tests"
+                                                    onclick="myCodeMirror.setValue(ALANS_PROJECT_TWO_TEST)">project_three_test.gle</a>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <div class="treeview-animated-element" onclick="myCodeMirror.setValue(JUICE_COMPILER_BOOLEAN_HELL)"><a id="sidebar__link--tests"
+                                                    onclick="myCodeMirror.setValue(JUICE_COMPILER_BOOLEAN_HELL)">juice_compiler_boolean_hell.gle</a>
+                                            </div>
+                                        </li>
+                                    </ul>
                                 </li>
                             </ul>
+                           
                         </li>
 
                         <li>
@@ -293,6 +325,11 @@
                         <li>
                             <div class="treeview-animated-element" onclick="myCodeMirror.setValue(ALANS_PROJECT_TWO_TEST)"><a id="sidebar__link--tests"
                                     onclick="myCodeMirror.setValue(ALANS_PROJECT_TWO_TEST)">project_two_test.gle</a>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="treeview-animated-element" onclick="myCodeMirror.setValue(ALANS_PROJECT_THREE_TEST)"><a id="sidebar__link--tests"
+                                    onclick="myCodeMirror.setValue(ALANS_PROJECT_THREE_TEST)">project_three_test.gle</a>
                             </div>
                         </li>
                     </ul>

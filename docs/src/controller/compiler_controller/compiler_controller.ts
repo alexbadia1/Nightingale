@@ -86,7 +86,9 @@ module NightingaleCompiler {
                  this.parser.debug,
                  this.semantic_analysis.verbose);
              let stacktrace_console_model: StacktraceConsoleModel = new StacktraceConsoleModel(this.lexer.stacktrace_stack);
-             let footer_model: FooterModel = new FooterModel(this.lexer.errors_stream.length, this.lexer.warnings_stream.length);
+             let footer_model: FooterModel = new FooterModel(
+                (this.lexer.errors_stream.length + this.parser.getErrorCount() + this.semantic_analysis.getErrorCount()),
+                (this.lexer.warnings_stream.length));
         }// compilerControllerBtnCompile_click
 
         /**

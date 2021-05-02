@@ -252,3 +252,33 @@ Scope tree test.
         a = 3
     }
 }$`;
+
+/**
+ * Semantic Analysis Tests
+ * 
+ *   - Type Checking
+ *   - Scope checking
+ *   - Missing variable declarations
+ *   - Unitialized variable warnings
+ *   - Unused variable warnings
+ *   - et cetera...
+ */
+const JUICE_COMPILER_BOOLEAN_HELL = `/* Juice Compiler's boolean hell, who they credit "TIEN" for */
+{
+    int a
+    a = 0
+    boolean b
+    b = false
+    boolean c
+    c = true
+    while(((a!=9) == ("test" != "alan")) == ((5==5) != (b == c))) {
+        print("a")
+        string d
+        d = "yes"
+        print(d)
+        {
+            int a
+            a = 5
+        }
+    }
+}$`;

@@ -112,7 +112,7 @@
                 console.log(entries);
                 for (let index: number = 0; index < entries.length; ++index) {
                     traversalResult += tempDepth;
-                    traversalResult += ` ${entries[index][0]} | Type: ${entries[index][1].type}, Used: ${entries[index][1].isUsed}, Line: ${entries[index][1].lineNumber}, Pos:${entries[index][1].linePosition}`;
+                    traversalResult += ` ${entries[index][0]} | Type: ${entries[index][1].type}, Used: ${entries[index][1].isUsed}, isInitialized: ${entries[index][1].isInitialized}, Line: ${entries[index][1].lineNumber}, Pos:${entries[index][1].linePosition}`;
                     traversalResult += "\n";
                 }// for
 
@@ -127,7 +127,7 @@
                 let entries: Array<Array<any>> = node.getScopeTable().entries();
                 for (let index: number = 0; index < entries.length; ++index) {
                     traversalResult += tempDepth;
-                    traversalResult += ` ${entries[index][0]} | Type: ${entries[index][1].type}, Used: ${entries[index][1].isUsed}, Line: ${entries[index][1].lineNumber}, Pos:${entries[index][1].linePosition}`;
+                    traversalResult += ` ${entries[index][0]} | Type: ${entries[index][1].type}, Used: ${entries[index][1].isUsed}, isInitialized: ${entries[index][1].isInitialized}, Line: ${entries[index][1].lineNumber}, Pos:${entries[index][1].linePosition}`;
                     traversalResult += "\n";
                 }// for
 
@@ -168,7 +168,7 @@
 
             let entries: Array<Array<any>> = this.root.getScopeTable().entries();
             for (let index: number = 0; index < entries.length; ++index) {
-                 innerHtml += `<br> ${entries[index][0]} | Type: ${entries[index][1].type}, Used: ${entries[index][1].isUsed}, Line: ${entries[index][1].lineNumber}, Pos:${entries[index][1].linePosition}`;
+                 innerHtml += `<br> ${entries[index][0]} | Type: ${entries[index][1].type}, Used: ${entries[index][1].isUsed}, isInitialized: ${entries[index][1].isInitialized}, Line: ${entries[index][1].lineNumber}, Pos:${entries[index][1].linePosition}`;
             }// for
             
             innerHtml += `</a>`;
@@ -232,7 +232,7 @@
                         // Add scope table
                         let entries: Array<Array<any>> = curr.getScopeTable().entries();
                         for (let index: number = 0; index < entries.length; ++index) {
-                            innerHtml += `<br> ${entries[index][0]} | Type: ${entries[index][1].type}, Used: ${entries[index][1].isUsed}, Line: ${entries[index][1].lineNumber}, Pos:${entries[index][1].linePosition}`;
+                            innerHtml += `<br> ${entries[index][0]} | Type: ${entries[index][1].type}, Used: ${entries[index][1].isUsed}, isInitialized: ${entries[index][1].isInitialized}, Line: ${entries[index][1].lineNumber}, Pos:${entries[index][1].linePosition}`;
                         }// for
                         
                         innerHtml += `</a>`;
@@ -259,7 +259,7 @@
                         // Add scope table
                         let entries: Array<Array<any>> = curr.getScopeTable().entries();
                         for (let index: number = 0; index < entries.length; ++index) {
-                            innerHtml += `<br> ${entries[index][0]} | Type: ${entries[index][1].type}, Used: ${entries[index][1].isUsed}, Line: ${entries[index][1].lineNumber}, Pos:${entries[index][1].linePosition}`;
+                            innerHtml += `<br> ${entries[index][0]} | Type: ${entries[index][1].type}, Used: ${entries[index][1].isUsed}, isInitialized: ${entries[index][1].isInitialized}, Line: ${entries[index][1].lineNumber}, Pos:${entries[index][1].linePosition}`;
                         }// for
                         
                         innerHtml += `</a>`;

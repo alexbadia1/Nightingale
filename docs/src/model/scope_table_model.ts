@@ -12,6 +12,7 @@ module NightingaleCompiler {
         constructor(
             public type: string,
             public isUsed: boolean,
+            public isInitialized: boolean,
             public lineNumber: number,
             public linePosition: number,
         ){}

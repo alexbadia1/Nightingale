@@ -9,9 +9,10 @@
 var NightingaleCompiler;
 (function (NightingaleCompiler) {
     class VariableMetaData {
-        constructor(type, isUsed, lineNumber, linePosition) {
+        constructor(type, isUsed, isInitialized, lineNumber, linePosition) {
             this.type = type;
             this.isUsed = isUsed;
+            this.isInitialized = isInitialized;
             this.lineNumber = lineNumber;
             this.linePosition = linePosition;
         }

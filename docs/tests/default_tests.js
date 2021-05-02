@@ -96,3 +96,29 @@ const ALANS_PROJECT_TWO_TEST = `/* You’re expecting anything that could start 
 }$
 `;
 
+const ALANS_PROJECT_THREE_TEST = `/* Valid test case */
+{
+    int a	
+    boolean b
+
+    {	
+        string	c	
+        a = 5
+        b = true /*nocomment*/
+        c = "int a" 
+        print(c)
+    }
+    
+    print(b)
+    print(a)
+}$	
+
+/* Should fail due to missing variable declaration for 'b' */
+{
+    int a
+    {
+        boolean b
+        a = 1
+    }
+    print(b)
+}$`;

@@ -46,12 +46,13 @@
          * @param new_name Name of the node, could be a string or lexeme
          * @param kind Root, Branch, or Leaf Node?
          */
-        public add_node(new_name: string, kind: string, isValid: boolean = true, lex_token: LexicalToken = null) {
+        public add_node(new_name: string, kind: string, hasError: boolean = false, hasWarning: boolean = false, lex_token: LexicalToken = null) {
             this._node_count++
 
             // Construct the node object.
             let new_node = new Node(new_name, this._node_count, kind);
-            new_node.isValid = isValid;
+            new_node.errorFlag = hasError;
+            new_node.warningFlag = hasWarning;
             new_node.setToken(lex_token);
             
             // Check to see if it needs to be the root node.
@@ -75,6 +76,8 @@
                 // ... update the CURrent node pointer to ourselves.
                 this.current_node = new_node;
             }// if
+
+            return this.current_node;
         }// add_node
 
         /**
@@ -204,8 +207,11 @@
                             li.style.paddingLeft = "1.5rem";
                         }// if
 
-                        // Make red if invalid
-                        if (!curr.isValid) {
+                        // Yellow for warnings, overriden with red for errors
+                        if (curr.warningFlag) {
+                            li.style.color = "yellow";
+                        }// if
+                        if (curr.errorFlag) {
                             li.style.color = "red";
                         }// if
 
@@ -225,11 +231,13 @@
                             li.style.paddingLeft = "1.5rem";
                         }// if
 
-                        // Make red if invalid
-                        if (!curr.isValid) {
+                        // Yellow for warnings, overriden with red for errors
+                        if (curr.warningFlag) {
+                            li.style.color = "yellow";
+                        }// if
+                        if (curr.errorFlag) {
                             li.style.color = "red";
                         }// if
-
                         document.getElementById(`ast_p${this.program}_ul_node_id_${curr.parent_node.children_nodes[0].id}`).appendChild(li);
                     }// else
 

@@ -9,12 +9,13 @@
 var NightingaleCompiler;
 (function (NightingaleCompiler) {
     class VariableMetaData {
-        constructor(type, isUsed, isInitialized, lineNumber, linePosition) {
+        constructor(type, isUsed, isInitialized, lineNumber, linePosition, node) {
             this.type = type;
             this.isUsed = isUsed;
             this.isInitialized = isInitialized;
             this.lineNumber = lineNumber;
             this.linePosition = linePosition;
+            this.node = node;
         }
     } // class
     NightingaleCompiler.VariableMetaData = VariableMetaData;

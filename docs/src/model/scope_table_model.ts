@@ -15,6 +15,7 @@ module NightingaleCompiler {
             public isInitialized: boolean,
             public lineNumber: number,
             public linePosition: number,
+            public node: Node,
         ){}
     }// class
 

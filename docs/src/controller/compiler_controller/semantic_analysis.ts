@@ -690,8 +690,7 @@ module NightingaleCompiler {
                 )// OutputConsoleMessage
             );// this.verbose[this.verbose.length - 1].push
 
-            let boolean_value_node: Node = boolean_expression_node.children_nodes[0];
-            let boolean_node: Node = boolean_value_node.children_nodes[0];
+            let open_parenthesis_or_boolean_value_node: Node = boolean_expression_node.children_nodes[0];
 
             // Enforce type matching in boolean expressions
             let valid_type = false;
@@ -705,7 +704,8 @@ module NightingaleCompiler {
 
             // Else, there is a parent type to enforce type matching with.
             else {
-                valid_type = !this.check_type(parent_var_type, boolean_node, BOOLEAN);
+                console.log(`Boolean_node: ${open_parenthesis_or_boolean_value_node.getToken().lexeme}`);
+                valid_type = !this.check_type(parent_var_type, open_parenthesis_or_boolean_value_node, BOOLEAN);
             }// else
 
             // Boolean expression ::== ( Expr BoolOp Expr )
@@ -753,7 +753,7 @@ module NightingaleCompiler {
 
             // Boolean expression is: boolval
             else if (boolean_expression_node.children_nodes.length === 1) {
-                this._current_ast.add_node(boolean_node.name, NODE_TYPE_LEAF, valid_type, false);
+                this._current_ast.add_node(open_parenthesis_or_boolean_value_node.children_nodes[0].name, NODE_TYPE_LEAF, valid_type, false);
             }// else if
 
             // Boolean expression is neither: ( Expr BoolOp Expr ) NOR boolval...
@@ -975,7 +975,6 @@ module NightingaleCompiler {
                             );// this.output[this.output.length - 1].push
                             this._warning_count += 1;
                             value.node.warningFlag = true;
-                            console.log(`Node Warning Flag Raised: ${value.node.name}`);
                         }// if
                         else if (value.isUsed && !value.isInitialized) {
                             this.output[this.output.length - 1].push(
@@ -988,7 +987,6 @@ module NightingaleCompiler {
 
                             this._warning_count += 1;
                             value.node.warningFlag = true;
-                            console.log(`Node Warning Flag Raised: ${value.node.name}`);
                         }// else if
                         else if (!value.isUsed && value.isInitialized) {
                             this.output[this.output.length - 1].push(
@@ -1000,9 +998,7 @@ module NightingaleCompiler {
                             );// this.output[this.output.length - 1].push
 
                             this._warning_count += 1;
-                            console.log(`Node Warning Flag Raised: ${value.node.name}`);
                             value.node.warningFlag = true;
-                            console.log(`Node Warning Flag Value: ${value.node.warningFlag}`);
                         }// else if
                     }// for
 

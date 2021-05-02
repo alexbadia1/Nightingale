@@ -263,6 +263,26 @@ Scope tree test.
  *   - Unused variable warnings
  *   - et cetera...
  */
+const SIMPLE_MISSING_VARIABLES = `/* Unintialized identifiers, with some missing identifiers too and type checking too... */
+{
+    int a
+    string b
+    string c
+    boolean e
+    int f /* f is never read */
+
+    /* Missing initializations */
+
+    print(a)
+    print(b)
+    print(c)
+    print(d) /* Missing declaration */
+
+    if (d == d) {} /* Missing declaration */
+    while((b == e) != (a == 2)) {} /* Type mismatch error */
+}$
+`;
+
 const JUICE_COMPILER_BOOLEAN_HELL = `/* Juice Compiler's boolean hell, who they credit "TIEN" for */
 {
     int a

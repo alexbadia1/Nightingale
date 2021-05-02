@@ -97,7 +97,6 @@ var NightingaleCompiler;
                 traversalResult += ` [${node.name}]`;
                 traversalResult += "\n";
                 let entries = node.getScopeTable().entries();
-                console.log(entries);
                 for (let index = 0; index < entries.length; ++index) {
                     traversalResult += tempDepth;
                     traversalResult += ` ${entries[index][0]} | Type: ${entries[index][1].type}, Used: ${entries[index][1].isUsed}, isInitialized: ${entries[index][1].isInitialized}, Line: ${entries[index][1].lineNumber}, Pos:${entries[index][1].linePosition}`;

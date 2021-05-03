@@ -137,7 +137,8 @@ html {
 /* Side Bar Links */
 #sidebar__link {
   font-size: 2.25rem;
-  color:rgba(51, 51, 51, 1);
+  /* color:rgba(51, 51, 51, 1); */
+  color:white;
   text-decoration: none;
 }
 

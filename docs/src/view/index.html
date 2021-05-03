@@ -16,6 +16,7 @@
     <meta name="author" content="Alex Badia" />
 
     <title>Nightingale - a browser-based virtual Compiler in TypeScript</title>
+    <link rel="shortcut icon" type="images/png" href="images/nightingale_favicon.png"/>
 
     <!-- Personal stylesheet, bootstrap is too "cookie cutterish" -->
     <link rel="stylesheet" href="css/style.css">
@@ -121,7 +122,7 @@
     <div id="main">
 
         <!-- Sidebar to reveal test files -->
-        <div id="sidebar">
+        <div id="sidebar" style="min-width: 55px;">
             <div class="d-flex flex-column mt-3">
                 <div class="d-flex justify-content-center">
                     <a id="sidebar__link">
@@ -132,7 +133,7 @@
         </div>
 
         <!-- lists all test files -->
-        <div id="side-nav">
+        <div id="side-nav" style = "overflow: visible;">
             <div class="d-flex flex-column mt-3">
                 <div class="treeview-animated w-20 mx-4 my-4">
                     <h6 class="pt-3 pl-3" style="color: white;">Tests</h6>
@@ -520,40 +521,69 @@
 
 <!-- Reactive UI Changes Script -->
 <script>
-
-    // Resize Side Navigation
-    $('#side-nav').resizable({
-        // north, east, south, west sides of a div
-        handles: 'e',
-
-        // Horizantal Boundaries
-        minWidth: 0,
-        maxWidth: screen.width * .8,
-    });
-
-    // Resize Code Editor and Console
-    $('#code-editor').resizable({
-
-        // north, east, south, west sides of a div
-        handles: 's',
-
-        // Vertical Boundaries
-        minHeight: screen.height * .1,
-        maxHeight: screen.height * .8,
-    });
-
-    // Reveal test files
-    $("#sidebar__link").click(function () {
-        // Change color
-        // $("#sidebar__link").css({ "color": "white" });
-
-        // Open Navigiator
-        $('#side-nav').width(screen.width * .1125);
-    });
-
-    // MDBootstrap Treeview Initialization
     $(document).ready(function () {
+        // MDBootstrap Treeview Initialization
         $('.treeview-animated').mdbTreeview();
+
+        var navBarIsOpen = false;
+
+        // Resize Side Navigation
+        $('#side-nav').resizable({
+            // north, east, south, west sides of a div
+            handles: 'e',
+
+            // Horizantal Boundaries
+            minWidth: 45,
+            maxWidth: screen.width * .8,
+
+            stop: function( event, ui ) {
+                if ($('#side-nav').width() <= 45) {
+                    // Inactive grey color
+                    $("#sidebar__link").css({ "color": "rgba(51, 51, 51, 1)" });
+
+                    // Close navbar
+                    $('#side-nav').width(0);
+                }// if
+
+                else {
+                    // Active white color
+                    $("#sidebar__link").css({ "color": "white" });
+                }// else
+            }// stop
+        });
+
+        // Resize Code Editor and Console
+        $('#code-editor').resizable({
+
+            // north, east, south, west sides of a div
+            handles: 's',
+
+            // Vertical Boundaries
+            minHeight: screen.height * .1,
+            maxHeight: screen.height * .8,
+        });
+
+        // Reveal test files
+        $("#sidebar__link").click(function () {
+            if ($('#side-nav').width() > 0) {
+                // Inactive grey color
+                $("#sidebar__link").css({ "color": "rgba(51, 51, 51, 1)" });
+
+                // Close navbar
+                $('#side-nav').width(0);
+            }// if
+
+            else {
+                // Active white color
+                $("#sidebar__link").css({ "color": "white" });
+
+                // Open Navigiator
+                $('#side-nav').width(screen.width * .1125);
+            }// else
+
+            navBarIsOpen = !navBarIsOpen;
+        });
+
     });
 </script>
 

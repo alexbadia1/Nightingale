@@ -16,6 +16,8 @@
 
  module NightingaleCompiler {
     export class AbstractSyntaxTree {
+        public scope_tree: ScopeTreeModel;
+        
         constructor(
             /**
              * Root node of the tree.

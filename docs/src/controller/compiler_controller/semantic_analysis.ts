@@ -35,7 +35,6 @@ module NightingaleCompiler {
 
         // Scope Tables
         private _current_scope_tree: ScopeTreeModel = null;
-        public scope_trees: Array<ScopeTreeModel> =  Array<ScopeTreeModel>();
 
         // Messages to Consoles
         public output: Array<Array<OutputConsoleMessage>> = [];
@@ -57,7 +56,7 @@ module NightingaleCompiler {
 
         private main(): void {
             for (var cstIndex: number = 0; cstIndex < this.concrete_syntax_trees.length; ++cstIndex) {
-                // Capture messages from lexer for each program
+                // Capture messages from semanntic analysis for each program
                 this.output.push(new Array<OutputConsoleMessage>());
                 this.verbose.push(new Array<OutputConsoleMessage>());
 
@@ -77,7 +76,6 @@ module NightingaleCompiler {
                     // Create a scope tree
                     this._current_scope_tree = new ScopeTreeModel();
                     this._current_scope_tree.program = this.concrete_syntax_trees[cstIndex].program;
-                    this.scope_trees.push(this._current_scope_tree);
 
                     // Traverse the CST and create the AST while also doing type and scope checking
                     this.generate_abstract_syntax_tree(this.concrete_syntax_trees[cstIndex]);
@@ -169,6 +167,9 @@ module NightingaleCompiler {
             );
             // Make new ast
             this._current_ast = new AbstractSyntaxTree();
+
+            // Store scope tree in AST
+            this._current_ast.scope_tree = this._current_scope_tree;
 
             // Get program number from CST
             this._current_ast.program = cst.program;
@@ -932,6 +933,9 @@ module NightingaleCompiler {
             }// while
 
             if (!isDeclared) {
+                if (!this.invalid_semantic_programs.includes(this._current_ast.program)) {
+                    this.invalid_semantic_programs.push(this._current_ast.program);
+                }// if
                 this.output[this.output.length - 1].push(
                     new OutputConsoleMessage(
                         SEMANTIC_ANALYSIS, 
@@ -964,6 +968,9 @@ module NightingaleCompiler {
          */
         private check_type(parent_var_type: string, node: Node, curr_var_type: string): boolean {
             if (parent_var_type !== curr_var_type) {
+                if (!this.invalid_semantic_programs.includes(this._current_ast.program)) {
+                    this.invalid_semantic_programs.push(this._current_ast.program);
+                }// if
                 this.output[this.output.length - 1].push(
                     new OutputConsoleMessage(
                         SEMANTIC_ANALYSIS, 

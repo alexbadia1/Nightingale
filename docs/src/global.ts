@@ -12,9 +12,10 @@ const APP_VERSION: string = "0.01";
 const CODE_EDITOR_TAB_LENGTH = 4;
 
 // Output console mesages' sources
-const LEXER = "LEXER";
-const PARSER = "PARSER";
-const SEMANTIC_ANALYSIS = "SEMANTIC ANALYSIS";
+const LEXER: string = "LEXER";
+const PARSER: string = "PARSER";
+const SEMANTIC_ANALYSIS: string = "SEMANTIC ANALYSIS";
+const CODE_GENERATION: string = "CODE GENERATION";
 
 // Output console mesages' types
 const ERROR = "ERROR";

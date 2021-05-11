@@ -1,34 +1,114 @@
 module NightingaleCompiler {
     export class CodeGeneration {
-        private _memory: Array<string>;
+        private _error_count: number;
+        private _warning_count: number;
 
-        private _code_base: number;
-        private _code_pointer: number;
+        public programs: Array<ProgramModel>;
+        private _current_program: ProgramModel;
 
-        private _stack_base: number;
-        private _stack_pointer: number;
+        public output: Array<Array<OutputConsoleMessage>>;
+        public verbose: Array<Array<OutputConsoleMessage>>;
 
-        private _heap_base: number;
-        private _heap_pointer: number;
 
-        constructor(){
-            // Initialize 256 bytes of memory, with 0's
-            for(let i: number = 0; i < MEMORY_BYTE_LIMIT/2; ++i) {
-                this._memory.push("00");
+        constructor(
+            private _abstract_syntax_trees: Array<AbstractSyntaxTree>,
+            private _invalid_abstract_syntax_trees: Array<number>,
+        ){
+            // Initialize output and verbose
+            this.output = [[]];
+            this.verbose = [[]];
+
+            this.programs = [];
+            this._current_program = null;
+
+            this.main();
+        }// constructor
+
+        private main(): void {
+            for (var astIndex: number = 0; astIndex < this._abstract_syntax_trees.length; ++astIndex) {
+                // New output array for each program
+                this.output.push(new Array<OutputConsoleMessage>());
+                this.verbose.push(new Array<OutputConsoleMessage>());
+
+                // Skips invalid semantic analyzed programs
+                if (!this._invalid_abstract_syntax_trees.includes(this._abstract_syntax_trees[astIndex].program)) {
+                    this.output[astIndex].push(
+                        new OutputConsoleMessage(
+                            CODE_GENERATION, 
+                            INFO, 
+                            `Performing Code Generation on program ${this._abstract_syntax_trees[astIndex].program + 1}...`
+                        )// OutputConsoleMessage
+                    );// this.output[astIndex].push
+
+                    // Traverse the valid AST, depth first in order, and generate code
+                    this.code_gen(this._abstract_syntax_trees[astIndex].root);
+                    this.programs.push(this._current_program);
+
+                    this.output[this.output.length -1].push(
+                        new OutputConsoleMessage(
+                            CODE_GENERATION, 
+                            INFO, 
+                            `Finished code generation on program ${astIndex + 1}.`
+                        )// OutputConsoleMessage
+                    );// this.output[astIndex].push
+                    this.verbose[this.verbose.length -1].push(
+                        new OutputConsoleMessage(
+                            CODE_GENERATION, 
+                            INFO, 
+                            `Finished code generation on program ${astIndex + 1}.`
+                        )// OutputConsoleMessage
+                    );// this.verbose[astIndex].push
+                }// if
+
+                // Tell user: skipped the program
+                else {
+                    this.output[astIndex].push(
+                        new OutputConsoleMessage(
+                            CODE_GENERATION, 
+                            WARNING, 
+                            `Skipping program ${this._abstract_syntax_trees[astIndex].program + 1} due to semantic analysis errors.`
+                        )
+                    );
+                    this.verbose[astIndex].push(
+                        new OutputConsoleMessage(
+                            CODE_GENERATION, 
+                            WARNING, 
+                            `Skipping program ${this._abstract_syntax_trees[astIndex].program + 1} due to semantic analysis errors.`
+                        )
+                    );
+                }// else
             }// for
 
-            // Code starts at beginning of memory
-            this._code_base = 0;
-            this._code_pointer = this._code_base;
+            this.output[this.output.length -1].push(
+                new OutputConsoleMessage(
+                    CODE_GENERATION, 
+                    INFO, 
+                    `Code Generation completed with ${this._warning_count} warning(s)`
+                )// OutputConsoleMessage
+            );// this.output[astIndex].push
+            this.output[this.output.length -1].push(
+                new OutputConsoleMessage(
+                    CODE_GENERATION, 
+                    INFO, 
+                    `Code Generation completed with  ${this._error_count} error(s)`
+                )// OutputConsoleMessage
+            );// this.output[astIndex].push
 
-            // Don't know where the stack will start yet
-            this._stack_base = null;
-            this._stack_pointer = this._stack_base;
-
-            // Heap starts at end of memory
-            this._heap_base = this._memory.length - 1;
-            this._heap_pointer = this._heap_base;
-        }// constructor
+            this.verbose[this.verbose.length -1].push(
+                new OutputConsoleMessage(
+                    CODE_GENERATION, 
+                    INFO, 
+                    `Code Generation completed with ${this._warning_count} warning(s)`
+                )// OutputConsoleMessage
+            );// this.verbose[astIndex].push
+            this.verbose[this.verbose.length -1].push(
+                new OutputConsoleMessage(
+                    CODE_GENERATION, 
+                    INFO, 
+                    `Code Generation completed with  ${this._error_count} error(s)`
+                )// OutputConsoleMessage
+            );// this.verbose[astIndex].push
+        }// main
 
         private code_gen(current_node: Node): void {
             switch (current_node.name) {

@@ -150,3 +150,6 @@ const NODE_NAME_INT_OPERATION = "Int Operation";
 
 // Scope Tree Node Names
 const NODE_NAME_SCOPE = "Scope";
+
+// Code Generation
+const MEMORY_BYTE_LIMIT: number = 256;

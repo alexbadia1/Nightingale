@@ -153,4 +153,4 @@ const NODE_NAME_INT_OPERATION = "Int Operation";
 const NODE_NAME_SCOPE = "Scope";
 
 // Code Generation
-const MEMORY_BYTE_LIMIT: number = 256;
+const MAX_MEMORY_SIZE: number = 256;

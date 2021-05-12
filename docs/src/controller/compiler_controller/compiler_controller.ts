@@ -47,6 +47,14 @@ module NightingaleCompiler {
          */
         public static semantic_analysis: NightingaleCompiler.SemanticAnalysis;
 
+        /**
+         * Semantic analysis, enforces scope, or type checking, and other rules of the grammar.
+         * 
+         * Semantic analysis will generate an Abstract Syntax Tree, from the Parser's 
+         * Concrete Syntax Tree which is the Intermediate Representation sent to code generation. 
+         */
+         public static code_generation: NightingaleCompiler.CodeGeneration;
+
         //
         // TODO: Implement more stages...
         //
@@ -64,12 +72,15 @@ module NightingaleCompiler {
 
             // Step 2: Parse
             this.parser = new  NightingaleCompiler.Parser(this.lexer.token_stream, this.lexer.invalid_programs);
-            let cst_controller = new ConcreteSyntaxTreeController(this.parser.concrete_syntax_trees);
+            let cst_controller = new NightingaleCompiler.ConcreteSyntaxTreeController(this.parser.concrete_syntax_trees);
 
             // Step 3: Semantic Analysis
-            this.semantic_analysis = new SemanticAnalysis(this.parser.concrete_syntax_trees, this.parser.invalid_parsed_programs);
-            let ast_controller = new AbstractSyntaxTreeController(this.semantic_analysis.abstract_syntax_trees);
-            let scope_tree_controller = new ScopeTreeController(this.semantic_analysis.scope_trees);
+            this.semantic_analysis = new NightingaleCompiler.SemanticAnalysis(this.parser.concrete_syntax_trees, this.parser.invalid_parsed_programs);
+            let ast_controller = new NightingaleCompiler.AbstractSyntaxTreeController(this.semantic_analysis.abstract_syntax_trees);
+            let scope_tree_controller = new NightingaleCompiler.ScopeTreeController(this.semantic_analysis.scope_trees);
+
+            // Step 4: Code Generation
+            this.code_generation = new NightingaleCompiler.CodeGeneration(this.semantic_analysis.abstract_syntax_trees, this.semantic_analysis.invalid_semantic_programs);
 
             // Final output
              let output_console_model: OutputConsoleModel = new OutputConsoleModel(

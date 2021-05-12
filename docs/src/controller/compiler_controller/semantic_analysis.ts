@@ -35,6 +35,7 @@ module NightingaleCompiler {
 
         // Scope Tables
         private _current_scope_tree: ScopeTreeModel = null;
+        public scope_trees: Array<ScopeTreeModel> = [];
 
         // Messages to Consoles
         public output: Array<Array<OutputConsoleMessage>> = [];
@@ -76,6 +77,7 @@ module NightingaleCompiler {
                     // Create a scope tree
                     this._current_scope_tree = new ScopeTreeModel();
                     this._current_scope_tree.program = this.concrete_syntax_trees[cstIndex].program;
+                    this.scope_trees.push(this._current_scope_tree);
 
                     // Traverse the CST and create the AST while also doing type and scope checking
                     this.generate_abstract_syntax_tree(this.concrete_syntax_trees[cstIndex]);
@@ -260,16 +262,16 @@ module NightingaleCompiler {
                 )// OutputConsoleMessage
             );// this.verbose[this.verbose.length - 1].push
 
-            // Add new BLOCK node
-            // SYMBOL_OPEN_BLOCK Token
-            this._current_ast.add_node(cst_current_node.name, NODE_TYPE_BRANCH, false, false, cst_current_node.getToken());
-
-            // Get child node, which should be a statement list
-            let statement_list_node = cst_current_node.children_nodes[1];
-
             // Add a new scope node to the scope tree
             let scope_table: ScopeTableModel = new ScopeTableModel();
             this._current_scope_tree.add_node(NODE_NAME_SCOPE, NODE_TYPE_BRANCH, scope_table);
+
+            // Add new BLOCK node
+            // SYMBOL_OPEN_BLOCK Token
+            this._current_ast.add_node(cst_current_node.name, NODE_TYPE_BRANCH, false, false, cst_current_node.getToken(), scope_table);
+
+            // Get child node, which should be a statement list
+            let statement_list_node = cst_current_node.children_nodes[1];
 
             // Skip the statement list node
             if (cst_current_node.children_nodes.length === 3) {

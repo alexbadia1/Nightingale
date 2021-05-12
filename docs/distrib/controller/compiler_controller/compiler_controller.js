@@ -38,6 +38,8 @@ var NightingaleCompiler;
             this.semantic_analysis = new NightingaleCompiler.SemanticAnalysis(this.parser.concrete_syntax_trees, this.parser.invalid_parsed_programs);
             let ast_controller = new NightingaleCompiler.AbstractSyntaxTreeController(this.semantic_analysis.abstract_syntax_trees);
             let scope_tree_controller = new NightingaleCompiler.ScopeTreeController(this.semantic_analysis.scope_trees);
+            // Step 4: Code Generation
+            this.code_generation = new NightingaleCompiler.CodeGeneration(this.semantic_analysis.abstract_syntax_trees, this.semantic_analysis.invalid_semantic_programs);
             // Final output
             let output_console_model = new NightingaleCompiler.OutputConsoleModel(this.lexer.output, cst_controller, ast_controller, scope_tree_controller, this.parser.output, this.semantic_analysis.output, this.parser.invalid_parsed_programs);
             let debug_console_model = new NightingaleCompiler.DebugConsoleModel(this.lexer.debug_token_stream, this.parser.debug, this.semantic_analysis.verbose);

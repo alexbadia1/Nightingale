@@ -40,7 +40,7 @@ var NightingaleCompiler;
             this._current_ast = null;
             // Scope Tables
             this._current_scope_tree = null;
-            this.scope_trees = Array();
+            this.scope_trees = [];
             // Messages to Consoles
             this.output = [];
             this.verbose = [];
@@ -51,7 +51,7 @@ var NightingaleCompiler;
         } // constructor 
         main() {
             for (var cstIndex = 0; cstIndex < this.concrete_syntax_trees.length; ++cstIndex) {
-                // Capture messages from lexer for each program
+                // Capture messages from semanntic analysis for each program
                 this.output.push(new Array());
                 this.verbose.push(new Array());
                 // Skips invalid parsed programs
@@ -101,6 +101,8 @@ var NightingaleCompiler;
             this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, INFO, `Generating Abstract Syntax Tree...`));
             // Make new ast
             this._current_ast = new NightingaleCompiler.AbstractSyntaxTree();
+            // Store scope tree in AST
+            this._current_ast.scope_tree = this._current_scope_tree;
             // Get program number from CST
             this._current_ast.program = cst.program;
             // Begin adding nodes to the ast from the cst, filtering for the key elements
@@ -167,14 +169,14 @@ var NightingaleCompiler;
         _add_block_subtree_to_ast(cst_current_node) {
             this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, INFO, `Adding ${cst_current_node.name} subtree to abstract syntax tree.`) // OutputConsoleMessage
             ); // this.verbose[this.verbose.length - 1].push
-            // Add new BLOCK node
-            // SYMBOL_OPEN_BLOCK Token
-            this._current_ast.add_node(cst_current_node.name, NODE_TYPE_BRANCH, false, false, cst_current_node.getToken());
-            // Get child node, which should be a statement list
-            let statement_list_node = cst_current_node.children_nodes[1];
             // Add a new scope node to the scope tree
             let scope_table = new NightingaleCompiler.ScopeTableModel();
             this._current_scope_tree.add_node(NODE_NAME_SCOPE, NODE_TYPE_BRANCH, scope_table);
+            // Add new BLOCK node
+            // SYMBOL_OPEN_BLOCK Token
+            this._current_ast.add_node(cst_current_node.name, NODE_TYPE_BRANCH, false, false, cst_current_node.getToken(), scope_table);
+            // Get child node, which should be a statement list
+            let statement_list_node = cst_current_node.children_nodes[1];
             // Skip the statement list node
             if (cst_current_node.children_nodes.length === 3) {
                 this._skip_node_for_ast(statement_list_node, scope_table);
@@ -641,6 +643,9 @@ var NightingaleCompiler;
                 } // else
             } // while
             if (!isDeclared) {
+                if (!this.invalid_semantic_programs.includes(this._current_ast.program)) {
+                    this.invalid_semantic_programs.push(this._current_ast.program);
+                } // if
                 this.output[this.output.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, ERROR, `Missing variable declaration [${identifier_node.name}] at ${identifier_node.getToken().lineNumber}:${identifier_node.getToken().linePosition}`) // OutputConsoleMessage
                 ); // this.output[this.output.length - 1].push
                 this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, ERROR, `Missing variable declaration [${identifier_node.name}] at ${identifier_node.getToken().lineNumber}:${identifier_node.getToken().linePosition}`) // OutputConsoleMessage
@@ -661,6 +666,9 @@ var NightingaleCompiler;
          */
         check_type(parent_var_type, node, curr_var_type) {
             if (parent_var_type !== curr_var_type) {
+                if (!this.invalid_semantic_programs.includes(this._current_ast.program)) {
+                    this.invalid_semantic_programs.push(this._current_ast.program);
+                } // if
                 this.output[this.output.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, ERROR, `Type mismatch error: tried to perform an operation on [${curr_var_type}] with [${parent_var_type}] at ${node.getToken().lineNumber}:${node.getToken().linePosition}`) // OutputConsoleMessage
                 ); // this.output[this.output.length - 1].push
                 this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, ERROR, `Type mismatch error: tried to perform an operation on [${curr_var_type}] with [${parent_var_type}] at ${node.getToken().lineNumber}:${node.getToken().linePosition}`) // OutputConsoleMessage

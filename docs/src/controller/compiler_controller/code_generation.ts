@@ -9,6 +9,8 @@ module NightingaleCompiler {
         public output: Array<Array<OutputConsoleMessage>>;
         public verbose: Array<Array<OutputConsoleMessage>>;
 
+        private _current_scope_tree: ScopeTreeModel;
+        private _current_scope_table: ScopeTableModel;
 
         constructor(
             private _abstract_syntax_trees: Array<AbstractSyntaxTree>,
@@ -21,6 +23,8 @@ module NightingaleCompiler {
             this.programs = [];
             this._current_program = null;
 
+            this._current_scope_tree = null;
+
             this.main();
         }// constructor
 
@@ -29,9 +33,14 @@ module NightingaleCompiler {
                 // New output array for each program
                 this.output.push(new Array<OutputConsoleMessage>());
                 this.verbose.push(new Array<OutputConsoleMessage>());
+                console.log("AST's received: ");
+                console.log(this._abstract_syntax_trees);
+                console.log("Invalid AST's by program id: ");
+                console.log(this._invalid_abstract_syntax_trees);
 
                 // Skips invalid semantic analyzed programs
                 if (!this._invalid_abstract_syntax_trees.includes(this._abstract_syntax_trees[astIndex].program)) {
+                    console.log(`Performing code generation for: ${this._abstract_syntax_trees[astIndex].program + 1}`);
                     this.output[astIndex].push(
                         new OutputConsoleMessage(
                             CODE_GENERATION, 
@@ -39,6 +48,9 @@ module NightingaleCompiler {
                             `Performing Code Generation on program ${this._abstract_syntax_trees[astIndex].program + 1}...`
                         )// OutputConsoleMessage
                     );// this.output[astIndex].push
+
+                    // Set current scope
+                    this._current_scope_tree = this._abstract_syntax_trees[astIndex].scope_tree;
 
                     // Traverse the valid AST, depth first in order, and generate code
                     this.code_gen(this._abstract_syntax_trees[astIndex].root);
@@ -62,6 +74,7 @@ module NightingaleCompiler {
 
                 // Tell user: skipped the program
                 else {
+                    console.log(`Skipping code generation for: ${this._abstract_syntax_trees[astIndex].program + 1}`);
                     this.output[astIndex].push(
                         new OutputConsoleMessage(
                             CODE_GENERATION, 
@@ -124,10 +137,10 @@ module NightingaleCompiler {
                 case NODE_NAME_PRINT_STATEMENT:
                     this._code_gen_print_statement(current_node);
                     break;
-                case NODE_NAME_IF_STATEMENT:
+                case AST_NODE_NAME_IF:
                     this._code_gen_if_statement(current_node);
                     break;
-                case NODE_NAME_WHILE_STATEMENT:
+                case AST_NODE_NAME_WHILE:
                     this._code_gen_while_statement(current_node);
                     break;
                 default:
@@ -136,26 +149,40 @@ module NightingaleCompiler {
         }// code_gen
 
         private _code_gen_block(current_node: Node): void {
-            throw Error("Unimplemented error: block code generation has not yet been implemented!");
+            console.log("Current Scope Table: ");
+            console.log(current_node.getScopeTable().entries());
+
+            this._current_scope_table = current_node.getScopeTable();
+
+            for (let i: number = 0; i < current_node.children_nodes.length; ++i) {
+                this.code_gen(current_node.children_nodes[i]);
+            }// for
         }// _code_gen_block
 
         private _code_gen_variable_decalration(current_node: Node): void {
+            return;
             throw Error("Unimplemented error: variable declaration code generation has not yet been implemented!");
         }// _code_gen_variable_decalration
 
         private _code_gen_assignment_statement(current_node: Node): void {
+            return;
             throw Error("Unimplemented error: assignment statement code generation has not yet been implemented!");
         }// _code_gen_assignment_statement
 
         private _code_gen_print_statement(current_node: Node): void {
+            return;
             throw Error("Unimplemented error: Print statement code generation has not yet been implemented!");
         }// _code_gen_print_statement
 
         private _code_gen_if_statement(current_node: Node): void {
+            this._code_gen_block(current_node.children_nodes[1]);
+            return;
             throw Error("Unimplemented error: If statement code generation has not yet been implemented!");
         }// _code_gen_if_statement
 
         private _code_gen_while_statement(current_node: Node): void {
+            this._code_gen_block(current_node.children_nodes[1]);
+            return;
             throw Error("Unimplemented error: While statement code generation has not yet been implemented!");
         }// _code_gen_while_statement
     }//class

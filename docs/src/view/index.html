@@ -57,6 +57,7 @@
     <script type="text/javascript" src="../../distrib/controller/compiler_controller/lexer.js"></script>
     <script type="text/javascript" src="../../distrib/controller/compiler_controller/parser.js"></script>
     <script type="text/javascript" src="../../distrib/controller/compiler_controller/semantic_analysis.js"></script>
+    <script type="text/javascript" src="../../distrib/controller/compiler_controller/code_generation.js"></script>
     <script type="text/javascript" src="../../distrib/controller/concrete_syntax_tree_controller.js"></script>
     <script type="text/javascript" src="../../distrib/controller/abstract_syntax_tree_controller.js"></script>
     <script type="text/javascript" src="../../distrib/controller/scope_tree_controller.js"></script>
@@ -79,6 +80,7 @@
     <script type="text/javascript" src="../../tests/lexer_tests.js"></script>
     <script type="text/javascript" src="../../tests/parser_tests.js"></script>
     <script type="text/javascript" src="../../tests/semantic_tests.js"></script>
+    <script type="text/javascript" src="../../tests/code_generation_tests.js"></script>
 </head>
 
 <body id='body'>
@@ -365,6 +367,22 @@
                                             </div>
                                         </li>
                                     </ul>
+                                </li>
+                            </ul>
+                        </li>
+               
+                        <li class="treeview-animated-items">
+                            <a class="closed">
+                                <i class="fas fa-angle-right"></i>
+                                <span style="color: white; font-size: 1.2rem;">Code Generation</span>
+                            </a>
+                            <ul class="nested">
+                                <li>
+                                    <div class="treeview-animated-element"
+                                        onclick="myCodeMirror.setValue(CODE_GEN_SCOPE_TEST)"><a
+                                            id="sidebar__link--tests"
+                                            onclick="myCodeMirror.setValue(CODE_GEN_SCOPE_TEST)">code_gen_scope_test.gle</a>
+                                    </div>
                                 </li>
                             </ul>
                         </li>

@@ -28,6 +28,9 @@ var NightingaleCompiler;
                     ); // this.output[astIndex].push
                     // Set current scope
                     this._current_scope_tree = this._abstract_syntax_trees[astIndex].scope_tree;
+                    // Create a new image of the program
+                    this._current_program = new NightingaleCompiler.ProgramModel();
+                    this.programs.push(this._current_program);
                     // Traverse the valid AST, depth first in order, and generate code
                     this.code_gen(this._abstract_syntax_trees[astIndex].root);
                     this.programs.push(this._current_program);
@@ -79,14 +82,31 @@ var NightingaleCompiler;
         _code_gen_block(current_node) {
             console.log("Current Scope Table: ");
             console.log(current_node.getScopeTable().entries());
+            // Get scope table
             this._current_scope_table = current_node.getScopeTable();
+            this._current_program.write_to_code("A9 00");
             for (let i = 0; i < current_node.children_nodes.length; ++i) {
                 this.code_gen(current_node.children_nodes[i]);
             } // for
         } // _code_gen_block
+        /**
+         * Generates 6502a op codes that reserves a memory location
+         * in the programs stack for a variable that is initialized to zero.
+         *
+         * Remember, if you built your ast correctly..
+         *   - Variabel Declaration ::== { StatementList }
+         *    - Node(Variable Declaration).children[0] --> int | char list | boolean
+         *    - Node(Variable Declaration).children[1] --> identifier
+         *
+         * @param cst_current_node current node in the ast.
+         */
         _code_gen_variable_decalration(current_node) {
-            return;
-            throw Error("Unimplemented error: variable declaration code generation has not yet been implemented!");
+            console.log("Code generation for variable declarations: ");
+            // Initialize the variable to zero and store it in memory,
+            // where the exact location is to be determined in backtracking.
+            this.load_accumulator_with_constant("00");
+            this.store_accumulator_to_memory("T1", "$$");
+            // throw Error("Unimplemented error: variable declaration code generation has not yet been implemented!");
         } // _code_gen_variable_decalration
         _code_gen_assignment_statement(current_node) {
             return;
@@ -106,6 +126,26 @@ var NightingaleCompiler;
             return;
             throw Error("Unimplemented error: While statement code generation has not yet been implemented!");
         } // _code_gen_while_statement
+        /**
+         * Load the accumulator with a constant.
+         * @param hex_pair_constant 1 byte constant being loaded into the accumulator
+         */
+        load_accumulator_with_constant(hex_pair_constant) {
+            this._current_program.write_to_code("A9");
+            this._current_program.write_to_code(hex_pair_constant);
+        } // loadAccumulatorWithConstant
+        /**
+         * Store the contents of the accumulator in memory.
+         * @param leading_hex_pair first byte in the 2 byte address.
+         * @param trailing_hex_pair second byte in the 2 byte address.
+         */
+        store_accumulator_to_memory(leading_hex_pair, trailing_hex_pair) {
+            this._current_program.write_to_code("8D");
+            // Remember to reverse the order, as this used to be 
+            // an optimaztion for direct addressing in the old 6502a days.
+            this._current_program.write_to_code(trailing_hex_pair);
+            this._current_program.write_to_code(leading_hex_pair);
+        } // loadAccumulatorWithConstant
     } //class
     NightingaleCompiler.CodeGeneration = CodeGeneration;
 })(NightingaleCompiler || (NightingaleCompiler = {})); // module

@@ -89,36 +89,36 @@ module NightingaleCompiler {
 
             // I know we're not in OS anymore but to make debugging easier...
             // Ensure valid addressing of memory, logically, physically, and metaphysically.
-            let pyhsical_address: number = this._get_physical_address(logical_address, hex_pair);
+            let physical_address: number = this._get_physical_address(this._code_base, logical_address, hex_pair);
 
             // Code must be appended synchronous
-            if (pyhsical_address > (this._code_limit + 1)) {
-                throw Error(`Code must be contigous, writing to code ${hex_pair} to L${logical_address}:P${pyhsical_address}!`);
+            if (physical_address > (this._code_limit + 1)) {
+                throw Error(`Code must be contigous, writing to code ${hex_pair} to L${logical_address}:P${physical_address}!`);
             }// if
 
             // Avoid heap collisions
             //
             // Allows the user to change 6502a op codes within the code section memory
             // This will be particularly useful for backtracking.
-            if ((this._code_limit + 1) >= this._heap_limit) { 
-                throw Error(`Heap Collision writing to code ${hex_pair} to L${logical_address}:P${pyhsical_address}!`);
+            if (physical_address >= this._heap_limit) { 
+                throw Error(`Heap Collision writing to code ${hex_pair} to L${logical_address}:P${physical_address}!`);
             }// if
 
             // Explicitly banning self modifying code via the stack or heap.
             // That is out of the scope of this class, and a lot of brain damage all considering...
             if (this._stack_base !== null) {
-                if (pyhsical_address < this._stack_base) {
-                    throw Error(`Self Modifying Code Error writing ${hex_pair} to L${logical_address}:P${pyhsical_address}!
+                if (physical_address < this._stack_base) {
+                    throw Error(`Self Modifying Code Error writing ${hex_pair} to L${logical_address}:P${physical_address}!
                     Self modifiying code is explicitly prohibited! If the [stack base] is non-null, that means backpatching is or 
                     was already performed. Meaning, there should not be any new code entries that would cause the code section to grow.`);
                 }// if
             }// if
 
             // Write to code
-            this._memory[pyhsical_address] = hex_pair;
+            this._memory[physical_address] = hex_pair;
 
             // User did not specify a logical address, so hex_pair was written to the end of the code
-            if (pyhsical_address === (this._code_limit + 1)) {
+            if (physical_address === (this._code_limit + 1)) {
                 this._code_limit++;
             }// if
         }// write_to_code
@@ -154,30 +154,28 @@ module NightingaleCompiler {
 
             // I know we're not in OS anymore but to make debugging easier...
             // Ensure valid addressing of memory, logically, physically, and metaphysically.
-            let pyhsical_address: number = this._get_physical_address(logical_address, hex_pair);
-
-            // (this._stack_limit + 1)
+            let physical_address: number = this._get_physical_address(this._stack_base, logical_address, hex_pair);
 
             // Avoid code collisions, again no self modifying code...
-            if (pyhsical_address <= this._code_limit) { 
-                throw Error(`Code Collision writing to stack ${hex_pair} to L${logical_address}:P${pyhsical_address}!`);
+            if (physical_address <= this._code_limit) { 
+                throw Error(`Code Collision writing to stack ${hex_pair} to L${logical_address}:P${physical_address}!`);
             }// if
 
             // Avoid heap collisions
-            if (pyhsical_address >= this._heap_limit) { 
-                throw Error(`Heap Collision writing to stack ${hex_pair} to L${logical_address}:P${pyhsical_address}!`);
+            if (physical_address >= this._heap_limit) { 
+                throw Error(`Heap Collision writing to stack ${hex_pair} to L${logical_address}:P${physical_address}!`);
             }// if
 
             // Ensure contigous expansion of the stack
-            if (pyhsical_address > (this._stack_limit + 1)) {
-                throw Error(`Stack must be contigous, writing to stack ${hex_pair} to L${logical_address}:P${pyhsical_address}!`);
+            if (physical_address > (this._stack_limit + 1)) {
+                throw Error(`Stack must be contigous, writing to stack ${hex_pair} to L${logical_address}:P${physical_address}!`);
             }// if
 
             // Write to stack
-            this._memory[pyhsical_address] = hex_pair;
+            this._memory[physical_address] = hex_pair;
 
             // Stack just greww
-            if (pyhsical_address = (this._stack_limit + 1)) {
+            if (physical_address = (this._stack_limit + 1)) {
                 this._stack_limit++;
             }// if
         }// write_to_stack
@@ -202,36 +200,45 @@ module NightingaleCompiler {
                 throw Error(`Invalid Hex Pair, cannot write to heap ${hex_pair} to L${logical_address}!`);
             }// if
 
-            let pyhsical_address: number = this._get_physical_address(logical_address, hex_pair);
+            let physical_address: number = this._heap_base - logical_address;
+
+            if (physical_address < this._memory_address_base) {
+                throw Error(`Memory Lower Bound Limit Reached, cannot write ${hex_pair} to L${logical_address}:P${physical_address}!`);
+            }// if
+
+            if (physical_address > this._memory_address_limit) { 
+                throw Error(`Memory Upper Bound Limit Reached, cannot write ${hex_pair} to L${logical_address}:P${physical_address}!`)
+            }// if
 
             // Avoid code collisions
-            if (pyhsical_address > this._code_limit) { 
-                throw Error(`Code Collision writing to heap ${hex_pair} to L${logical_address}:P${pyhsical_address}!`);
+            if (physical_address > this._code_limit) { 
+                throw Error(`Code Collision writing to heap ${hex_pair} to L${logical_address}:P${physical_address}!`);
             }// if
 
             // If the stack was specified, ensure no stack collisions
             if (this._stack_base !== null && this._stack_limit !== null) {
-                if (pyhsical_address > this._stack_limit) {
-                    throw Error(`Stack Collision writing to heap ${hex_pair} to L${logical_address}:P${pyhsical_address}!`);
+                if (physical_address > this._stack_limit) {
+                    throw Error(`Stack Collision writing to heap ${hex_pair} to L${logical_address}:P${physical_address}!`);
                 }// if
             }// if
 
             // Ensure the heap is CONTIGOUSLY expanded
-            if (pyhsical_address > (this._heap_limit - 1)) {
-                throw Error(`Heap must be contigous, writing to heap ${hex_pair} to L${logical_address}:P${pyhsical_address}!`);
+            if (physical_address > (this._heap_limit - 1)) {
+                throw Error(`Heap must be contigous, writing to heap ${hex_pair} to L${logical_address}:P${physical_address}!`);
             }// if
 
             // Write to heap
-            this._memory[pyhsical_address] = hex_pair;
+            this._memory[physical_address] = hex_pair;
 
             // Heap just grew
-            if (pyhsical_address === (this._heap_limit - 1)) {
-                this._heap_limit++;
+            if (physical_address === (this._heap_limit - 1)) {
+                this._heap_limit--;
             }// if
         }// write_to_stack
 
         private is_valid_hex_pair(hex_pair: string) {
-            return /([A-F]|[0-9])([A-F]|[0-9])/.test(hex_pair);
+            // Allow T's and $'s for temporary locations
+            return /([A-F]|[0-9]|[T]|[\$])([A-F]|[0-9]|[T]|[\$])/.test(hex_pair);
         }// is_valid_hex_pair
 
         /**
@@ -242,8 +249,8 @@ module NightingaleCompiler {
          * @param hex_pair hex pair that will be written to memory
          * @returns the physical address in memory, calculated from the logical
          */
-        private _get_physical_address(logical_address: number, hex_pair: string): number {
-            let physical_address = logical_address + this._memory_address_base;
+        private _get_physical_address(base: number, logical_address: number, hex_pair: string): number {
+            let physical_address = logical_address + base;
 
             if (physical_address < this._memory_address_base) {
                 throw Error(`Memory Lower Bound Limit Reached, cannot write ${hex_pair} to L${logical_address}:P${physical_address}!`);

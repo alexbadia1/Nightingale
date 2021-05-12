@@ -12,6 +12,9 @@ module NightingaleCompiler {
         private _current_scope_tree: ScopeTreeModel;
         private _current_scope_table: ScopeTableModel;
 
+        public static_tables: Array<StaticTableModel>;
+        private _current_static_table: StaticTableModel;
+
         constructor(
             private _abstract_syntax_trees: Array<AbstractSyntaxTree>,
             private _invalid_abstract_syntax_trees: Array<number>,
@@ -22,6 +25,8 @@ module NightingaleCompiler {
 
             this.programs = [];
             this._current_program = null;
+            
+            this.static_tables = [];
 
             this._current_scope_tree = null;
 
@@ -51,6 +56,14 @@ module NightingaleCompiler {
 
                     // Set current scope
                     this._current_scope_tree = this._abstract_syntax_trees[astIndex].scope_tree;
+
+                    // Create a new image of the program
+                    this._current_program = new ProgramModel();
+                    this.programs.push(this._current_program);
+
+                    // Create a new static table
+                    this._current_static_table = new StaticTableModel();
+                    this.static_tables.push(this._current_static_table);
 
                     // Traverse the valid AST, depth first in order, and generate code
                     this.code_gen(this._abstract_syntax_trees[astIndex].root);
@@ -152,16 +165,57 @@ module NightingaleCompiler {
             console.log("Current Scope Table: ");
             console.log(current_node.getScopeTable().entries());
 
+            // Get scope table
             this._current_scope_table = current_node.getScopeTable();
+
+            this._current_program.write_to_code("A9 00");
 
             for (let i: number = 0; i < current_node.children_nodes.length; ++i) {
                 this.code_gen(current_node.children_nodes[i]);
             }// for
         }// _code_gen_block
 
+        /**
+         * Generates 6502a op codes that reserves a memory location 
+         * in the programs stack for a variable that is initialized to zero.
+         * 
+         * Remember, if you built your ast correctly..
+         *   - Variabel Declaration ::== { StatementList }
+         *    - Node(Variable Declaration).children[0] --> int | char list | boolean
+         *    - Node(Variable Declaration).children[1] --> identifier
+         *  
+         * @param cst_current_node current node in the ast.
+         */
         private _code_gen_variable_decalration(current_node: Node): void {
-            return;
-            throw Error("Unimplemented error: variable declaration code generation has not yet been implemented!");
+            console.log("Code generation for variable declarations: ");
+
+            let type: string = current_node.children_nodes[0].name;
+            let identifier: string = current_node.children_nodes[1].name;
+            let static_table_size: number = this._current_static_table.size();
+
+            // Make an entry in the static table, for later backtracking
+            this._current_static_table.put(
+                identifier, 
+                this._current_scope_table.id, 
+                new StaticDataMetadata(`T${static_table_size}$$`, static_table_size)
+            );// this._current_static_table.put
+
+            // Integers and boolean
+            if (type !== STRING) {
+
+                // Initialize the variable to zero and store it in memory,
+                // where the exact location is to be determined in backtracking.
+                this.load_accumulator_with_constant("00");
+            }// if 
+
+            // Strings
+            else {
+                // For strings, load the accumulator with a pointer to the heap,
+                // then store that pointer to the heap in the static area memory.
+                this.load_accumulator_with_constant("00");
+            }// else 
+
+            this.store_accumulator_to_memory(`T${static_table_size}`, "$$");
         }// _code_gen_variable_decalration
 
         private _code_gen_assignment_statement(current_node: Node): void {
@@ -185,5 +239,28 @@ module NightingaleCompiler {
             return;
             throw Error("Unimplemented error: While statement code generation has not yet been implemented!");
         }// _code_gen_while_statement
+
+        /**
+         * Load the accumulator with a constant.
+         * @param hex_pair_constant 1 byte constant being loaded into the accumulator
+         */
+        private load_accumulator_with_constant(hex_pair_constant: string) {
+            this._current_program.write_to_code("A9");
+            this._current_program.write_to_code(hex_pair_constant);
+        }// loadAccumulatorWithConstant
+
+        /**
+         * Store the contents of the accumulator in memory.
+         * @param leading_hex_pair first byte in the 2 byte address.
+         * @param trailing_hex_pair second byte in the 2 byte address.
+         */
+        private store_accumulator_to_memory(leading_hex_pair: string, trailing_hex_pair: string) {
+            this._current_program.write_to_code("8D");
+
+            // Remember to reverse the order, as this used to be 
+            // an optimaztion for direct addressing in the old 6502a days.
+            this._current_program.write_to_code(trailing_hex_pair);
+            this._current_program.write_to_code(leading_hex_pair);
+        }// loadAccumulatorWithConstant
     }//class
 }// module

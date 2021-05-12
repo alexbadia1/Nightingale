@@ -1,5 +1,5 @@
 /**
- * scope_table.ts
+ * static_table.ts
  * 
  * The logical model of a Scope Table.
  * 
@@ -7,21 +7,16 @@
  * 
  */
 
-module NightingaleCompiler {
-    export class VariableMetaData{
+ module NightingaleCompiler {
+    export class StaticDataMetadata{
         constructor(
-            public type: string,
-            public isUsed: boolean,
-            public isInitialized: boolean,
-            public lineNumber: number,
-            public linePosition: number,
-            public node: Node,
+            public temp_address: string,
+            public logical_address: number,
         ){}
     }// class
 
-    export class ScopeTableModel {
-        public id: number;
-        private _map: Map<string, VariableMetaData>;
+    export class StaticTableModel {
+        private _map: Map<string, StaticDataMetadata>;
 
         constructor(){
             this._map = new Map();
@@ -34,9 +29,12 @@ module NightingaleCompiler {
          * @param value variable metadata object indicating type and usage
          * @returns false if there was a collision
          */
-        public put(key: string, value: VariableMetaData): boolean {
-            if (!this._map.has(key)) {
-                this._map.set(key, value);
+        public put(identifier: string, scope: number, static_data_metadata: StaticDataMetadata): boolean {
+            let primary_key: string = identifier + scope.toString();
+            let value: StaticDataMetadata = static_data_metadata;
+
+            if (!this._map.has(primary_key)) {
+                this._map.set(primary_key, value);
                 return true;
             }// if
 
@@ -49,9 +47,11 @@ module NightingaleCompiler {
          * @param key unique key value for hash table
          * @returns Variable etadata object, null if not
          */
-         public get(key: string): VariableMetaData {
-            if (this._map.has(key)) {
-                return this._map.get(key);
+         public get(identifier: string, scope: number,): StaticDataMetadata {
+            let primary_key: string = identifier + scope.toString();
+
+            if (this._map.has(primary_key)) {
+                return this._map.get(primary_key);
             }// if
 
             return null;
@@ -61,12 +61,18 @@ module NightingaleCompiler {
             return Array.from(this._map.entries());
         }// entries
 
-        public has(key: string): boolean{
-            return this._map.has(key);
+        public has(identifier: string, scope: number,): boolean{
+            let primary_key: string = identifier + scope.toString();
+
+            return this._map.has(primary_key);
         }// has
         
         public isEmpty(): boolean {
             return this._map.size === 0;
         }// isEmpty
+
+        public size(): number {
+            return this._map.size;
+        }// size
     }// class
 }// module

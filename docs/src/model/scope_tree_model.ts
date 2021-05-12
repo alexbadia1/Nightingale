@@ -42,6 +42,7 @@
 
             // Construct the node object.
             let new_node = new Node(new_name, this._node_count, kind);
+            scope_table.id = this._node_count;
 
             // Set new node's metadata
             new_node.setScopeTable(scope_table);

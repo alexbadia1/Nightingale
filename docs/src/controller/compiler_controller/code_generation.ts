@@ -18,14 +18,14 @@ module NightingaleCompiler {
         constructor(
             private _abstract_syntax_trees: Array<AbstractSyntaxTree>,
             private _invalid_abstract_syntax_trees: Array<number>,
-        ){
+        ) {
             // Initialize output and verbose
             this.output = [[]];
             this.verbose = [[]];
 
             this.programs = [];
             this._current_program = null;
-            
+
             this.static_tables = [];
 
             this._current_scope_tree = null;
@@ -48,8 +48,8 @@ module NightingaleCompiler {
                     console.log(`Performing code generation for: ${this._abstract_syntax_trees[astIndex].program + 1}`);
                     this.output[astIndex].push(
                         new OutputConsoleMessage(
-                            CODE_GENERATION, 
-                            INFO, 
+                            CODE_GENERATION,
+                            INFO,
                             `Performing Code Generation on program ${this._abstract_syntax_trees[astIndex].program + 1}...`
                         )// OutputConsoleMessage
                     );// this.output[astIndex].push
@@ -69,17 +69,17 @@ module NightingaleCompiler {
                     this.code_gen(this._abstract_syntax_trees[astIndex].root, this._abstract_syntax_trees[astIndex].scope_tree.root.getScopeTable());
                     this.programs.push(this._current_program);
 
-                    this.output[this.output.length -1].push(
+                    this.output[this.output.length - 1].push(
                         new OutputConsoleMessage(
-                            CODE_GENERATION, 
-                            INFO, 
+                            CODE_GENERATION,
+                            INFO,
                             `Finished code generation on program ${astIndex + 1}.`
                         )// OutputConsoleMessage
                     );// this.output[astIndex].push
-                    this.verbose[this.verbose.length -1].push(
+                    this.verbose[this.verbose.length - 1].push(
                         new OutputConsoleMessage(
-                            CODE_GENERATION, 
-                            INFO, 
+                            CODE_GENERATION,
+                            INFO,
                             `Finished code generation on program ${astIndex + 1}.`
                         )// OutputConsoleMessage
                     );// this.verbose[astIndex].push
@@ -95,47 +95,47 @@ module NightingaleCompiler {
                     console.log(`Skipping code generation for: ${this._abstract_syntax_trees[astIndex].program + 1}`);
                     this.output[astIndex].push(
                         new OutputConsoleMessage(
-                            CODE_GENERATION, 
-                            WARNING, 
+                            CODE_GENERATION,
+                            WARNING,
                             `Skipping program ${this._abstract_syntax_trees[astIndex].program + 1} due to semantic analysis errors.`
                         )
                     );
                     this.verbose[astIndex].push(
                         new OutputConsoleMessage(
-                            CODE_GENERATION, 
-                            WARNING, 
+                            CODE_GENERATION,
+                            WARNING,
                             `Skipping program ${this._abstract_syntax_trees[astIndex].program + 1} due to semantic analysis errors.`
                         )
                     );
                 }// else
             }// for
 
-            this.output[this.output.length -1].push(
+            this.output[this.output.length - 1].push(
                 new OutputConsoleMessage(
-                    CODE_GENERATION, 
-                    INFO, 
+                    CODE_GENERATION,
+                    INFO,
                     `Code Generation completed with ${this._warning_count} warning(s)`
                 )// OutputConsoleMessage
             );// this.output[astIndex].push
-            this.output[this.output.length -1].push(
+            this.output[this.output.length - 1].push(
                 new OutputConsoleMessage(
-                    CODE_GENERATION, 
-                    INFO, 
+                    CODE_GENERATION,
+                    INFO,
                     `Code Generation completed with  ${this._error_count} error(s)`
                 )// OutputConsoleMessage
             );// this.output[astIndex].push
 
-            this.verbose[this.verbose.length -1].push(
+            this.verbose[this.verbose.length - 1].push(
                 new OutputConsoleMessage(
-                    CODE_GENERATION, 
-                    INFO, 
+                    CODE_GENERATION,
+                    INFO,
                     `Code Generation completed with ${this._warning_count} warning(s)`
                 )// OutputConsoleMessage
             );// this.verbose[astIndex].push
-            this.verbose[this.verbose.length -1].push(
+            this.verbose[this.verbose.length - 1].push(
                 new OutputConsoleMessage(
-                    CODE_GENERATION, 
-                    INFO, 
+                    CODE_GENERATION,
+                    INFO,
                     `Code Generation completed with  ${this._error_count} error(s)`
                 )// OutputConsoleMessage
             );// this.verbose[astIndex].push
@@ -204,9 +204,9 @@ module NightingaleCompiler {
 
             // Make an entry in the static table, for later backtracking
             this._current_static_table.put(
-                identifier, 
-                current_scope_table.id, 
-                new StaticDataMetadata(`T${static_table_size}$$`, static_table_size)
+                identifier,
+                current_scope_table.id,
+                new StaticDataMetadata(`T${static_table_size}`, `$$`, static_table_size)
             );// this._current_static_table.put
 
             // Integers and boolean
@@ -231,8 +231,72 @@ module NightingaleCompiler {
             throw Error("Unimplemented error: assignment statement code generation has not yet been implemented!");
         }// _code_gen_assignment_statement
 
-        private _code_gen_print_statement(current_node: Node, current_scope_table: ScopeTableModel): void {
-            return;
+        private _code_gen_print_statement(print_node: Node, current_scope_table: ScopeTableModel): void {
+        \
+            // Print a value
+            if (print_node.children_nodes.length === 1) {
+                let identifier: string = print_node.children_nodes[0].name;
+
+                // Value is an identifier
+                if (new RegExp("^[a-z]$").test(identifier)) {
+                    let type: string = current_scope_table.get(identifier).type;
+
+                    // Get start location of string in heap
+                    let metadata: StaticDataMetadata = this._current_static_table.get(identifier, current_scope_table.id);
+
+                    switch (type) {
+                        // Get int value
+                        case INT:
+                            // Get int value from static area
+                            this.load_y_register_from_memory(metadata.temp_address_leading_hex, metadata.temp_address_trailing_hex);
+                            
+                            // Load the X register with 1
+                            this.load_x_register_with_constant("01");
+                            break;
+
+                        // Boolean strings are preloaded in heap
+                        case BOOLEAN:
+                            // Load value to X register
+                            this.load_x_register_with_constant("00");
+
+                            // Compare to zero (false)
+                            this.compare_x_register_to_memory(metadata.temp_address_leading_hex, metadata.temp_address_trailing_hex);
+
+                            // Boolean value was false...
+                            // Skip loading string pointer to true to X register
+                            this.branch_on_zero("01");
+                            this.load_y_register_from_memory("00", this._current_program.getTrueAddress().toString(16));
+                            this.load_y_register_from_memory("00", this._current_program.getFalseAddress().toString(16));
+
+                            // Load the X register with 2
+                            this.load_x_register_with_constant("02");
+                            break;
+
+                        // Print string from heap
+                        case STRING:
+                            // Get address of string pointer...
+                            // Load Y register with string pointer from the address
+                            this.load_y_register_from_memory(metadata.temp_address_leading_hex, metadata.temp_address_trailing_hex);
+
+                            // Load the X register with 2
+                            this.load_x_register_with_constant("02");
+                            break;
+                        default:
+                            break;
+                    }// switch
+
+                    // Print
+                    // Load the X register with 2 and make a system call to print
+                    this.load_x_register_with_constant("02");
+                    this.system_call();
+
+                }// if
+
+                else {
+                    if 
+                }// else
+            }//if
+
             throw Error("Unimplemented error: Print statement code generation has not yet been implemented!");
         }// _code_gen_print_statement
 
@@ -259,6 +323,7 @@ module NightingaleCompiler {
 
         /**
          * Store the contents of the accumulator in memory.
+         * 
          * @param leading_hex_pair first byte in the 2 byte address.
          * @param trailing_hex_pair second byte in the 2 byte address.
          */
@@ -269,6 +334,64 @@ module NightingaleCompiler {
             // an optimaztion for direct addressing in the old 6502a days.
             this._current_program.write_to_code(trailing_hex_pair);
             this._current_program.write_to_code(leading_hex_pair);
-        }// loadAccumulatorWithConstant
+        }// store_accumulator_to_memory
+
+        /**
+         * Load the x-register with a constant.
+         * @param hex_pair_constant 1 byte constant being loaded into the accumulator
+         */
+        private load_x_register_with_constant(hex_pair_constant: string) {
+            this._current_program.write_to_code("A2");
+            this._current_program.write_to_code(hex_pair_constant);
+        }// load_x_register_with_constant
+
+        /**
+         * Load the x-register from memory.
+         * @param hex_pair_constant 1 byte constant being loaded into the accumulator
+         */
+        private load_x_register_from_memory(leading_hex_pair: string, trailing_hex_pair: string) {
+            this._current_program.write_to_code("AE");
+
+            // Remember to reverse the order, as this used to be 
+            // an optimaztion for direct addressing in the old 6502a days.
+            this._current_program.write_to_code(trailing_hex_pair);
+            this._current_program.write_to_code(leading_hex_pair);
+        }// load_x_register_from_memory
+
+        /**
+         * Load the y-register from memory.
+         * @param hex_pair_constant 1 byte constant being loaded into the accumulator
+         */
+        private load_y_register_from_memory(leading_hex_pair: string, trailing_hex_pair: string) {
+            this._current_program.write_to_code("AC");
+
+            // Remember to reverse the order, as this used to be 
+            // an optimaztion for direct addressing in the old 6502a days.
+            this._current_program.write_to_code(trailing_hex_pair);
+            this._current_program.write_to_code(leading_hex_pair);
+        }// load_y_register_from_memory
+
+        private compare_x_register_to_memory(leading_hex_pair: string, trailing_hex_pair: string): void {
+            this._current_program.write_to_code("EC");
+
+            // Remember to reverse the order, as this used to be 
+            // an optimaztion for direct addressing in the old 6502a days.
+            this._current_program.write_to_code(trailing_hex_pair);
+            this._current_program.write_to_code(leading_hex_pair);
+        }// compare_x_register_to_memory
+
+        private branch_on_zero(hex_pair: string): void {
+            this._current_program.write_to_code("D0");
+
+            // Bytes to skip
+            this._current_program.write_to_code(hex_pair);
+        }// compare_x_register_to_memory
+
+        /**
+         * Writes a system call.
+         */
+        private system_call() {
+            this._current_program.write_to_code("FF");
+        }// system_call
     }//class
 }// module

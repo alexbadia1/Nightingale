@@ -10,8 +10,9 @@
  module NightingaleCompiler {
     export class StaticDataMetadata{
         constructor(
-            public temp_address: string,
-            public logical_address: number,
+            public temp_address_leading_hex: string,
+            public temp_address_trailing_hex: string,
+            public logical_stack_address: number,
         ){}
     }// class
 

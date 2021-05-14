@@ -66,7 +66,7 @@ module NightingaleCompiler {
                     this.static_tables.push(this._current_static_table);
 
                     // Traverse the valid AST, depth first in order, and generate code
-                    this.code_gen(this._abstract_syntax_trees[astIndex].root);
+                    this.code_gen(this._abstract_syntax_trees[astIndex].root, this._abstract_syntax_trees[astIndex].scope_tree.root.getScopeTable());
                     this.programs.push(this._current_program);
 
                     this.output[this.output.length -1].push(
@@ -86,6 +86,8 @@ module NightingaleCompiler {
 
                     console.log(`Finished code generation on program ${astIndex + 1}.`);
                     console.log(this._current_program);
+                    console.log(`Showing static table for program ${astIndex + 1}`);
+                    console.log(this._current_static_table);
                 }// if
 
                 // Tell user: skipped the program
@@ -139,40 +141,46 @@ module NightingaleCompiler {
             );// this.verbose[astIndex].push
         }// main
 
-        private code_gen(current_node: Node): void {
+        private code_gen(current_node: Node, current_scope_table: ScopeTableModel): void {
             switch (current_node.name) {
                 case NODE_NAME_BLOCK:
-                    this._code_gen_block(current_node);
+                    this._code_gen_block(current_node, current_scope_table);
                     break;
                 case NODE_NAME_VARIABLE_DECLARATION:
-                    this._code_gen_variable_decalration(current_node);
+                    this._code_gen_variable_decalration(current_node, current_scope_table);
                     break;
                 case NODE_NAME_ASSIGNMENT_STATEMENT:
-                    this._code_gen_assignment_statement(current_node);
+                    this._code_gen_assignment_statement(current_node, current_scope_table);
                     break;
                 case NODE_NAME_PRINT_STATEMENT:
-                    this._code_gen_print_statement(current_node);
+                    this._code_gen_print_statement(current_node, current_scope_table);
                     break;
                 case AST_NODE_NAME_IF:
-                    this._code_gen_if_statement(current_node);
+                    this._code_gen_if_statement(current_node, current_scope_table);
                     break;
                 case AST_NODE_NAME_WHILE:
-                    this._code_gen_while_statement(current_node);
+                    this._code_gen_while_statement(current_node, current_scope_table);
                     break;
                 default:
                     throw Error("ERROR: Invalid Node found on the AST: " + current_node.name);
             }// switch
         }// code_gen
 
-        private _code_gen_block(current_node: Node): void {
-            console.log("Current Scope Table: ");
-            console.log(current_node.getScopeTable().entries());
+        private _code_gen_block(current_node: Node, current_scope_table: ScopeTableModel = null): void {
+            if (current_scope_table === null) {
+                current_scope_table = current_node.getScopeTable();
+            }// if
 
-            // Get scope table
-            this._current_scope_table = current_node.getScopeTable();
+            console.log("Current Scope Table: ");
+            console.log(current_scope_table.entries());
 
             for (let i: number = 0; i < current_node.children_nodes.length; ++i) {
-                this.code_gen(current_node.children_nodes[i]);
+                if (current_node.children_nodes[i].name === NODE_NAME_BLOCK) {
+                    this._code_gen_block(current_node.children_nodes[i]);
+                }// if
+                else {
+                    this.code_gen(current_node.children_nodes[i], current_scope_table);
+                }// else
             }// for
         }// _code_gen_block
 
@@ -187,7 +195,7 @@ module NightingaleCompiler {
          *  
          * @param cst_current_node current node in the ast.
          */
-        private _code_gen_variable_decalration(current_node: Node): void {
+        private _code_gen_variable_decalration(current_node: Node, current_scope_table: ScopeTableModel): void {
             console.log("Code generation for variable declarations: ");
 
             let type: string = current_node.children_nodes[0].name;
@@ -197,7 +205,7 @@ module NightingaleCompiler {
             // Make an entry in the static table, for later backtracking
             this._current_static_table.put(
                 identifier, 
-                this._current_scope_table.id, 
+                current_scope_table.id, 
                 new StaticDataMetadata(`T${static_table_size}$$`, static_table_size)
             );// this._current_static_table.put
 
@@ -211,31 +219,30 @@ module NightingaleCompiler {
 
             // Strings
             else {
-                // Initialiaze strings as "null" by
-                // pointing to the word "null" in the heap
+                // Initialiaze strings as "null" by pointing to the word "null" in the heap
                 this.load_accumulator_with_constant("FF");
             }// else 
 
             this.store_accumulator_to_memory(`T${static_table_size}`, "$$");
         }// _code_gen_variable_decalration
 
-        private _code_gen_assignment_statement(current_node: Node): void {
+        private _code_gen_assignment_statement(current_node: Node, current_scope_table: ScopeTableModel): void {
             return;
             throw Error("Unimplemented error: assignment statement code generation has not yet been implemented!");
         }// _code_gen_assignment_statement
 
-        private _code_gen_print_statement(current_node: Node): void {
+        private _code_gen_print_statement(current_node: Node, current_scope_table: ScopeTableModel): void {
             return;
             throw Error("Unimplemented error: Print statement code generation has not yet been implemented!");
         }// _code_gen_print_statement
 
-        private _code_gen_if_statement(current_node: Node): void {
+        private _code_gen_if_statement(current_node: Node, current_scope_table: ScopeTableModel): void {
             this._code_gen_block(current_node.children_nodes[1]);
             return;
             throw Error("Unimplemented error: If statement code generation has not yet been implemented!");
         }// _code_gen_if_statement
 
-        private _code_gen_while_statement(current_node: Node): void {
+        private _code_gen_while_statement(current_node: Node, current_scope_table: ScopeTableModel): void {
             this._code_gen_block(current_node.children_nodes[1]);
             return;
             throw Error("Unimplemented error: While statement code generation has not yet been implemented!");

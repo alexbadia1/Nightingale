@@ -30,7 +30,7 @@ module NightingaleCompiler {
 
             this._current_scope_tree = null;
 
-            this.main();
+            // this.main();
         }// constructor
 
         private main(): void {
@@ -236,14 +236,14 @@ module NightingaleCompiler {
             throw Error("Unimplemented error: Print statement code generation has not yet been implemented!");
         }// _code_gen_print_statement
 
-        private _code_gen_if_statement(current_node: Node, current_scope_table: ScopeTableModel): void {
-            this._code_gen_block(current_node.children_nodes[1]);
+        private _code_gen_if_statement(if_node: Node, current_scope_table: ScopeTableModel): void {
+            this._code_gen_block(if_node.children_nodes[1]);
             return;
             throw Error("Unimplemented error: If statement code generation has not yet been implemented!");
         }// _code_gen_if_statement
 
-        private _code_gen_while_statement(current_node: Node, current_scope_table: ScopeTableModel): void {
-            this._code_gen_block(current_node.children_nodes[1]);
+        private _code_gen_while_statement(while_node: Node, current_scope_table: ScopeTableModel): void {
+            this._code_gen_block(while_node.children_nodes[1]);
             return;
             throw Error("Unimplemented error: While statement code generation has not yet been implemented!");
         }// _code_gen_while_statement

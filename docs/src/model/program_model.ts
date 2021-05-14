@@ -35,16 +35,21 @@ module NightingaleCompiler {
         private _heap_base: number;
         private _heap_limit: number;
 
+        private _false_address: number;
+        private _true_address: number;
+        private _null_address: number;
+
         constructor() {
             this.init();
         }// constructor
 
         private init(): void {
+            this._memory = [];
             this._memory_address_base = 0;
             this._memory_address_limit = MAX_MEMORY_SIZE - 1; //
 
             // Initialize 256 bytes of memory, with 0's
-            for (let i: number = this._memory_address_base; i < this._memory_address_limit; ++i) {
+            for (let i: number = this._memory_address_base; i <= this._memory_address_limit; ++i) {
                 this._memory.push("00");
             }// for
 
@@ -52,19 +57,44 @@ module NightingaleCompiler {
             this._code_base = 0;
 
             // End of code starts at the code's base, but will grow over time
-            this._code_limit = this._code_base;
+            this._code_limit = this._code_base - 1;
 
             // Don't know where the stack will start yet
             this._stack_base = null;
 
             // End of stack starts at the stacks base, but will grow over time
-            this._stack_limit = this._stack_base;
+            this._stack_limit = this._stack_base - 1;
 
             // Heap starts at end of memory
             this._heap_base = this._memory.length - 1;
 
             // End of heap starts at the heap's base, but will grow over time
-            this._heap_limit = this._heap_base;
+            this._heap_limit = this._heap_base + 1;
+
+            // Write "null" to heap
+            // Null's location is the heap base
+            this._null_address = this._heap_limit - 1;
+            this.write_to_heap("6E")// n
+            this.write_to_heap("75")// u
+            this.write_to_heap("6C")// l
+            this.write_to_heap("6C")// l
+
+            // Write "false" to heap, starting at FB or 251
+            this._false_address = this._heap_limit - 1;
+            this.write_to_heap("66")// f
+            this.write_to_heap("97")// a
+            this.write_to_heap("6C")// l
+            this.write_to_heap("73")// s
+            this.write_to_heap("65")// e
+
+            // Write "true", starting at 246
+            this._true_address = this._heap_limit - 1;
+            this.write_to_heap("74")// t
+            this.write_to_heap("72")// r
+            this.write_to_heap("75")// u
+            this.write_to_heap("65")// e
+
+            console.log(`Null address: ${this._null_address}, False address: ${this._false_address}, True address: ${this._true_address}`);
         }// init
 
         /**
@@ -194,7 +224,7 @@ module NightingaleCompiler {
          * @param hex_pair hex pair to write to heap
          * @param logical_address logical address in memory to write hex pair
          */
-        public write_to_heap(hex_pair: string, logical_address: number = (this._heap_limit -1)): void {
+        public write_to_heap(hex_pair: string, logical_address: number = this._heap_base - this._heap_limit + 1): void {
             // Avoid invalid hex pairs
             if (!this.is_valid_hex_pair(hex_pair)) {
                 throw Error(`Invalid Hex Pair, cannot write to heap ${hex_pair} to L${logical_address}!`);
@@ -211,27 +241,28 @@ module NightingaleCompiler {
             }// if
 
             // Avoid code collisions
-            if (physical_address > this._code_limit) { 
+            if (physical_address <= this._code_limit) { 
                 throw Error(`Code Collision writing to heap ${hex_pair} to L${logical_address}:P${physical_address}!`);
             }// if
 
             // If the stack was specified, ensure no stack collisions
             if (this._stack_base !== null && this._stack_limit !== null) {
-                if (physical_address > this._stack_limit) {
+                if (physical_address <= this._stack_limit) {
                     throw Error(`Stack Collision writing to heap ${hex_pair} to L${logical_address}:P${physical_address}!`);
                 }// if
             }// if
 
             // Ensure the heap is CONTIGOUSLY expanded
-            if (physical_address > (this._heap_limit - 1)) {
+            if (physical_address < (this._heap_limit - 1)) {
                 throw Error(`Heap must be contigous, writing to heap ${hex_pair} to L${logical_address}:P${physical_address}!`);
             }// if
 
             // Write to heap
+            console.log(`Writing ${hex_pair} to L${logical_address}:P${physical_address}`)
             this._memory[physical_address] = hex_pair;
 
             // Heap just grew
-            if (physical_address === (this._heap_limit - 1)) {
+            if (physical_address === this._heap_limit - 1) {
                 this._heap_limit--;
             }// if
         }// write_to_stack
@@ -262,5 +293,17 @@ module NightingaleCompiler {
 
             return physical_address;
         }// calculate_physical_address
+
+        public getNullAddress(): number {
+            return this._null_address;
+        }// getNullAddress
+
+        public getFalseAddress(): number {
+            return this._false_address;
+        }// getNullAddress
+
+        public getTrueAddress(): number {
+            return this._true_address;
+        }// getNullAddress
     }// class
 }// module

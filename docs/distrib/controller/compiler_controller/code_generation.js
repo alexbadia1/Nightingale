@@ -9,6 +9,7 @@ var NightingaleCompiler;
             this.verbose = [[]];
             this.programs = [];
             this._current_program = null;
+            this.static_tables = [];
             this._current_scope_tree = null;
             this.main();
         } // constructor
@@ -31,6 +32,9 @@ var NightingaleCompiler;
                     // Create a new image of the program
                     this._current_program = new NightingaleCompiler.ProgramModel();
                     this.programs.push(this._current_program);
+                    // Create a new static table
+                    this._current_static_table = new NightingaleCompiler.StaticTableModel();
+                    this.static_tables.push(this._current_static_table);
                     // Traverse the valid AST, depth first in order, and generate code
                     this.code_gen(this._abstract_syntax_trees[astIndex].root);
                     this.programs.push(this._current_program);
@@ -38,6 +42,8 @@ var NightingaleCompiler;
                     ); // this.output[astIndex].push
                     this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(CODE_GENERATION, INFO, `Finished code generation on program ${astIndex + 1}.`) // OutputConsoleMessage
                     ); // this.verbose[astIndex].push
+                    console.log(`Finished code generation on program ${astIndex + 1}.`);
+                    console.log(this._current_program);
                 } // if
                 // Tell user: skipped the program
                 else {
@@ -84,7 +90,6 @@ var NightingaleCompiler;
             console.log(current_node.getScopeTable().entries());
             // Get scope table
             this._current_scope_table = current_node.getScopeTable();
-            this._current_program.write_to_code("A9 00");
             for (let i = 0; i < current_node.children_nodes.length; ++i) {
                 this.code_gen(current_node.children_nodes[i]);
             } // for
@@ -102,11 +107,24 @@ var NightingaleCompiler;
          */
         _code_gen_variable_decalration(current_node) {
             console.log("Code generation for variable declarations: ");
-            // Initialize the variable to zero and store it in memory,
-            // where the exact location is to be determined in backtracking.
-            this.load_accumulator_with_constant("00");
-            this.store_accumulator_to_memory("T1", "$$");
-            // throw Error("Unimplemented error: variable declaration code generation has not yet been implemented!");
+            let type = current_node.children_nodes[0].name;
+            let identifier = current_node.children_nodes[1].name;
+            let static_table_size = this._current_static_table.size();
+            // Make an entry in the static table, for later backtracking
+            this._current_static_table.put(identifier, this._current_scope_table.id, new NightingaleCompiler.StaticDataMetadata(`T${static_table_size}$$`, static_table_size)); // this._current_static_table.put
+            // Integers and boolean
+            if (type !== STRING) {
+                // Initialize the variable to zero and store it in memory,
+                // where the exact location is to be determined in backtracking.
+                this.load_accumulator_with_constant("00");
+            } // if 
+            // Strings
+            else {
+                // Initialiaze strings as "null" by
+                // pointing to the word "null" in the heap
+                this.load_accumulator_with_constant("FF");
+            } // else 
+            this.store_accumulator_to_memory(`T${static_table_size}`, "$$");
         } // _code_gen_variable_decalration
         _code_gen_assignment_statement(current_node) {
             return;

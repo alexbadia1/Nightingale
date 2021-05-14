@@ -83,6 +83,9 @@ module NightingaleCompiler {
                             `Finished code generation on program ${astIndex + 1}.`
                         )// OutputConsoleMessage
                     );// this.verbose[astIndex].push
+
+                    console.log(`Finished code generation on program ${astIndex + 1}.`);
+                    console.log(this._current_program);
                 }// if
 
                 // Tell user: skipped the program
@@ -168,8 +171,6 @@ module NightingaleCompiler {
             // Get scope table
             this._current_scope_table = current_node.getScopeTable();
 
-            this._current_program.write_to_code("A9 00");
-
             for (let i: number = 0; i < current_node.children_nodes.length; ++i) {
                 this.code_gen(current_node.children_nodes[i]);
             }// for
@@ -210,9 +211,9 @@ module NightingaleCompiler {
 
             // Strings
             else {
-                // For strings, load the accumulator with a pointer to the heap,
-                // then store that pointer to the heap in the static area memory.
-                this.load_accumulator_with_constant("00");
+                // Initialiaze strings as "null" by
+                // pointing to the word "null" in the heap
+                this.load_accumulator_with_constant("FF");
             }// else 
 
             this.store_accumulator_to_memory(`T${static_table_size}`, "$$");

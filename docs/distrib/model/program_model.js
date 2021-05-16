@@ -26,25 +26,20 @@ var NightingaleCompiler;
             this._heap_limit = this._heap_base + 1;
             // Write "null" to heap
             // Null's location is the heap base
-            this._null_address = this._heap_limit - 1;
-            this.write_to_heap("6E"); // n
-            this.write_to_heap("75"); // u
-            this.write_to_heap("6C"); // l
-            this.write_to_heap("6C"); // l
+            console.log(`Writing null to heap...`);
+            this.write_string_to_heap("null");
+            this._null_address = this._heap_limit;
+            console.log(`Wrote null to heap starting at ${this._null_address}`);
             // Write "false" to heap, starting at FB or 251
-            this._false_address = this._heap_limit - 1;
-            this.write_to_heap("66"); // f
-            this.write_to_heap("97"); // a
-            this.write_to_heap("6C"); // l
-            this.write_to_heap("73"); // s
-            this.write_to_heap("65"); // e
+            console.log(`Writing false to heap...`);
+            this.write_string_to_heap("false");
+            this._false_address = this._heap_limit;
+            console.log(`Wrote false to heap starting at ${this._false_address}`);
             // Write "true", starting at 246
-            this._true_address = this._heap_limit - 1;
-            this.write_to_heap("74"); // t
-            this.write_to_heap("72"); // r
-            this.write_to_heap("75"); // u
-            this.write_to_heap("65"); // e
-            console.log(`Null address: ${this._null_address}, False address: ${this._false_address}, True address: ${this._true_address}`);
+            console.log(`Writing true to heap...`);
+            this.write_string_to_heap("true");
+            this._true_address = this._heap_limit;
+            console.log(`Wrote true to heap starting at ${this._true_address}`);
         } // init
         /**
          * Writes a hex pair to the code.
@@ -62,7 +57,7 @@ var NightingaleCompiler;
          */
         write_to_code(hex_pair, logical_address = (this._code_limit + 1)) {
             // Avoid invalid hex pairs
-            if (!this.is_valid_hex_pair(hex_pair)) {
+            if (!this._is_valid_hex_pair(hex_pair)) {
                 throw Error(`Invalid Hex Pair, cannot write to code ${hex_pair} to L${logical_address}!`);
             } // if
             // I know we're not in OS anymore but to make debugging easier...
@@ -89,6 +84,7 @@ var NightingaleCompiler;
                 } // if
             } // if
             // Write to code
+            console.log(`Code: Writing ${hex_pair} to L${logical_address}:P${physical_address}`);
             this._memory[physical_address] = hex_pair;
             // User did not specify a logical address, so hex_pair was written to the end of the code
             if (physical_address === (this._code_limit + 1)) {
@@ -118,7 +114,7 @@ var NightingaleCompiler;
                 logical_address++;
             } // else
             // Avoid invalid hex pairs
-            if (!this.is_valid_hex_pair(hex_pair)) {
+            if (!this._is_valid_hex_pair(hex_pair)) {
                 throw Error(`Invalid Hex Pair, cannot write to stack ${hex_pair} to L${logical_address}!`);
             } // if
             // I know we're not in OS anymore but to make debugging easier...
@@ -137,6 +133,7 @@ var NightingaleCompiler;
                 throw Error(`Stack must be contigous, writing to stack ${hex_pair} to L${logical_address}:P${physical_address}!`);
             } // if
             // Write to stack
+            console.log(`Stack: Writing ${hex_pair} to L${logical_address}:P${physical_address}`);
             this._memory[physical_address] = hex_pair;
             // Stack just greww
             if (physical_address = (this._stack_limit + 1)) {
@@ -159,7 +156,7 @@ var NightingaleCompiler;
          */
         write_to_heap(hex_pair, logical_address = this._heap_base - this._heap_limit + 1) {
             // Avoid invalid hex pairs
-            if (!this.is_valid_hex_pair(hex_pair)) {
+            if (!this._is_valid_hex_pair(hex_pair)) {
                 throw Error(`Invalid Hex Pair, cannot write to heap ${hex_pair} to L${logical_address}!`);
             } // if
             let physical_address = this._heap_base - logical_address;
@@ -184,14 +181,24 @@ var NightingaleCompiler;
                 throw Error(`Heap must be contigous, writing to heap ${hex_pair} to L${logical_address}:P${physical_address}!`);
             } // if
             // Write to heap
-            console.log(`Writing ${hex_pair} to L${logical_address}:P${physical_address}`);
+            console.log(`Heap: Writing ${hex_pair} to L${logical_address}:P${physical_address}`);
             this._memory[physical_address] = hex_pair;
             // Heap just grew
             if (physical_address === this._heap_limit - 1) {
                 this._heap_limit--;
             } // if
-        } // write_to_stack
-        is_valid_hex_pair(hex_pair) {
+        } // write_to_heap
+        write_string_to_heap(str) {
+            str = str.split("\"").join("");
+            console.log(str);
+            // Null termination for string
+            this.write_to_heap("00");
+            for (let i = str.length - 1; i >= 0; --i) {
+                let ascii_value_in_hex = str[i].charCodeAt(0).toString(16).toUpperCase();
+                this.write_to_heap(ascii_value_in_hex);
+            } // for
+        } // write_string_to_heap
+        _is_valid_hex_pair(hex_pair) {
             // Allow T's and $'s for temporary locations
             return /([A-F]|[0-9]|[T]|[\$])([A-F]|[0-9]|[T]|[\$])/.test(hex_pair);
         } // is_valid_hex_pair
@@ -222,6 +229,16 @@ var NightingaleCompiler;
         getTrueAddress() {
             return this._true_address;
         } // getNullAddress
+        getHeapLimit() {
+            return this._heap_limit;
+        } // getHeapLimit
+        memory() {
+            let ans = "";
+            for (let byte of this._memory) {
+                ans += byte + " ";
+            } // for
+            return ans;
+        } // toString
     } // class
     NightingaleCompiler.ProgramModel = ProgramModel;
 })(NightingaleCompiler || (NightingaleCompiler = {})); // module

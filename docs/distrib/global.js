@@ -125,6 +125,9 @@ const NODE_NAME_BOOLEAN_VALUE = "Boolean Value";
 const NODE_NAME_INT_OPERATION = "Int Operation";
 const AST_NODE_NAME_IF = "if";
 const AST_NODE_NAME_WHILE = "while";
+const NODE_NAME_TRUE = "true";
+const NODE_NAME_FALSE = "false";
+const AST_NODE_NAME_INT_OP = "+";
 // Scope Tree Node Names
 const NODE_NAME_SCOPE = "Scope";
 // Code Generation

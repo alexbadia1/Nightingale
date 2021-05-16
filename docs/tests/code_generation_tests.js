@@ -51,3 +51,22 @@ be fine (there's just no output for this program)*/
     boolean z
 }
 $`;
+
+const CODE_GEN_PRINT_TEST = `{
+	/* Basic print statements */
+	print(0)
+    print(true)
+    print(false)
+    print("hello world")
+	print(9)
+    
+	/* Printing identifiers */
+    int a
+    boolean b
+    string c
+    
+    print(a)
+    print(b)
+    print(c)
+}
+$`;

@@ -18,9 +18,11 @@
 
     export class StaticTableModel {
         private _map: Map<string, StaticDataMetadata>;
+        private _anonymous_address: Array<StaticDataMetadata>;
 
         constructor(){
             this._map = new Map();
+            this._anonymous_address = new Array<StaticDataMetadata>();
         }// constructor
 
         /**
@@ -75,5 +77,9 @@
         public size(): number {
             return this._map.size;
         }// size
+
+        public add_anonymous_address(meta_data: StaticDataMetadata): void {
+            this._anonymous_address.push(meta_data);
+        }// add_anonymous_address
     }// class
 }// module

@@ -86,6 +86,7 @@ module NightingaleCompiler {
 
                     console.log(`Finished code generation on program ${astIndex + 1}.`);
                     console.log(this._current_program);
+                    console.log(this._current_program.memory());
                     console.log(`Showing static table for program ${astIndex + 1}`);
                     console.log(this._current_static_table);
                 }// if
@@ -196,8 +197,6 @@ module NightingaleCompiler {
          * @param cst_current_node current node in the ast.
          */
         private _code_gen_variable_decalration(current_node: Node, current_scope_table: ScopeTableModel): void {
-            console.log("Code generation for variable declarations: ");
-
             let type: string = current_node.children_nodes[0].name;
             let identifier: string = current_node.children_nodes[1].name;
             let static_table_size: number = this._current_static_table.size();
@@ -210,20 +209,34 @@ module NightingaleCompiler {
             );// this._current_static_table.put
 
             // Integers and boolean
-            if (type !== STRING) {
+            if (type === INT) {
+                console.log("Code generation for VarDecl(int)");
 
                 // Initialize the variable to zero and store it in memory,
                 // where the exact location is to be determined in backtracking.
-                this.load_accumulator_with_constant("00");
+                this._load_accumulator_with_constant("00");
             }// if 
 
-            // Strings
-            else {
-                // Initialiaze strings as "null" by pointing to the word "null" in the heap
-                this.load_accumulator_with_constant("FF");
-            }// else 
+            else if (type === BOOLEAN) {
+                console.log("Code generation for VarDecl(boolean)");
 
-            this.store_accumulator_to_memory(`T${static_table_size}`, "$$");
+                // Booleans get initialized to the string "false" in the heap
+                this._load_accumulator_with_constant(this._current_program.getFalseAddress().toString(16).toUpperCase());
+            }// else-if
+
+            // Strings
+            else if (type === STRING) {
+                console.log("Code generation for VarDecl(string)");
+
+                // Initialize strings to the string "null" in the heap
+                this._load_accumulator_with_constant(this._current_program.getNullAddress().toString(16).toUpperCase());
+            }// else-if
+
+            else {
+                throw Error(`Variable Declaration: AST variable declaration node uses an invalid type [${type}]!`);
+            }// else
+
+            this._store_accumulator_to_memory(`T${static_table_size}`, "$$");
         }// _code_gen_variable_decalration
 
         private _code_gen_assignment_statement(current_node: Node, current_scope_table: ScopeTableModel): void {
@@ -232,72 +245,101 @@ module NightingaleCompiler {
         }// _code_gen_assignment_statement
 
         private _code_gen_print_statement(print_node: Node, current_scope_table: ScopeTableModel): void {
-        \
-            // Print a value
+            // Printing a single value
             if (print_node.children_nodes.length === 1) {
-                let identifier: string = print_node.children_nodes[0].name;
+                let value: string = print_node.children_nodes[0].name;
 
                 // Value is an identifier
-                if (new RegExp("^[a-z]$").test(identifier)) {
-                    let type: string = current_scope_table.get(identifier).type;
+                if (new RegExp("^[a-z]$").test(value)) {
+                    console.log("Code generation for print(identifier) ");
+                    let type: string = current_scope_table.get(value).type;
 
                     // Get start location of string in heap
-                    let metadata: StaticDataMetadata = this._current_static_table.get(identifier, current_scope_table.id);
+                    let metadata: StaticDataMetadata = this._current_static_table.get(value, current_scope_table.id);
 
-                    switch (type) {
-                        // Get int value
-                        case INT:
-                            // Get int value from static area
-                            this.load_y_register_from_memory(metadata.temp_address_leading_hex, metadata.temp_address_trailing_hex);
-                            
-                            // Load the X register with 1
-                            this.load_x_register_with_constant("01");
-                            break;
+                    // Get int value from static area or pointer to string in heap
+                    this._load_y_register_from_memory(metadata.temp_address_leading_hex, metadata.temp_address_trailing_hex);
 
-                        // Boolean strings are preloaded in heap
-                        case BOOLEAN:
-                            // Load value to X register
-                            this.load_x_register_with_constant("00");
+                    if (type === INT) {
+                        this._load_x_register_with_constant("01");
+                    }// if
 
-                            // Compare to zero (false)
-                            this.compare_x_register_to_memory(metadata.temp_address_leading_hex, metadata.temp_address_trailing_hex);
+                    else if (type === BOOLEAN || type === STRING) {
+                        this._load_x_register_with_constant("02");
+                    }// else-if
 
-                            // Boolean value was false...
-                            // Skip loading string pointer to true to X register
-                            this.branch_on_zero("01");
-                            this.load_y_register_from_memory("00", this._current_program.getTrueAddress().toString(16));
-                            this.load_y_register_from_memory("00", this._current_program.getFalseAddress().toString(16));
-
-                            // Load the X register with 2
-                            this.load_x_register_with_constant("02");
-                            break;
-
-                        // Print string from heap
-                        case STRING:
-                            // Get address of string pointer...
-                            // Load Y register with string pointer from the address
-                            this.load_y_register_from_memory(metadata.temp_address_leading_hex, metadata.temp_address_trailing_hex);
-
-                            // Load the X register with 2
-                            this.load_x_register_with_constant("02");
-                            break;
-                        default:
-                            break;
-                    }// switch
-
-                    // Print
-                    // Load the X register with 2 and make a system call to print
-                    this.load_x_register_with_constant("02");
-                    this.system_call();
-
+                    else {
+                        throw Error(`Code gen Print --> Scope Table: identifier ${value} has invalid type [${type}]`);
+                    }// else
                 }// if
 
+                // Not an identifier
                 else {
-                    if 
+                    // Integer
+                    if (new RegExp("^[0-9]$").test(value)) {
+                        console.log("Code generation for print(integer) ");
+
+                        // Load constant to Y register
+                        this._load_y_register_with_constant(this._convert_decimal_to_one_byte_hex(parseInt(value, 10)));
+                        this._load_x_register_with_constant("01");
+                    }// if
+
+                    // Value is a boolean false
+                    else if (new RegExp("^(false)$").test(value)) {
+                        console.log("Code generation for print(false) ");
+                        this._load_y_register_with_constant(this._current_program.getFalseAddress().toString(16).toUpperCase());
+                        this._load_x_register_with_constant("02");
+                    }// else-if
+
+                    // Value is boolean true
+                    else if (new RegExp("^(true)$").test(value)) {
+                        console.log("Code generation for print(true) ");
+                        this._load_y_register_with_constant(this._current_program.getTrueAddress().toString(16).toUpperCase());
+                        this._load_x_register_with_constant("02");
+                    }// else-if
+
+                    // Value is string expression
+                    else if (value.startsWith("\"")) {
+                        console.log("Code generation for print(string expr) ");
+                        // Make entry in heap for string
+                        this._current_program.write_string_to_heap(value);
+                        let pointer_to_string_in_heap: string = this._current_program.getHeapLimit().toString(16).toUpperCase();
+
+                        this._load_y_register_with_constant(pointer_to_string_in_heap);
+                        this._load_x_register_with_constant("02");
+                    }// else-if
                 }// else
             }//if
 
-            throw Error("Unimplemented error: Print statement code generation has not yet been implemented!");
+            // Printing an expression
+            else {
+                // Integer Expression
+                if (print_node.children_nodes[1].name === AST_NODE_NAME_INT_OP) {
+                    console.log("Code generation for print(int expr) ");
+
+                    // memory_address_of_sum[0] = leading_hex_byte
+                    // memory_address_of_sum[1] = trailing_hex_byte
+                    let memory_address_of_sum: Array<string> = this._code_gen_int_expression(print_node.children_nodes[1],current_scope_table);
+
+                    // Load the Y register with the sum of the integer expression
+                    this._load_y_register_from_memory(memory_address_of_sum[0], memory_address_of_sum[1]);
+
+                    // Print out number
+                    this._load_x_register_with_constant("01");
+                }// if
+
+                // Boolean expression
+                else if (true) {
+                    console.log("Code generation for print(boolean expr) ");
+                }// else-if
+
+                else {
+                    throw Error(`Code Gen Print --> Expected [IntExpr | BooleanExpr], but got ${print_node.children_nodes[1].name}`);
+                }// else
+            }// else
+
+            // Print
+            this.system_call();
         }// _code_gen_print_statement
 
         private _code_gen_if_statement(if_node: Node, current_scope_table: ScopeTableModel): void {
@@ -313,13 +355,142 @@ module NightingaleCompiler {
         }// _code_gen_while_statement
 
         /**
+         * Calculates the sum of an integer expression and stores it in memory at TX XX.
+         * 
+         * @param int_op_node ast parent node to the addends
+         * @param current_scope_table current scope table used for identifier lookups
+         * @returns the address in memory where the sum is stored
+         */
+        private _code_gen_int_expression(int_op_node: Node, current_scope_table: ScopeTableModel): Array<string> {
+            // LDA [root integer]
+            this._load_accumulator_with_constant(this._convert_decimal_to_one_byte_hex(parseInt(int_op_node.children_nodes[0].name, 10)));
+
+            // Make an anoymous address entry in the static table, for later backtracking
+            let static_table_size: number = this._current_static_table.size();
+            let temp_location: string = "T" + static_table_size.toString(16).toUpperCase().padStart(3, "$");
+            this._current_static_table.add_anonymous_address(
+                new StaticDataMetadata(
+                    temp_location.substring(0, 2),
+                    temp_location.substring(2, 4),
+                    static_table_size
+                )// StaticDataMetadata
+            );// this._current_static_table.put
+
+            // STA TX XX
+            this._store_accumulator_to_memory(temp_location.substring(0, 2), temp_location.substring(2, 4));
+
+            // Recursively add integers to the root integer in 
+            // the accumulator possibly ending on an integer expression.
+            this._code_gen_addition(int_op_node, temp_location.substring(0, 2), temp_location.substring(2, 4), current_scope_table);
+
+            return [temp_location.substring(0, 2), temp_location.substring(2, 4)];
+        }// _code_gen_int_expression
+
+        /**
+         * Recursively adds two two numbers of an integer expression.
+         * 
+         * The left child integer (addend) is loaded into the accumulator. Then
+         * the current sum is added to the left child integer that was stored in the
+         * accumulator. Finally, the new sum is stored back in memory, at the same address
+         * of the old sum, effectively replacing the old sum with the new sum.
+         * 
+         * @param int_op_node ast parent node to the two addends.
+         * @param leading_hex_pair leading byte of memory address where the sum is stored.
+         * @param trailing_hex_pair trailing byte of memory address where the sum is stored.
+         * @param current_scope_table current scope table used to perform identifier lookups.
+         */
+        private _code_gen_addition(int_op_node: Node, leading_hex_pair: string, trailing_hex_pair: string, current_scope_table: ScopeTableModel): void {
+            // Load new left digit to the accumulator
+            let left_integer: string = int_op_node.children_nodes[0].name
+            this._load_accumulator_with_constant(this._convert_decimal_to_one_byte_hex(parseInt(left_integer, 10)));
+
+            // Add current sum from memory to left integer
+            this._add_with_carry(leading_hex_pair, trailing_hex_pair);
+
+            // Store result back in anonymous location
+            this._store_accumulator_to_memory(leading_hex_pair, trailing_hex_pair);
+
+            // Integer plus [integer expression]
+            if (int_op_node.children_nodes[1].name === AST_NODE_NAME_INT_OP) {
+                this._code_gen_addition(int_op_node.children_nodes[1], leading_hex_pair, trailing_hex_pair, current_scope_table);
+            }// if
+
+            // Expression ends with an integer
+            else if (new RegExp("^[0-9]$").test(int_op_node.children_nodes[1].name)) {
+                // Load new right digit to the accumulator
+                let right_integer: string = int_op_node.children_nodes[1].name
+                this._load_accumulator_with_constant(this._convert_decimal_to_one_byte_hex(parseInt(right_integer, 10)));
+
+                // Add current sum from memory to left integer
+                this._add_with_carry(leading_hex_pair, trailing_hex_pair);
+
+                // Store result back in anonymous location
+                this._store_accumulator_to_memory(leading_hex_pair, trailing_hex_pair);
+            }// else-if
+
+            // Expression ends with an identifier
+            else if (new RegExp("^[a-z]$").test(int_op_node.children_nodes[1].name)) {
+                // Get start location of string in heap
+                let identifier_metadata: StaticDataMetadata = this._current_static_table.get(int_op_node.children_nodes[1].name, current_scope_table.id);
+
+                // Load new right digit to the accumulator
+                this._load_accumulator_from_memory(identifier_metadata.temp_address_leading_hex, identifier_metadata.temp_address_trailing_hex);
+
+                // Add current sum from memory to left integer
+                this._add_with_carry(leading_hex_pair, trailing_hex_pair);
+
+                // Store result back in anonymous location
+                this._store_accumulator_to_memory(leading_hex_pair, trailing_hex_pair);
+            }// else-if
+
+            else {
+                throw Error(`Code Gen Addition Error: expted integer expression to end with [integer | identifier], but got ${int_op_node.children_nodes[1].name}`);
+            }// else
+        }// _code_gen_addition
+
+        private _code_gen_boolean_expression() { }// _code_gen_boolean_expression
+
+        private _convert_decimal_to_one_byte_hex(int: number): string {
+            if (int < 0) {
+                throw Error(`Cannot write negative number [${int}] to memory.`);
+            }// if
+
+            else if (int > 255) {
+                throw Error(`Cannot write a number [${int}] bigger than 1 byte to memory.`);
+            }// if
+
+            else {
+                return int.toString(16).toUpperCase().padStart(2, "0");
+            }// else
+        }// convert_decimal_to_one_byte_hex
+
+        /**
          * Load the accumulator with a constant.
+         * 
          * @param hex_pair_constant 1 byte constant being loaded into the accumulator
          */
-        private load_accumulator_with_constant(hex_pair_constant: string) {
+        private _load_accumulator_with_constant(hex_pair_constant: string): void {
+            console.log(`LDA [${hex_pair_constant}]`);
             this._current_program.write_to_code("A9");
             this._current_program.write_to_code(hex_pair_constant);
         }// loadAccumulatorWithConstant
+
+        /**
+         * Load the X register from memory.
+         * 
+         * @param leading_hex_pair first byte in the 2 byte address.
+         * @param trailing_hex_pair second byte in the 2 byte address.
+         */
+        private _load_accumulator_from_memory(leading_hex_pair: string, trailing_hex_pair: string): void {
+            console.log(`LDA [${leading_hex_pair} ${trailing_hex_pair}]`);
+
+            this._current_program.write_to_code("AD");
+
+            // Remember to reverse the order, as this used to be 
+            // an optimaztion for direct addressing in the old 6502a days.
+            this._current_program.write_to_code(trailing_hex_pair);
+            this._current_program.write_to_code(leading_hex_pair);
+        }// _load_accumulator_from_memory
 
         /**
          * Store the contents of the accumulator in memory.
@@ -327,7 +498,9 @@ module NightingaleCompiler {
          * @param leading_hex_pair first byte in the 2 byte address.
          * @param trailing_hex_pair second byte in the 2 byte address.
          */
-        private store_accumulator_to_memory(leading_hex_pair: string, trailing_hex_pair: string) {
+        private _store_accumulator_to_memory(leading_hex_pair: string, trailing_hex_pair: string): void {
+            console.log(`STA [${leading_hex_pair} ${trailing_hex_pair}]`);
+
             this._current_program.write_to_code("8D");
 
             // Remember to reverse the order, as this used to be 
@@ -337,19 +510,42 @@ module NightingaleCompiler {
         }// store_accumulator_to_memory
 
         /**
-         * Load the x-register with a constant.
-         * @param hex_pair_constant 1 byte constant being loaded into the accumulator
+         * Adds contents of an address in memory to the contents
+         * of the accumulator and keeps the result in the accumulator.
+         * 
+         * @param leading_hex_pair first byte in the 2 byte address.
+         * @param trailing_hex_pair second byte in the 2 byte address.
          */
-        private load_x_register_with_constant(hex_pair_constant: string) {
+        private _add_with_carry(leading_hex_pair: string, trailing_hex_pair: string): void {
+            this._current_program.write_to_code("6D");
+
+            // Remember to reverse the order, as this used to be 
+            // an optimaztion for direct addressing in the old 6502a days.
+            this._current_program.write_to_code(trailing_hex_pair);
+            this._current_program.write_to_code(leading_hex_pair);
+        }// _add_with_carry
+
+        /**
+         * Load the X register with a constant.
+         * 
+         * @param hex_pair_constant 1 byte constant being loaded into the X Register
+         */
+        private _load_x_register_with_constant(hex_pair_constant: string): void {
+            console.log(`LDX [${hex_pair_constant}]`);
+
             this._current_program.write_to_code("A2");
             this._current_program.write_to_code(hex_pair_constant);
         }// load_x_register_with_constant
 
         /**
-         * Load the x-register from memory.
-         * @param hex_pair_constant 1 byte constant being loaded into the accumulator
+         * Load the X register from memory.
+         * 
+         * @param leading_hex_pair first byte in the 2 byte address.
+         * @param trailing_hex_pair second byte in the 2 byte address.
          */
-        private load_x_register_from_memory(leading_hex_pair: string, trailing_hex_pair: string) {
+        private _load_x_register_from_memory(leading_hex_pair: string, trailing_hex_pair: string): void {
+            console.log(`LDX [${leading_hex_pair} ${trailing_hex_pair}]`);
+
             this._current_program.write_to_code("AE");
 
             // Remember to reverse the order, as this used to be 
@@ -359,10 +555,25 @@ module NightingaleCompiler {
         }// load_x_register_from_memory
 
         /**
-         * Load the y-register from memory.
-         * @param hex_pair_constant 1 byte constant being loaded into the accumulator
+         * Load the y-register with a constant.
+         * 
+         * @param hex_pair_constant 1 byte constant being loaded into the Y register
          */
-        private load_y_register_from_memory(leading_hex_pair: string, trailing_hex_pair: string) {
+        private _load_y_register_with_constant(hex_pair_constant: string): void {
+            console.log(`LDY [${hex_pair_constant}]`);
+            this._current_program.write_to_code("A0");
+            this._current_program.write_to_code(hex_pair_constant);
+        }// _load_y_register_with_constant
+
+        /**
+         * Load the y-register from memory.
+         * 
+         * @param leading_hex_pair first byte in the 2 byte address.
+         * @param trailing_hex_pair second byte in the 2 byte address.
+         */
+        private _load_y_register_from_memory(leading_hex_pair: string, trailing_hex_pair: string): void {
+            console.log(`LDY [${leading_hex_pair} ${trailing_hex_pair}]`);
+
             this._current_program.write_to_code("AC");
 
             // Remember to reverse the order, as this used to be 
@@ -371,7 +582,16 @@ module NightingaleCompiler {
             this._current_program.write_to_code(leading_hex_pair);
         }// load_y_register_from_memory
 
-        private compare_x_register_to_memory(leading_hex_pair: string, trailing_hex_pair: string): void {
+        /**
+         * Compares the contents of the X register to 
+         * the value stored at the specified memory location.
+         * 
+         * @param leading_hex_pair first byte in the 2 byte address.
+         * @param trailing_hex_pair second byte in the 2 byte address.
+         */
+        private _compare_x_register_to_memory(leading_hex_pair: string, trailing_hex_pair: string): void {
+            console.log(`CPX [${leading_hex_pair} ${trailing_hex_pair}]`);
+
             this._current_program.write_to_code("EC");
 
             // Remember to reverse the order, as this used to be 
@@ -380,17 +600,24 @@ module NightingaleCompiler {
             this._current_program.write_to_code(leading_hex_pair);
         }// compare_x_register_to_memory
 
-        private branch_on_zero(hex_pair: string): void {
+        /**
+         * Branches when the zero flag is set to 0.
+         * 
+         * @param hex_pair number of bytes to skip
+         */
+        private _branch_on_zero(hex_pair: string): void {
+            console.log(`BNE [${hex_pair}]`);
             this._current_program.write_to_code("D0");
 
             // Bytes to skip
             this._current_program.write_to_code(hex_pair);
-        }// compare_x_register_to_memory
+        }// _branch_on_zero
 
         /**
          * Writes a system call.
          */
-        private system_call() {
+        private system_call(): void {
+            console.log(`SYS Call`);
             this._current_program.write_to_code("FF");
         }// system_call
     }//class

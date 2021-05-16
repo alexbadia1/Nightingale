@@ -9,15 +9,17 @@
 var NightingaleCompiler;
 (function (NightingaleCompiler) {
     class StaticDataMetadata {
-        constructor(temp_address, logical_address) {
-            this.temp_address = temp_address;
-            this.logical_address = logical_address;
+        constructor(temp_address_leading_hex, temp_address_trailing_hex, logical_stack_address) {
+            this.temp_address_leading_hex = temp_address_leading_hex;
+            this.temp_address_trailing_hex = temp_address_trailing_hex;
+            this.logical_stack_address = logical_stack_address;
         }
     } // class
     NightingaleCompiler.StaticDataMetadata = StaticDataMetadata;
     class StaticTableModel {
         constructor() {
             this._map = new Map();
+            this._anonymous_address = new Array();
         } // constructor
         /**
          * Simulate a hash tables "put" method
@@ -61,6 +63,9 @@ var NightingaleCompiler;
         size() {
             return this._map.size;
         } // size
+        add_anonymous_address(meta_data) {
+            this._anonymous_address.push(meta_data);
+        } // add_anonymous_address
     } // class
     NightingaleCompiler.StaticTableModel = StaticTableModel;
 })(NightingaleCompiler || (NightingaleCompiler = {})); // module

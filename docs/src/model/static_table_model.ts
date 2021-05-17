@@ -75,7 +75,7 @@
         }// isEmpty
 
         public size(): number {
-            return this._map.size;
+            return this._map.size + this._anonymous_address.length;
         }// size
 
         public add_anonymous_address(meta_data: StaticDataMetadata): void {

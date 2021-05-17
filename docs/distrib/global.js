@@ -128,6 +128,8 @@ const AST_NODE_NAME_WHILE = "while";
 const NODE_NAME_TRUE = "true";
 const NODE_NAME_FALSE = "false";
 const AST_NODE_NAME_INT_OP = "+";
+const AST_NODE_NAME_BOOLEAN_EQUALS = "==";
+const AST_NODE_NAME_BOOLEAN_NOT_EQUALS = "!=";
 // Scope Tree Node Names
 const NODE_NAME_SCOPE = "Scope";
 // Code Generation

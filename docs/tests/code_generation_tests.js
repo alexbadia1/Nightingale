@@ -53,20 +53,29 @@ be fine (there's just no output for this program)*/
 $`;
 
 const CODE_GEN_PRINT_TEST = `{
+	/* Declare variables first to pass semantic analysis */
+    int a
+    boolean b
+    string c
+
 	/* Basic print statements */
 	print(0)
     print(true)
     print(false)
     print("hello world")
 	print(9)
-    
-	/* Printing identifiers */
-    int a
-    boolean b
-    string c
-    
+
+	/* Print identifiers */    
     print(a)
     print(b)
     print(c)
+
+	/* Int expressions */
+	print(1 + 9)
+	print(0 + 9 + 9 + 0)
+
+	/* Int Expressions With Identifiers*/
+	print(1 + a)
+	print(1 + 2 + 3 + 4 + 5 + a) 
 }
 $`;

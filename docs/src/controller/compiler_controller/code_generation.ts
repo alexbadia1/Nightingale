@@ -9,9 +9,6 @@ module NightingaleCompiler {
         public output: Array<Array<OutputConsoleMessage>>;
         public verbose: Array<Array<OutputConsoleMessage>>;
 
-        private _current_scope_tree: ScopeTreeModel;
-        private _current_scope_table: ScopeTableModel;
-
         public static_tables: Array<StaticTableModel>;
         private _current_static_table: StaticTableModel;
 
@@ -20,15 +17,16 @@ module NightingaleCompiler {
             private _invalid_abstract_syntax_trees: Array<number>,
         ) {
             // Initialize output and verbose
-            this.output = [[]];
-            this.verbose = [[]];
+            this.output = new Array<Array<OutputConsoleMessage>>();
+            this.verbose = new Array<Array<OutputConsoleMessage>>();
 
-            this.programs = [];
+            // Keep track of code generated from programs
+            // and the current program being used for code generation.
+            this.programs = new Array<ProgramModel>();
             this._current_program = null;
 
-            this.static_tables = [];
-
-            this._current_scope_tree = null;
+            // Keep track of each programs static tables
+            this.static_tables = new Array<StaticTableModel>();
 
             this.main();
         }// constructor
@@ -54,9 +52,6 @@ module NightingaleCompiler {
                         )// OutputConsoleMessage
                     );// this.output[astIndex].push
 
-                    // Set current scope
-                    this._current_scope_tree = this._abstract_syntax_trees[astIndex].scope_tree;
-
                     // Create a new image of the program
                     this._current_program = new ProgramModel();
                     this.programs.push(this._current_program);
@@ -72,6 +67,13 @@ module NightingaleCompiler {
 
                     // Traverse the valid AST, depth first in order, and generate code
                     this.code_gen(this._abstract_syntax_trees[astIndex].root, this._abstract_syntax_trees[astIndex].scope_tree.root.getScopeTable());
+
+                    // Teminate the program with a break, so the operating system doesn't read into the static area or heap!
+                    this._current_program.write_to_code("00");
+
+                    // Back patch temp variables
+                    this._back_patch();
+
                     this.programs.push(this._current_program);
 
                     this.output[this.output.length - 1].push(
@@ -115,6 +117,9 @@ module NightingaleCompiler {
                     );
                 }// else
             }// for
+            if (this.output.length === 0) {
+                this.output.push(new Array<OutputConsoleMessage>());
+            }// if
 
             this.output[this.output.length - 1].push(
                 new OutputConsoleMessage(
@@ -122,14 +127,18 @@ module NightingaleCompiler {
                     INFO,
                     `Code Generation completed with ${this._warning_count} warning(s)`
                 )// OutputConsoleMessage
-            );// this.output[astIndex].push
+            );// this.output[this.output.length - 1].push
             this.output[this.output.length - 1].push(
                 new OutputConsoleMessage(
                     CODE_GENERATION,
                     INFO,
                     `Code Generation completed with  ${this._error_count} error(s)`
                 )// OutputConsoleMessage
-            );// this.output[astIndex].push
+            );// this.output[this.output.length - 1].push
+
+            if (this.verbose.length === 0) {
+                this.verbose.push(new Array<OutputConsoleMessage>());
+            }// if
 
             this.verbose[this.verbose.length - 1].push(
                 new OutputConsoleMessage(
@@ -137,14 +146,14 @@ module NightingaleCompiler {
                     INFO,
                     `Code Generation completed with ${this._warning_count} warning(s)`
                 )// OutputConsoleMessage
-            );// this.verbose[astIndex].push
+            );// this.verbose[this.verbose.length - 1].push
             this.verbose[this.verbose.length - 1].push(
                 new OutputConsoleMessage(
                     CODE_GENERATION,
                     INFO,
                     `Code Generation completed with  ${this._error_count} error(s)`
                 )// OutputConsoleMessage
-            );// this.verbose[astIndex].push
+            );// this.verbose[this.verbose.length - 1].push
         }// main
 
         private code_gen(current_node: Node, current_scope_table: ScopeTableModel): void {
@@ -206,11 +215,14 @@ module NightingaleCompiler {
             let identifier: string = current_node.children_nodes[1].name;
             let static_table_size: number = this._current_static_table.size();
 
+            // Find scope table that contains the identifer
+            let scope_table_with_identifier: ScopeTableModel = this._get_scope_table_with_identifier(identifier, current_scope_table);
+
             // Make an entry in the static table, for later backtracking
             let temp_location: string = "T" + static_table_size.toString(16).toUpperCase().padStart(3, "$");
             this._current_static_table.put(
                 identifier,
-                current_scope_table.id,
+                scope_table_with_identifier.id,
                 new StaticDataMetadata(
                     temp_location.substring(0, 2),
                     temp_location.substring(2, 4),
@@ -253,17 +265,40 @@ module NightingaleCompiler {
             let identifier: string = assignment_statement_node.children_nodes[0].name;
             let right_child_node_value: string = assignment_statement_node.children_nodes[1].name;
 
+            // Find scope table with the identifier
+            let scope_table_with_left_identifier: ScopeTableModel = this._get_scope_table_with_identifier(identifier, current_scope_table);
+
             // Get left hand variable location
-            let left_id_metadata: StaticDataMetadata = this._current_static_table.get(identifier, current_scope_table.id);
+            let left_id_metadata: StaticDataMetadata = null;
+
+            // Given a valid AST, eventually a declared variable should be found
+            while (left_id_metadata === null && scope_table_with_left_identifier !== null) {
+                left_id_metadata = this._current_static_table.get(identifier, scope_table_with_left_identifier.id);
+
+                if (left_id_metadata === null) {
+                    scope_table_with_left_identifier = this._get_scope_table_with_identifier(identifier, scope_table_with_left_identifier.parent_scope_table);
+                }// if
+            }// while
 
             // Assigning to another identifier
             if (new RegExp("^[a-z]$").test(right_child_node_value)) {
                 console.log("Code generation for Assigment Statement(identifier) ");
+                // Find scope table with the identifier
+                let scope_table_with_right_identifier: ScopeTableModel = this._get_scope_table_with_identifier(right_child_node_value, current_scope_table);
 
                 // Get right hand variable location
-                let right_id_metadata: StaticDataMetadata = this._current_static_table.get(right_child_node_value, current_scope_table.id);
+                let right_id_metadata: StaticDataMetadata = null;
 
-                // Load accumulator with right hand varibale value
+                // Given a valid AST, eventually a declared variable should be found
+                while (right_id_metadata === null && scope_table_with_right_identifier !== null) {
+                    right_id_metadata = this._current_static_table.get(right_child_node_value, scope_table_with_right_identifier.id);
+
+                    if (right_id_metadata === null) {
+                        scope_table_with_right_identifier = this._get_scope_table_with_identifier(right_child_node_value, scope_table_with_right_identifier.parent_scope_table);
+                    }// if
+                }// while
+
+                // Load accumulator with right hand variable value
                 this._load_accumulator_from_memory(right_id_metadata.temp_address_leading_hex, right_id_metadata.temp_address_trailing_hex);
             }// if
 
@@ -297,7 +332,7 @@ module NightingaleCompiler {
                 else if (right_child_node_value.startsWith("\"")) {
                     console.log("Code generation for Assigment Statement(string expr) ");
                     let str: string = right_child_node_value.split("\"").join("");
-                    
+
                     // Check if string is already in heap
                     let string_in_heap_address: string = this._current_static_table.get_string_in_heap(str);
 
@@ -357,10 +392,23 @@ module NightingaleCompiler {
             // Value is an identifier
             if (new RegExp("^[a-z]$").test(value)) {
                 console.log("Code generation for print(identifier) ");
-                let type: string = current_scope_table.get(value).type;
+
+                // Find scope with the identifier
+                let scope_table_with_identifier: ScopeTableModel = this._get_scope_table_with_identifier(value, current_scope_table);
+                let type: string = null;
 
                 // Get start location of string in heap
-                let metadata: StaticDataMetadata = this._current_static_table.get(value, current_scope_table.id);
+                let metadata: StaticDataMetadata = null;
+
+                // Given a valid AST, eventually a declared variable should be found
+                while (metadata === null && scope_table_with_identifier !== null) {
+                    metadata = this._current_static_table.get(value, scope_table_with_identifier.id);
+                    type = scope_table_with_identifier.get(value).type;
+
+                    if (metadata === null) {
+                        scope_table_with_identifier = this._get_scope_table_with_identifier(value, scope_table_with_identifier.parent_scope_table);
+                    }// if
+                }// while
 
                 // Get int value from static area or pointer to string in heap
                 this._load_y_register_from_memory(metadata.temp_address_leading_hex, metadata.temp_address_trailing_hex);
@@ -408,7 +456,7 @@ module NightingaleCompiler {
                     console.log("Code generation for print(string expr) ");
 
                     let str: string = value.split("\"").join("");
-                    
+
                     // Check if string is already in heap
                     let string_in_heap_address: string = this._current_static_table.get_string_in_heap(str);
 
@@ -536,8 +584,11 @@ module NightingaleCompiler {
 
             // Expression ends with an identifier
             else if (new RegExp("^[a-z]$").test(int_op_node.children_nodes[1].name)) {
+                // Search for scope table with ID
+                let scope_table_with_identifier: ScopeTableModel = this._get_scope_table_with_identifier(int_op_node.children_nodes[1].name, current_scope_table);
+
                 // Get start location of string in heap
-                let identifier_metadata: StaticDataMetadata = this._current_static_table.get(int_op_node.children_nodes[1].name, current_scope_table.id);
+                let identifier_metadata: StaticDataMetadata = this._current_static_table.get(int_op_node.children_nodes[1].name, scope_table_with_identifier.id);
 
                 // Load new right digit to the accumulator
                 this._load_accumulator_from_memory(identifier_metadata.temp_address_leading_hex, identifier_metadata.temp_address_trailing_hex);
@@ -556,32 +607,109 @@ module NightingaleCompiler {
             }// else
         }// _code_gen_int_expression
 
-        private _code_gen_boolean_expression() { }// _code_gen_boolean_expression
+        private _code_gen_boolean_expression() {
 
-        private back_patch(): void {
+        }// _code_gen_boolean_expression
+
+        /**
+         * Back patches identifiers' temporary addresses and anonymous temporary addresses.
+         */
+        private _back_patch(): void {
             // Initialize stack base and limit
             this._current_program.initialize_stack();
 
             // Back patch all identifiers using the static area
+            console.log(`Back patching identifiers...`);
             for (let identifier_metadata of this._current_static_table.values()) {
+
+                // Convert the logical stack address to a physical address in memory
+                let physical_address: string = (this._current_program.get_stack_base() + identifier_metadata.logical_stack_address).toString(16).toUpperCase().padStart(4, "0");
+                let leading_hex_byte: string = physical_address.substring(0, 2);
+                let trailing_hex_byte: string = physical_address.substring(2, 4);
+
+                console.log(`Identifier [${identifier_metadata.temp_address_leading_hex} ${identifier_metadata.temp_address_trailing_hex}] patched with [${physical_address}].`);
 
                 // Search for occurences of the temp address in the code area to backpatch
                 for (let logical_address: number = 0; logical_address < this._current_program.get_code_area_size(); ++logical_address) {
 
-                    // Temp address are in the format $$ T$
+                    // Found temp variable
                     if (this._current_program.read_code_area(logical_address) === identifier_metadata.temp_address_leading_hex) {
-                        
-                        // As we are only dealing with 1 byte addresses
-                        // we can just replace T$ with 00 as a shortcut
-                        
+                        if (logical_address !== 0) {
+                            if (this._current_program.read_code_area(logical_address - 1) === identifier_metadata.temp_address_trailing_hex) {
+                                // Back patch the leading byte...
+                                //
+                                // Since we are using 256 bytes, we only need to worry about
+                                // 1 byte addresses, so the leading byte in this case should always be: "00"
+                                this._current_program.write_to_code(leading_hex_byte, logical_address);
 
-
+                                // Back patch trailing byte
+                                //
+                                // Remember the ordering is reversed in memory, as it was an 
+                                // optimization for direct addressing with no offset for the 6502a...
+                                this._current_program.write_to_code(trailing_hex_byte, logical_address - 1);
+                            }// if
+                        }// if
                     }// if
                 }// for
+
+                // Replace static table entry's current temp address with the real static area address
+                identifier_metadata.temp_address_leading_hex = leading_hex_byte;
+                identifier_metadata.temp_address_trailing_hex = trailing_hex_byte;
             }// for
 
-            // TODO: Back patch anonymous address
+            // Back patch anonymous address
+            console.log(`Back patching anonymous addresses...`);
+            for (let temp_anonymous_address of this._current_static_table.get_anonymous_address()) {
+                // Convert the logical stack address to a physical address in memory
+                let physical_address: string = (this._current_program.get_stack_base() + temp_anonymous_address.logical_stack_address).toString(16).toUpperCase().padStart(4, "0");
+                let leading_hex_byte: string = physical_address.substring(0, 2);
+                let trailing_hex_byte: string = physical_address.substring(2, 4);
+
+                console.log(`Anonymous address [${temp_anonymous_address.temp_address_leading_hex} ${temp_anonymous_address.temp_address_trailing_hex}] patched with [${physical_address}].`);
+                // Search for occurences of the temp address in the code area to backpatch
+                for (let logical_address: number = 0; logical_address < this._current_program.get_code_area_size(); ++logical_address) {
+
+                    // Found temp variable
+                    if (this._current_program.read_code_area(logical_address) === temp_anonymous_address.temp_address_leading_hex) {
+                        if (logical_address !== 0) {
+                            if (this._current_program.read_code_area(logical_address - 1) === temp_anonymous_address.temp_address_trailing_hex) {
+                                // Back patch the leading byte...
+                                //
+                                // Since we are using 256 bytes, we only need to worry about
+                                // 1 byte addresses, so the leading byte in this case should always be: "00"
+                                this._current_program.write_to_code(leading_hex_byte, logical_address);
+
+                                // Back patch trailing byte
+                                //
+                                // Remember the ordering is reversed in memory, as it was an 
+                                // optimization for direct addressing with no offset for the 6502a...
+                                this._current_program.write_to_code(trailing_hex_byte, logical_address - 1);
+                            }// if
+                        }// if
+                    }// if
+                }// for
+
+                // Replace static table entry's current temp address with the real static area address
+                temp_anonymous_address.temp_address_leading_hex = leading_hex_byte;
+                temp_anonymous_address.temp_address_trailing_hex = trailing_hex_byte;
+            }// for
         }// back_patch
+
+        private _get_scope_table_with_identifier(identifier: string, current_scope_table: ScopeTableModel): ScopeTableModel {
+            let identifier_metadata: VariableMetaData = null;
+
+            // Check parents for identfier
+            while (identifier_metadata === null && current_scope_table !== null) {
+                identifier_metadata = current_scope_table.get(identifier);
+
+                // Keep searching
+                if (identifier_metadata === null) {
+                    current_scope_table = current_scope_table.parent_scope_table;
+                }// if
+            }// while
+
+            return current_scope_table;
+        }// _get_identifier_from_scope_table
 
         private _convert_decimal_to_one_byte_hex(int: number): string {
             if (int < 0) {

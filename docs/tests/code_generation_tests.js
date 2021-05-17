@@ -1,31 +1,43 @@
-const CODE_GEN_SCOPE_TEST = `/* Code generation scope checking, be sure you traverse the scop tree depth first in order */
+const CODE_GEN_SCOPE_TEST = `
+/**
+ * Code generation scope checking, be sure you traverse the scop tree depth first in order!
+ * 
+ * Standard output should be:
+ *   - 9
+ *   - true
+ *   - hello world
+ *   - 0
+ *   - 12
+ *   - false
+ * */
 {
 	/* Int Declaration */
 	int a
-	int b
-	a = 0
-	b=0
-	/* While Loop */
-	while (a != 3) {
+	boolean b
+	string c
+	a = 9
+	b = true
+
+	/* New scope */
+	{
 		print(a)
-        if(a == a) {
-        	int z
-        }
-		while (b != 3) {
-			print(b)
-			b = 1 + b
-			if (b == 2) {
-				/* Print Statement */
-				print("there is no spoon" /* This will do nothing */ )
+        print(b)
+		b = false
+		c = "hello world"
+		int b
+		b = 0
+		{
+			print(c)
+			a = 1 + 2 + a
+
+			{
+				print(b)
 			}
 		}
-		b = 0
-		a = 1+a
-        
-        {
-        	boolean z
-        }
+		b = a
+		print(b)
 	}
+	print(b)
 }
 $`;
 
@@ -127,3 +139,25 @@ const CODE_GEN_STRING_POINTERS_TEST = `/* Sadly we're only working with 256 byte
 	print(c)
 }
 $`;
+
+const CODE_GEN_BIG_INT_TEST = `
+{
+	/**
+	 * Big Integer Test:
+	 * 
+	 * 29 * 9 = 261
+	 * 
+	 * The operating systems were only designed to hold a 1 byte number:
+	 *   - Some Operating Systems will print 261.
+	 *   - Others will wrap past 261, resulting in 261 mod 256 = 5.
+	 *   - And finally, maybe some might explode...!
+	 * */
+	print(9 + 9 + 9 + 9 + 9 + 9 + 9 + 9 + 9 + 9 + 9 + 9 + 9 + 9 + 9 + 9 + 9 + 9 + 9 + 9 + 9 + 9 + 9 + 9 + 9 + 9 + 9 + 9 + 9)
+}
+$`
+
+const CODE_GEN_BACK_PATCHING_TEST = `/* Backpatching Test */
+{
+	
+}
+$`

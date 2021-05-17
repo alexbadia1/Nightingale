@@ -26,17 +26,14 @@ var NightingaleCompiler;
             this._heap_limit = this._heap_base + 1;
             // Write "null" to heap
             // Null's location is the heap base
-            console.log(`Writing null to heap...`);
             this.write_string_to_heap("null");
             this._null_address = this._heap_limit;
             console.log(`Wrote null to heap starting at ${this._null_address}`);
             // Write "false" to heap, starting at FB or 251
-            console.log(`Writing false to heap...`);
             this.write_string_to_heap("false");
             this._false_address = this._heap_limit;
             console.log(`Wrote false to heap starting at ${this._false_address}`);
             // Write "true", starting at 246
-            console.log(`Writing true to heap...`);
             this.write_string_to_heap("true");
             this._true_address = this._heap_limit;
             console.log(`Wrote true to heap starting at ${this._true_address}`);
@@ -77,7 +74,7 @@ var NightingaleCompiler;
             // Explicitly banning self modifying code via the stack or heap.
             // That is out of the scope of this class, and a lot of brain damage all considering...
             if (this._stack_base !== null) {
-                if (physical_address < this._stack_base) {
+                if (physical_address >= this._stack_base) {
                     throw Error(`Self Modifying Code Error writing ${hex_pair} to L${logical_address}:P${physical_address}[${physical_address.toString(16).toUpperCase().padStart(2, "0")}]!
                     Self modifiying code is explicitly prohibited! If the [stack base] is non-null, that means backpatching is or 
                     was already performed. Meaning, there should not be any new code entries that would cause the code section to grow.`);
@@ -190,14 +187,15 @@ var NightingaleCompiler;
         } // write_to_heap
         write_string_to_heap(str) {
             str = str.split("\"").join("");
-            console.log(str);
+            console.log(`Writing the string [${str}] to the heap...`);
             // Null termination for string
             this.write_to_heap("00");
             for (let i = str.length - 1; i >= 0; --i) {
                 let ascii_value_in_hex = str[i].charCodeAt(0).toString(16).toUpperCase();
                 this.write_to_heap(ascii_value_in_hex);
             } // for
-            return this._heap_limit.toString(16).toUpperCase();
+            console.log(`[${str}] starts at P${this._heap_limit}[${this._heap_limit.toString(16).toUpperCase().padStart(2, "0")}]`);
+            return this._heap_limit.toString(16).toUpperCase().padStart(2, "0");
         } // write_string_to_heap
         _is_valid_hex_pair(hex_pair) {
             // Allow T's and $'s for temporary locations
@@ -246,6 +244,9 @@ var NightingaleCompiler;
         } // getCodeBase
         get_code_limit() {
             return this._code_limit;
+        } // get_code_limit
+        get_stack_base() {
+            return this._stack_base;
         } // getCodeBase
         get_heap_limit() {
             return this._heap_limit;

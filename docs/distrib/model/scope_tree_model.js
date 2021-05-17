@@ -42,6 +42,12 @@ var NightingaleCompiler;
             // Construct the node object.
             let new_node = new NightingaleCompiler.Node(new_name, this._node_count, kind);
             scope_table.id = this._node_count;
+            if (this.current_node !== null) {
+                scope_table.parent_scope_table = this.current_node.getScopeTable();
+            } // if
+            else {
+                scope_table.parent_scope_table = null;
+            } // else
             // Set new node's metadata
             new_node.setScopeTable(scope_table);
             // Check to see if it needs to be the root node.

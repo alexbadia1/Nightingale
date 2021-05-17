@@ -54,6 +54,11 @@ module NightingaleCompiler {
                 // Catch a fatal parse error
                 catch (e) {
                     if (e instanceof OutputConsoleMessage) {
+                        // Record that this program has an error, if no already done so
+                        if (!this.invalid_parsed_programs.includes(this._current_program_number)) {
+                            this.invalid_parsed_programs.push(this._current_program_number)
+                        }// if
+                        
                         this.output[this._current_program_number].push(e);
                         this.debug[this._current_program_number].push(e);
                     }// if

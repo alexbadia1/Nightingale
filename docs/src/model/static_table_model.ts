@@ -88,6 +88,10 @@
             this._anonymous_address.push(meta_data);
         }// add_anonymous_address
 
+        public get_anonymous_address(): Array<StaticDataMetadata> {
+            return this._anonymous_address;
+        }// get_anonymous_address
+
         public put_new_string(new_string: string, address: string): void {
             if (!this._strings_in_heap.has(new_string)) {
                 this._strings_in_heap.set(new_string, address);

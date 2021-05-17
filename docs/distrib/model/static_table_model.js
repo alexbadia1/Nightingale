@@ -70,6 +70,9 @@ var NightingaleCompiler;
         add_anonymous_address(meta_data) {
             this._anonymous_address.push(meta_data);
         } // add_anonymous_address
+        get_anonymous_address() {
+            return this._anonymous_address;
+        } // get_anonymous_address
         put_new_string(new_string, address) {
             if (!this._strings_in_heap.has(new_string)) {
                 this._strings_in_heap.set(new_string, address);

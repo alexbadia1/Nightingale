@@ -29,10 +29,12 @@ const CODE_GEN_SCOPE_TEST = `/* Code generation scope checking, be sure you trav
 }
 $`;
 
-const CODE_GEN_VARRIABLE_DECLARATIONS_TEST = `/* Testing variable declarations. 
-Semantic Analysis should warn that these are 
-declared and unused, but code generation should 
-be fine (there's just no output for this program)*/
+const CODE_GEN_VARRIABLE_DECLARATIONS_TEST = `/**
+ * Testing variable declarations. 
+ * Semantic Analysis should warn that these are 
+ * declared and unused, but code generation should 
+ * be fine (there's just no output for this program)
+ */
 {
 	/* Int Declaration */
 	int a
@@ -52,14 +54,17 @@ be fine (there's just no output for this program)*/
 }
 $`;
 
-const CODE_GEN_PRINT_TEST = `{
-	/* Declare variables first to pass semantic analysis */
+const CODE_GEN_PRINT_TEST = `/** 
+* Sadly we're only working with 256 byte of memory so these tests are limited...
+* 
+* First, declare variables first to pass semantic analysis 
+*/
+{
     int a
     boolean b
     string c
 
 	/* Basic print statements */
-	print(0)
     print(true)
     print(false)
     print("hello world")
@@ -71,11 +76,54 @@ const CODE_GEN_PRINT_TEST = `{
     print(c)
 
 	/* Int expressions */
-	print(1 + 9)
-	print(0 + 9 + 9 + 0)
+	print(1 + 2 + 3 + 2 + 1)
 
-	/* Int Expressions With Identifiers*/
-	print(1 + a)
+	/* Int Expressions With Identifiers */
 	print(1 + 2 + 3 + 4 + 5 + a) 
+}
+$`;
+
+const CODE_GEN_STRING_POINTERS_TEST = `/* Sadly we're only working with 256 byte of memory so these tests are limited... */
+{
+	/* Strings are initialized to null by default */
+    string a
+    string b
+    string c
+
+	/* Requires a new heap entry */
+    a = "two"
+
+	/* Also requires a new heap entry */
+	a = "one"
+
+	/* Make sure pointer updated */
+	print(a)
+
+	/* Already exists in the heap, NO new heap entry */
+	print("two")
+
+	/* Requires new heap entry */
+	print("three")
+
+	/**
+	 * These already exists in the heap, no new entries required
+	 * 
+	 * Really just pointer musical chairs at this point...
+	 */
+	b = "one"
+	print(b)
+	b = "two"
+	print(b)
+	b = "three"
+	print(b)
+	b = "true"
+	print(b)
+	b = "false"
+	print(b)
+	b = "null"
+	print(b)
+
+	/* Strings string should be initialized to null in the heap */    
+	print(c)
 }
 $`;

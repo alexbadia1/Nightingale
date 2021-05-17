@@ -65,6 +65,11 @@ module NightingaleCompiler {
                     this._current_static_table = new StaticTableModel();
                     this.static_tables.push(this._current_static_table);
 
+                    // Keep track of strings already in the heap
+                    this._current_static_table.put_new_string("null", this._convert_decimal_to_one_byte_hex(this._current_program.getNullAddress()));
+                    this._current_static_table.put_new_string("true", this._convert_decimal_to_one_byte_hex(this._current_program.getTrueAddress()));
+                    this._current_static_table.put_new_string("false", this._convert_decimal_to_one_byte_hex(this._current_program.getFalseAddress()));
+
                     // Traverse the valid AST, depth first in order, and generate code
                     this.code_gen(this._abstract_syntax_trees[astIndex].root, this._abstract_syntax_trees[astIndex].scope_tree.root.getScopeTable());
                     this.programs.push(this._current_program);
@@ -244,9 +249,97 @@ module NightingaleCompiler {
             this._store_accumulator_to_memory(temp_location.substring(0, 2), temp_location.substring(2, 4));
         }// _code_gen_variable_decalration
 
-        private _code_gen_assignment_statement(current_node: Node, current_scope_table: ScopeTableModel): void {
-            return;
-            throw Error("Unimplemented error: assignment statement code generation has not yet been implemented!");
+        private _code_gen_assignment_statement(assignment_statement_node: Node, current_scope_table: ScopeTableModel): void {
+            let identifier: string = assignment_statement_node.children_nodes[0].name;
+            let right_child_node_value: string = assignment_statement_node.children_nodes[1].name;
+
+            // Get left hand variable location
+            let left_id_metadata: StaticDataMetadata = this._current_static_table.get(identifier, current_scope_table.id);
+
+            // Assigning to another identifier
+            if (new RegExp("^[a-z]$").test(right_child_node_value)) {
+                console.log("Code generation for Assigment Statement(identifier) ");
+
+                // Get right hand variable location
+                let right_id_metadata: StaticDataMetadata = this._current_static_table.get(right_child_node_value, current_scope_table.id);
+
+                // Load accumulator with right hand varibale value
+                this._load_accumulator_from_memory(right_id_metadata.temp_address_leading_hex, right_id_metadata.temp_address_trailing_hex);
+            }// if
+
+            // Not an identifier
+            else {
+                // Integer
+                if (new RegExp("^[0-9]$").test(right_child_node_value)) {
+                    console.log("Code generation for Assigment Statement(integer) ");
+
+                    // Load accumulator with right hand integer
+                    this._load_accumulator_with_constant(this._convert_decimal_to_one_byte_hex(parseInt(right_child_node_value, 10)));
+                }// if
+
+                // Value is a boolean false
+                else if (new RegExp("^(false)$").test(right_child_node_value)) {
+                    console.log("Code generation for Assigment Statement(false) ");
+
+                    // Load the accumulator with pointer to "false" in the heap
+                    this._load_accumulator_with_constant(this._current_program.getFalseAddress().toString(16).toUpperCase());
+                }// else-if
+
+                // Value is boolean true
+                else if (new RegExp("^(true)$").test(right_child_node_value)) {
+                    console.log("Code generation for Assigment Statement(true) ");
+
+                    // Load the accumulator with pointer to "true" in the heap
+                    this._load_accumulator_with_constant(this._current_program.getTrueAddress().toString(16).toUpperCase());
+                }// else-if
+
+                // String expression
+                else if (right_child_node_value.startsWith("\"")) {
+                    console.log("Code generation for Assigment Statement(string expr) ");
+                    let str: string = right_child_node_value.split("\"").join("");
+                    
+                    // Check if string is already in heap
+                    let string_in_heap_address: string = this._current_static_table.get_string_in_heap(str);
+
+                    // String already exists in the heap, point to it instead of making a new entry.
+                    if (string_in_heap_address !== null) {
+                        console.log(`String already exists in heap starting at: ${string_in_heap_address}`);
+                        this._load_accumulator_with_constant(string_in_heap_address);
+                    }// if
+
+                    // Make new entry in heap for new string
+                    else {
+                        let string_start_address: string = this._current_program.write_string_to_heap(str);
+                        console.log(`String does not exist in heap writing new string starting at: ${string_start_address}`);
+                        this._current_static_table.put_new_string(str, string_start_address);
+                        this._load_accumulator_with_constant(string_start_address);
+                    }// else
+                }// else-if
+
+                // Integer Expression
+                else if (right_child_node_value === AST_NODE_NAME_INT_OP) {
+                    console.log("Code generation for print(int expr) ");
+
+                    // memory_address_of_sum[0] = leading_hex_byte
+                    // memory_address_of_sum[1] = trailing_hex_byte
+                    let memory_address_of_sum: Array<string> = this._code_gen_int_expression(assignment_statement_node.children_nodes[1], null, null, current_scope_table);
+
+                    // Load the Y register with the sum of the integer expression
+                    this._load_accumulator_from_memory(memory_address_of_sum[0], memory_address_of_sum[1]);
+                }// else-if
+
+                // Boolean expression
+                else if (right_child_node_value === AST_NODE_NAME_BOOLEAN_EQUALS || right_child_node_value == AST_NODE_NAME_BOOLEAN_NOT_EQUALS) {
+                    console.log("Code generation for print(boolean expr) ");
+                }// else-if
+
+                else {
+                    throw Error(`Code Gen Print --> Expected [Int | Boolean Value | StringExpr | IntExpr | BooleanExpr], but got ${right_child_node_value}`);
+                }// else
+            }// else
+
+            // Store accumulator in the left hand identifier address
+            this._store_accumulator_to_memory(left_id_metadata.temp_address_leading_hex, left_id_metadata.temp_address_trailing_hex);
         }// _code_gen_assignment_statement
 
         /**
@@ -313,11 +406,26 @@ module NightingaleCompiler {
                 // String expression
                 else if (value.startsWith("\"")) {
                     console.log("Code generation for print(string expr) ");
-                    // Make entry in heap for string
-                    this._current_program.write_string_to_heap(value);
-                    let pointer_to_string_in_heap: string = this._current_program.getHeapLimit().toString(16).toUpperCase();
 
-                    this._load_y_register_with_constant(pointer_to_string_in_heap);
+                    let str: string = value.split("\"").join("");
+                    
+                    // Check if string is already in heap
+                    let string_in_heap_address: string = this._current_static_table.get_string_in_heap(str);
+
+                    // String already exists in the heap, point to it instead of making a new entry.
+                    if (string_in_heap_address !== null) {
+                        console.log(`String already exists in heap starting at: ${string_in_heap_address}`);
+                        this._load_y_register_with_constant(string_in_heap_address);
+                    }// if
+
+                    // Make new entry in heap for new string
+                    else {
+                        let string_start_address: string = this._current_program.write_string_to_heap(str);
+                        console.log(`String does not exist in heap writing new string starting at: ${string_start_address}`);
+                        this._current_static_table.put_new_string(str, string_start_address);
+                        this._load_y_register_with_constant(string_start_address);
+                    }// else
+
                     this._load_x_register_with_constant("02");
                 }// else-if
 

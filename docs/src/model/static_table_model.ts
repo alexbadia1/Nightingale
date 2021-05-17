@@ -19,10 +19,12 @@
     export class StaticTableModel {
         private _map: Map<string, StaticDataMetadata>;
         private _anonymous_address: Array<StaticDataMetadata>;
+        private _strings_in_heap: Map<string, string>;
 
         constructor(){
             this._map = new Map();
             this._anonymous_address = new Array<StaticDataMetadata>();
+            this._strings_in_heap = new Map<string, string>();
         }// constructor
 
         /**
@@ -81,5 +83,18 @@
         public add_anonymous_address(meta_data: StaticDataMetadata): void {
             this._anonymous_address.push(meta_data);
         }// add_anonymous_address
+
+        public put_new_string(new_string: string, address: string): void {
+            if (!this._strings_in_heap.has(new_string)) {
+                this._strings_in_heap.set(new_string, address);
+            }// if
+        }// put_new_string
+
+        public get_string_in_heap(string_in_heap: string): string {
+            if (this._strings_in_heap.has(string_in_heap)) {
+                return this._strings_in_heap.get(string_in_heap);
+            }// if
+            return null;
+        }// get_string_in_heap
     }// class
 }// module

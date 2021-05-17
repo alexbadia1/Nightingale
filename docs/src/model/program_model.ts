@@ -263,7 +263,7 @@ module NightingaleCompiler {
             }// if
         }// write_to_heap
 
-        public write_string_to_heap(str: string): void {
+        public write_string_to_heap(str: string): string {
             str = str.split("\"").join("");
             console.log(str)
 
@@ -274,6 +274,8 @@ module NightingaleCompiler {
                 let ascii_value_in_hex: string = str[i].charCodeAt(0).toString(16).toUpperCase();
                 this.write_to_heap(ascii_value_in_hex);
             }// for
+
+            return this._heap_limit.toString(16).toUpperCase();
         }// write_string_to_heap
 
         private _is_valid_hex_pair(hex_pair: string) {

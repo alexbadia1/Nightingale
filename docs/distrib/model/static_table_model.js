@@ -20,6 +20,7 @@ var NightingaleCompiler;
         constructor() {
             this._map = new Map();
             this._anonymous_address = new Array();
+            this._strings_in_heap = new Map();
         } // constructor
         /**
          * Simulate a hash tables "put" method
@@ -66,6 +67,17 @@ var NightingaleCompiler;
         add_anonymous_address(meta_data) {
             this._anonymous_address.push(meta_data);
         } // add_anonymous_address
+        put_new_string(new_string, address) {
+            if (!this._strings_in_heap.has(new_string)) {
+                this._strings_in_heap.set(new_string, address);
+            } // if
+        } // put_new_string
+        get_string_in_heap(string_in_heap) {
+            if (this._strings_in_heap.has(string_in_heap)) {
+                return this._strings_in_heap.get(string_in_heap);
+            } // if
+            return null;
+        } // get_string_in_heap
     } // class
     NightingaleCompiler.StaticTableModel = StaticTableModel;
 })(NightingaleCompiler || (NightingaleCompiler = {})); // module

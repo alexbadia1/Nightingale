@@ -66,6 +66,10 @@
             return Array.from(this._map.entries());
         }// entries
 
+        public values(): Array<StaticDataMetadata> {
+            return Array.from(this._map.values());
+        }// values
+
         public has(identifier: string, scope: number,): boolean{
             let primary_key: string = identifier + scope.toString();
 

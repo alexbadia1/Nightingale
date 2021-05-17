@@ -54,6 +54,9 @@ var NightingaleCompiler;
         entries() {
             return Array.from(this._map.entries());
         } // entries
+        values() {
+            return Array.from(this._map.values());
+        } // values
         has(identifier, scope) {
             let primary_key = identifier + scope.toString();
             return this._map.has(primary_key);

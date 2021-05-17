@@ -36,9 +36,9 @@ var NightingaleCompiler;
                     this._current_static_table = new NightingaleCompiler.StaticTableModel();
                     this.static_tables.push(this._current_static_table);
                     // Keep track of strings already in the heap
-                    this._current_static_table.put_new_string("null", this._convert_decimal_to_one_byte_hex(this._current_program.getNullAddress()));
-                    this._current_static_table.put_new_string("true", this._convert_decimal_to_one_byte_hex(this._current_program.getTrueAddress()));
-                    this._current_static_table.put_new_string("false", this._convert_decimal_to_one_byte_hex(this._current_program.getFalseAddress()));
+                    this._current_static_table.put_new_string("null", this._convert_decimal_to_one_byte_hex(this._current_program.get_null_address()));
+                    this._current_static_table.put_new_string("true", this._convert_decimal_to_one_byte_hex(this._current_program.get_true_address()));
+                    this._current_static_table.put_new_string("false", this._convert_decimal_to_one_byte_hex(this._current_program.get_false_address()));
                     // Traverse the valid AST, depth first in order, and generate code
                     this.code_gen(this._abstract_syntax_trees[astIndex].root, this._abstract_syntax_trees[astIndex].scope_tree.root.getScopeTable());
                     this.programs.push(this._current_program);
@@ -136,13 +136,13 @@ var NightingaleCompiler;
             else if (type === BOOLEAN) {
                 console.log("Code generation for VarDecl(boolean)");
                 // Booleans get initialized to the string "false" in the heap
-                this._load_accumulator_with_constant(this._current_program.getFalseAddress().toString(16).toUpperCase());
+                this._load_accumulator_with_constant(this._current_program.get_false_address().toString(16).toUpperCase());
             } // else-if
             // Strings
             else if (type === STRING) {
                 console.log("Code generation for VarDecl(string)");
                 // Initialize strings to the string "null" in the heap
-                this._load_accumulator_with_constant(this._current_program.getNullAddress().toString(16).toUpperCase());
+                this._load_accumulator_with_constant(this._current_program.get_null_address().toString(16).toUpperCase());
             } // else-if
             else {
                 throw Error(`Variable Declaration: AST variable declaration node uses an invalid type [${type}]!`);
@@ -174,13 +174,13 @@ var NightingaleCompiler;
                 else if (new RegExp("^(false)$").test(right_child_node_value)) {
                     console.log("Code generation for Assigment Statement(false) ");
                     // Load the accumulator with pointer to "false" in the heap
-                    this._load_accumulator_with_constant(this._current_program.getFalseAddress().toString(16).toUpperCase());
+                    this._load_accumulator_with_constant(this._current_program.get_false_address().toString(16).toUpperCase());
                 } // else-if
                 // Value is boolean true
                 else if (new RegExp("^(true)$").test(right_child_node_value)) {
                     console.log("Code generation for Assigment Statement(true) ");
                     // Load the accumulator with pointer to "true" in the heap
-                    this._load_accumulator_with_constant(this._current_program.getTrueAddress().toString(16).toUpperCase());
+                    this._load_accumulator_with_constant(this._current_program.get_true_address().toString(16).toUpperCase());
                 } // else-if
                 // String expression
                 else if (right_child_node_value.startsWith("\"")) {
@@ -262,13 +262,13 @@ var NightingaleCompiler;
                 // Value is a boolean false
                 else if (new RegExp("^(false)$").test(value)) {
                     console.log("Code generation for print(false) ");
-                    this._load_y_register_with_constant(this._current_program.getFalseAddress().toString(16).toUpperCase());
+                    this._load_y_register_with_constant(this._current_program.get_false_address().toString(16).toUpperCase());
                     this._load_x_register_with_constant("02");
                 } // else-if
                 // Value is boolean true
                 else if (new RegExp("^(true)$").test(value)) {
                     console.log("Code generation for print(true) ");
-                    this._load_y_register_with_constant(this._current_program.getTrueAddress().toString(16).toUpperCase());
+                    this._load_y_register_with_constant(this._current_program.get_true_address().toString(16).toUpperCase());
                     this._load_x_register_with_constant("02");
                 } // else-if
                 // String expression
@@ -389,6 +389,21 @@ var NightingaleCompiler;
             } // else
         } // _code_gen_int_expression
         _code_gen_boolean_expression() { } // _code_gen_boolean_expression
+        back_patch() {
+            // Initialize stack base and limit
+            this._current_program.initialize_stack();
+            // Back patch all identifiers using the static area
+            for (let identifier_metadata of this._current_static_table.values()) {
+                // Search for occurences of the temp address in the code area to backpatch
+                for (let logical_address = 0; logical_address < this._current_program.get_code_area_size(); ++logical_address) {
+                    // Temp address are in the format $$ T$
+                    if (this._current_program.read_code_area(logical_address) === identifier_metadata.temp_address_leading_hex) {
+                        // As we are only dealing with 1 byte addresses
+                    } // if
+                } // for
+            } // for
+            // TODO: Back patch anonymous address
+        } // back_patch
         _convert_decimal_to_one_byte_hex(int) {
             if (int < 0) {
                 throw Error(`Cannot write negative number [${int}] to memory.`);

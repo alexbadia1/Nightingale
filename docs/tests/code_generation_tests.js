@@ -1,5 +1,4 @@
-const CODE_GEN_SCOPE_TEST = `
-/**
+const CODE_GEN_SCOPE_TEST = `/**
  * Code generation scope checking, be sure you traverse the scop tree depth first in order!
  * 
  * Standard output should be:
@@ -91,6 +90,7 @@ const CODE_GEN_PRINT_TEST = `/**
 	print(1 + 2 + 3 + 2 + 1)
 
 	/* Int Expressions With Identifiers */
+	a = 9
 	print(1 + 2 + 3 + 4 + 5 + a) 
 }
 $`;
@@ -140,8 +140,67 @@ const CODE_GEN_STRING_POINTERS_TEST = `/* Sadly we're only working with 256 byte
 }
 $`;
 
-const CODE_GEN_BIG_INT_TEST = `
+const CODE_GEN_STRING_SCOPE_TEST = `/* Sadly we're only working with 256 byte of memory so these tests are limited... */
 {
+	/* Strings are initialized to null by default */
+    string a
+    string b
+    string c
+
+	/* Requires a new heap entry */
+    a = "two"
+    
+    {
+		/* Also requires a new heap entry */
+		a = "one"
+    }
+    
+	{
+    	/* Make sure pointer updated */
+		print(a)
+    }
+    
+	/* Already exists in the heap, NO new heap entry */
+	print("two")
+
+	/* Requires new heap entry */
+	print("three")
+
+	/**
+	 * These already exists in the heap, no new entries required
+	 * 
+	 * Really just pointer musical chairs at this point...
+	 */
+	b = "one"
+	print(b)
+    {
+    	
+		b = "two"
+		print(b)
+		b = "three"
+		{
+        	print(b)
+			b = "true"
+			print(b)
+			b = "false"
+        }
+        
+		print(b)
+    
+    }
+	b = "null"
+	print(b)
+
+	{
+    	{
+    		/* Strings string should be initialized to null in the heap */    
+			print(c)
+        }
+    }
+}
+$`;
+
+const CODE_GEN_BIG_INT_TEST = `{
 	/**
 	 * Big Integer Test:
 	 * 
@@ -154,10 +213,40 @@ const CODE_GEN_BIG_INT_TEST = `
 	 * */
 	print(9 + 9 + 9 + 9 + 9 + 9 + 9 + 9 + 9 + 9 + 9 + 9 + 9 + 9 + 9 + 9 + 9 + 9 + 9 + 9 + 9 + 9 + 9 + 9 + 9 + 9 + 9 + 9 + 9)
 }
-$`
+$`;
 
-const CODE_GEN_BACK_PATCHING_TEST = `/* Backpatching Test */
-{
-	
-}
-$`
+const CODE_GEN_STATIC_AREA_OVERFLOW_TEST = `{
+	string a 
+    a = "static area should collide into heap filling up the heap with more data tp cause a collision at z"
+	string b
+	string c
+	string d
+	string e
+    
+	string f
+	string g
+	string h
+	string i
+    string j
+    
+    string k
+    string l
+    string m
+    string n
+    string o
+    
+    string p
+    string q
+    string r 
+    string s
+    string t
+    
+    string u
+    string v
+    string w
+    string x
+    string y
+    
+    string z
+}$
+`;

@@ -47,9 +47,9 @@ var NightingaleCompiler;
                     this._back_patch();
                     this.programs.push(this._current_program);
                     this.output[this.output.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(CODE_GENERATION, INFO, `Finished code generation on program ${astIndex + 1}.`) // OutputConsoleMessage
-                    ); // this.output[astIndex].push
+                    ); // this.output[this.output.length - 1].push
                     this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(CODE_GENERATION, INFO, `Finished code generation on program ${astIndex + 1}.`) // OutputConsoleMessage
-                    ); // this.verbose[astIndex].push
+                    ); // this.verbose[this.output.length - 1].push
                     console.log(`Finished code generation on program ${astIndex + 1}.`);
                     console.log(this._current_program);
                     console.log(this._current_program.memory());
@@ -166,7 +166,6 @@ var NightingaleCompiler;
             let right_child_node_value = assignment_statement_node.children_nodes[1].name;
             // Find scope table with the identifier
             let scope_table_with_left_identifier = this._get_scope_table_with_identifier(identifier, current_scope_table);
-            console.log(scope_table_with_left_identifier);
             // Get left hand variable location
             let left_id_metadata = null;
             // Given a valid AST, eventually a declared variable should be found
@@ -533,6 +532,10 @@ var NightingaleCompiler;
          * @param hex_pair_constant 1 byte constant being loaded into the accumulator
          */
         _load_accumulator_with_constant(hex_pair_constant) {
+            let max_static_area_size = this._current_program.get_heap_limit() - this._current_program.get_code_limit() - 1;
+            if (this._current_static_table.size() - this._current_static_table.get_number_of_anonymous_address() >= max_static_area_size) {
+                throw Error(`Program static area is not big enough to support LDA [${hex_pair_constant}]!`);
+            } // if
             console.log(`LDA [${hex_pair_constant}]`);
             this._current_program.write_to_code("A9");
             this._current_program.write_to_code(hex_pair_constant);
@@ -544,6 +547,10 @@ var NightingaleCompiler;
          * @param trailing_hex_pair second byte in the 2 byte address.
          */
         _load_accumulator_from_memory(leading_hex_pair, trailing_hex_pair) {
+            let max_static_area_size = this._current_program.get_heap_limit() - this._current_program.get_code_limit() - 1;
+            if (this._current_static_table.size() - this._current_static_table.get_number_of_anonymous_address() >= max_static_area_size) {
+                throw Error(`Program static area is not big enough to support LDA [${leading_hex_pair} ${trailing_hex_pair}]!`);
+            } // if
             console.log(`LDA [${leading_hex_pair} ${trailing_hex_pair}]`);
             this._current_program.write_to_code("AD");
             // Remember to reverse the order, as this used to be 
@@ -558,6 +565,10 @@ var NightingaleCompiler;
          * @param trailing_hex_pair second byte in the 2 byte address.
          */
         _store_accumulator_to_memory(leading_hex_pair, trailing_hex_pair) {
+            let max_static_area_size = this._current_program.get_heap_limit() - this._current_program.get_code_limit() - 1;
+            if (this._current_static_table.size() - this._current_static_table.get_number_of_anonymous_address() >= max_static_area_size) {
+                throw Error(`Program static area is not big enough to support STA [${leading_hex_pair} ${trailing_hex_pair}]!`);
+            } // if
             console.log(`STA [${leading_hex_pair} ${trailing_hex_pair}]`);
             this._current_program.write_to_code("8D");
             // Remember to reverse the order, as this used to be 
@@ -573,6 +584,10 @@ var NightingaleCompiler;
          * @param trailing_hex_pair second byte in the 2 byte address.
          */
         _add_with_carry(leading_hex_pair, trailing_hex_pair) {
+            let max_static_area_size = this._current_program.get_heap_limit() - this._current_program.get_code_limit() - 1;
+            if (this._current_static_table.size() - this._current_static_table.get_number_of_anonymous_address() >= max_static_area_size) {
+                throw Error(`Program static area is not big enough to support ADC [${leading_hex_pair} ${trailing_hex_pair}]!`);
+            } // if
             console.log(`ADC [${leading_hex_pair} ${trailing_hex_pair}]`);
             this._current_program.write_to_code("6D");
             // Remember to reverse the order, as this used to be 
@@ -586,6 +601,10 @@ var NightingaleCompiler;
          * @param hex_pair_constant 1 byte constant being loaded into the X Register
          */
         _load_x_register_with_constant(hex_pair_constant) {
+            let max_static_area_size = this._current_program.get_heap_limit() - this._current_program.get_code_limit() - 1;
+            if (this._current_static_table.size() - this._current_static_table.get_number_of_anonymous_address() >= max_static_area_size) {
+                throw Error(`Program static area is not big enough to support LDX [${hex_pair_constant}]!`);
+            } // if
             console.log(`LDX [${hex_pair_constant}]`);
             this._current_program.write_to_code("A2");
             this._current_program.write_to_code(hex_pair_constant);
@@ -597,6 +616,10 @@ var NightingaleCompiler;
          * @param trailing_hex_pair second byte in the 2 byte address.
          */
         _load_x_register_from_memory(leading_hex_pair, trailing_hex_pair) {
+            let max_static_area_size = this._current_program.get_heap_limit() - this._current_program.get_code_limit() - 1;
+            if (this._current_static_table.size() - this._current_static_table.get_number_of_anonymous_address() >= max_static_area_size) {
+                throw Error(`Program static area is not big enough to support LDX [${leading_hex_pair} ${trailing_hex_pair}]!`);
+            } // if
             console.log(`LDX [${leading_hex_pair} ${trailing_hex_pair}]`);
             this._current_program.write_to_code("AE");
             // Remember to reverse the order, as this used to be 
@@ -610,6 +633,10 @@ var NightingaleCompiler;
          * @param hex_pair_constant 1 byte constant being loaded into the Y register
          */
         _load_y_register_with_constant(hex_pair_constant) {
+            let max_static_area_size = this._current_program.get_heap_limit() - this._current_program.get_code_limit() - 1;
+            if (this._current_static_table.size() - this._current_static_table.get_number_of_anonymous_address() >= max_static_area_size) {
+                throw Error(`Program static area is not big enough to support LDY [${hex_pair_constant}]!`);
+            } // if
             console.log(`LDY [${hex_pair_constant}]`);
             this._current_program.write_to_code("A0");
             this._current_program.write_to_code(hex_pair_constant);
@@ -621,6 +648,10 @@ var NightingaleCompiler;
          * @param trailing_hex_pair second byte in the 2 byte address.
          */
         _load_y_register_from_memory(leading_hex_pair, trailing_hex_pair) {
+            let max_static_area_size = this._current_program.get_heap_limit() - this._current_program.get_code_limit() - 1;
+            if (this._current_static_table.size() - this._current_static_table.get_number_of_anonymous_address() >= max_static_area_size) {
+                throw Error(`Program static area is not big enough to support LDY [${leading_hex_pair} ${trailing_hex_pair}]!`);
+            } // if
             console.log(`LDY [${leading_hex_pair} ${trailing_hex_pair}]`);
             this._current_program.write_to_code("AC");
             // Remember to reverse the order, as this used to be 
@@ -636,6 +667,10 @@ var NightingaleCompiler;
          * @param trailing_hex_pair second byte in the 2 byte address.
          */
         _compare_x_register_to_memory(leading_hex_pair, trailing_hex_pair) {
+            let max_static_area_size = this._current_program.get_heap_limit() - this._current_program.get_code_limit() - 1;
+            if (this._current_static_table.size() - this._current_static_table.get_number_of_anonymous_address() >= max_static_area_size) {
+                throw Error(`Program static area is not big enough to support CPX [${leading_hex_pair} ${trailing_hex_pair}]!`);
+            } // if
             console.log(`CPX [${leading_hex_pair} ${trailing_hex_pair}]`);
             this._current_program.write_to_code("EC");
             // Remember to reverse the order, as this used to be 
@@ -649,6 +684,10 @@ var NightingaleCompiler;
          * @param hex_pair number of bytes to skip
          */
         _branch_on_zero(hex_pair) {
+            let max_static_area_size = this._current_program.get_heap_limit() - this._current_program.get_code_limit() - 1;
+            if (this._current_static_table.size() - this._current_static_table.get_number_of_anonymous_address() >= max_static_area_size) {
+                throw Error(`Program static area is not big enough to support BNE [${hex_pair}]!`);
+            } // if
             console.log(`BNE [${hex_pair}]`);
             this._current_program.write_to_code("D0");
             // Bytes to skip
@@ -658,6 +697,10 @@ var NightingaleCompiler;
          * Writes a system call.
          */
         system_call() {
+            let max_static_area_size = this._current_program.get_heap_limit() - this._current_program.get_code_limit() - 1;
+            if (this._current_static_table.size() - this._current_static_table.get_number_of_anonymous_address() >= max_static_area_size) {
+                throw Error(`Program static area is not big enough to support SYS Call [FF]!`);
+            } // if
             console.log(`SYS Call`);
             this._current_program.write_to_code("FF");
         } // system_call

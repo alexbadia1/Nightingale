@@ -67,6 +67,9 @@ var NightingaleCompiler;
         size() {
             return this._map.size + this._anonymous_address.length;
         } // size
+        get_number_of_anonymous_address() {
+            return this._anonymous_address.length;
+        } // get_anonymous_address_size
         add_anonymous_address(meta_data) {
             this._anonymous_address.push(meta_data);
         } // add_anonymous_address

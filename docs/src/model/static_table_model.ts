@@ -84,6 +84,10 @@
             return this._map.size + this._anonymous_address.length;
         }// size
 
+        public get_number_of_anonymous_address(): number {
+            return this._anonymous_address.length;
+        }// get_anonymous_address_size
+
         public add_anonymous_address(meta_data: StaticDataMetadata): void {
             this._anonymous_address.push(meta_data);
         }// add_anonymous_address

@@ -13,6 +13,7 @@ var NightingaleCompiler;
             this.temp_address_leading_hex = temp_address_leading_hex;
             this.temp_address_trailing_hex = temp_address_trailing_hex;
             this.logical_stack_address = logical_stack_address;
+            this.isUsable = false;
         }
     } // class
     NightingaleCompiler.StaticDataMetadata = StaticDataMetadata;
@@ -73,7 +74,7 @@ var NightingaleCompiler;
         add_anonymous_address(meta_data) {
             this._anonymous_address.push(meta_data);
         } // add_anonymous_address
-        get_anonymous_address() {
+        get_anonymous_addresses() {
             return this._anonymous_address;
         } // get_anonymous_address
         put_new_string(new_string, address) {

@@ -9,6 +9,7 @@
 
  module NightingaleCompiler {
     export class StaticDataMetadata{
+        public isUsable: boolean = false;
         constructor(
             public temp_address_leading_hex: string,
             public temp_address_trailing_hex: string,
@@ -92,7 +93,7 @@
             this._anonymous_address.push(meta_data);
         }// add_anonymous_address
 
-        public get_anonymous_address(): Array<StaticDataMetadata> {
+        public get_anonymous_addresses(): Array<StaticDataMetadata> {
             return this._anonymous_address;
         }// get_anonymous_address
 

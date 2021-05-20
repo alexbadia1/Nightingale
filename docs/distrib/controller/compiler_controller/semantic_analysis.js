@@ -525,7 +525,6 @@ var NightingaleCompiler;
                         && this._current_ast.current_node.name !== AST_NODE_NAME_BOOLEAN_NOT_EQUALS) {
                         if (this._current_ast.current_node.name !== AST_NODE_NAME_BOOLEAN_EQUALS
                             || this._current_ast.current_node.name !== AST_NODE_NAME_BOOLEAN_NOT_EQUALS) {
-                            console.log(`climbing!`);
                             this._current_ast.climb_one_level();
                         } // if
                     } // while
@@ -541,7 +540,7 @@ var NightingaleCompiler;
                 // To enforce type matching, use the left sides type as the parent type.
                 let right_expression_type = this._add_expression_subtree(right_expression_node, left_expression_type);
                 // If it was an integer expression climb back up to the parent boolean expression node
-                if (left_expression_node.children_nodes[0].name === NODE_NAME_INT_EXPRESSION) {
+                if (right_expression_node.children_nodes[0].name === NODE_NAME_INT_EXPRESSION) {
                     while ((this._current_ast.current_node !== undefined || this._current_ast.current_node !== null)
                         && this._current_ast.current_node.name !== AST_NODE_NAME_BOOLEAN_EQUALS
                         && this._current_ast.current_node.name !== AST_NODE_NAME_BOOLEAN_NOT_EQUALS) {

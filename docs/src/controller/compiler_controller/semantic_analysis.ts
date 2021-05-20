@@ -781,7 +781,6 @@ module NightingaleCompiler {
                         && this._current_ast.current_node.name !== AST_NODE_NAME_BOOLEAN_NOT_EQUALS) {
                         if (this._current_ast.current_node.name !== AST_NODE_NAME_BOOLEAN_EQUALS 
                             || this._current_ast.current_node.name !== AST_NODE_NAME_BOOLEAN_NOT_EQUALS ) {
-                                console.log(`climbing!`)
                             this._current_ast.climb_one_level();
                         }// if
                     }// while

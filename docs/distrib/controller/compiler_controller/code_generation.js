@@ -13,7 +13,7 @@ var NightingaleCompiler;
             this._current_program = null;
             // Keep track of each programs static tables
             this.static_tables = new Array();
-            // this.main();
+            this.main();
         } // constructor
         main() {
             for (var astIndex = 0; astIndex < this._abstract_syntax_trees.length; ++astIndex) {
@@ -395,22 +395,27 @@ var NightingaleCompiler;
             // left and right node are two comparable values
             if (![AST_NODE_NAME_BOOLEAN_EQUALS, AST_NODE_NAME_BOOLEAN_NOT_EQUALS].includes(left_node_val)
                 && ![AST_NODE_NAME_BOOLEAN_EQUALS, AST_NODE_NAME_BOOLEAN_NOT_EQUALS].includes(boolean_expression_node.children_nodes[1].name)) {
+                console.log(`Boolean expression left child and right child are two comparable values!`);
                 return this._code_gen_boolean_comparison(boolean_expression_node, current_scope_table);
             } // if
             // Go down as far left as possible
             if ([AST_NODE_NAME_BOOLEAN_EQUALS, AST_NODE_NAME_BOOLEAN_NOT_EQUALS].includes(left_node_val)) {
+                console.log(`Traversing to left boolean expression node [${left_node_val}]`);
                 left_result = this._code_gen_boolean_expression(boolean_expression_node.children_nodes[0], current_scope_table);
             } // if
             // Store single value in memory
             else {
+                console.log(`Boolean expression node left child is a value [${left_node_val}]`);
                 left_result = this._store_single_value_in_memory(left_node_val, boolean_expression_node.children_nodes[0], current_scope_table);
             } // else
             // Go down as far right as possible
             if ([AST_NODE_NAME_BOOLEAN_EQUALS, AST_NODE_NAME_BOOLEAN_NOT_EQUALS].includes(right_node_val)) {
+                console.log(`Traversing to right boolean expression node [${right_node_val}]`);
                 right_result = this._code_gen_boolean_expression(boolean_expression_node.children_nodes[1], current_scope_table);
             } // if
             // Store single value in memory
             else {
+                console.log(`Boolean expression node right child is a value [${right_node_val}]`);
                 right_result = this._store_single_value_in_memory(right_node_val, boolean_expression_node.children_nodes[1], current_scope_table);
             } // else
             // Compare results
@@ -476,7 +481,7 @@ var NightingaleCompiler;
                 // Child is a int expression
                 else if (left_child_value === AST_NODE_NAME_INT_OP) {
                     let memory_address_of_sum = this._code_gen_int_expression(boolean_expression_node.children_nodes[0], null, current_scope_table); // _code_gen_int_expression
-                    // Load the Y register with the sum of the integer expression
+                    // Load the X register with the sum of the integer expression
                     this._load_x_register_from_memory(memory_address_of_sum.temp_address_leading_hex, memory_address_of_sum.temp_address_trailing_hex);
                 } // else-if
                 // Throw error
@@ -520,10 +525,11 @@ var NightingaleCompiler;
                 else if (right_child_value === AST_NODE_NAME_INT_OP) {
                     // memory_address_of_sum[0] = leading_hex_byte
                     // memory_address_of_sum[1] = trailing_hex_byte
-                    let memory_address_of_sum = this._code_gen_int_expression(boolean_expression_node.children_nodes[0], null, current_scope_table); // _code_gen_int_expression
+                    let memory_address_of_sum = this._code_gen_int_expression(boolean_expression_node.children_nodes[1], null, current_scope_table); // _code_gen_int_expression
                     // Load the X register with the sum of the integer expression
                     this._compare_x_register_to_memory(memory_address_of_sum.temp_address_leading_hex, memory_address_of_sum.temp_address_trailing_hex);
                     // Won't need this later, free up memory
+                    memory_address_of_sum.isUsable = true;
                 } // else-if
                 // Throw error
                 else {
@@ -542,36 +548,46 @@ var NightingaleCompiler;
          * @returns address in memory of boolean result
          */
         _store_boolean_result(boolean_expression_node) {
-            // Branch, to skip storing false in memory
-            this._branch_on_zero("0B");
-            // Store compare results
+            // Branch on not equal
+            this._branch_on_zero("0C"); // Skip 12 bytes
+            // Z-flag was 1 and node was "==".
             //
-            // If z-flag was 1 and node was "==", store result as false
+            // Meaning the two values were equal and the 
+            // intended comparison was equal so store result as true
             if (boolean_expression_node.name === AST_NODE_NAME_BOOLEAN_EQUALS) {
-                this._load_accumulator_with_constant(this._current_program.get_false_address().toString(16).toUpperCase());
+                this._load_accumulator_with_constant(this._current_program.get_true_address().toString(16).toUpperCase()); // 2
             } // if
-            // If z-flag was 1 and node was "!=", store result as true
+            // Z-flag was 1 and node was "!=".
+            //
+            // Meaning the two values were equal and the 
+            // intended comparison was not equal so store result as false
             else {
-                this._load_accumulator_with_constant(this._current_program.get_true_address().toString(16).toUpperCase());
+                this._load_accumulator_with_constant(this._current_program.get_false_address().toString(16).toUpperCase()); // 2
             } // else
             // Make an anoymous address entry in the static table, for later backtracking
             let anonymous_address_static_data = this._get_anonymous_address();
             // Store answer in memory
-            this._store_accumulator_to_memory(anonymous_address_static_data.temp_address_leading_hex, anonymous_address_static_data.temp_address_trailing_hex); // _store_accumulator_to_memory
+            this._store_accumulator_to_memory(anonymous_address_static_data.temp_address_leading_hex, anonymous_address_static_data.temp_address_trailing_hex); // _store_accumulator_to_memory // 3
             // Force branch out of current branch to skip storing true in memory
             // By setting up an always true condition, comparing "f" to "f"
-            this._load_x_register_with_constant("66"); // "f"
-            this._compare_x_register_to_memory("00", this._current_program.get_false_address().toString(16).toUpperCase()); // "f"
-            this._branch_on_zero("05");
-            // If z-flag was 0 and node was "==", store result as true
+            this._load_x_register_with_constant("FF"); // "f", 2
+            this._compare_x_register_to_memory("00", this._current_program.get_false_address().toString(16).toUpperCase()); // "f", 3
+            this._branch_on_zero("05"); // 2
+            // Z-flag was 0 and node was "==".
+            //
+            // Meaning the two values were not equal and the 
+            // intended comparison was equal so store result as false
             if (boolean_expression_node.name === AST_NODE_NAME_BOOLEAN_EQUALS) {
-                this._load_accumulator_with_constant(this._current_program.get_true_address().toString(16).toUpperCase());
+                this._load_accumulator_with_constant(this._current_program.get_false_address().toString(16).toUpperCase()); // 2
             } // if
-            // If z-flag was 0 and node was "!=", store result as false
+            // Z-flag was 0 and node was "!=".
+            //
+            // Meaning the two values were not equal and the 
+            // intended comparison was not equal so store result as true
             else {
-                this._load_accumulator_with_constant(this._current_program.get_false_address().toString(16).toUpperCase());
+                this._load_accumulator_with_constant(this._current_program.get_true_address().toString(16).toUpperCase()); // 2
             } // else
-            this._store_accumulator_to_memory(anonymous_address_static_data.temp_address_leading_hex, anonymous_address_static_data.temp_address_trailing_hex); // _store_accumulator_to_memory
+            this._store_accumulator_to_memory(anonymous_address_static_data.temp_address_leading_hex, anonymous_address_static_data.temp_address_trailing_hex); // _store_accumulator_to_memory // 3
             // Return the boolean expression result’s location in memory
             return anonymous_address_static_data;
         } // _store_boolean_result
@@ -692,6 +708,7 @@ var NightingaleCompiler;
         _get_anonymous_address() {
             for (let temp_anonymous_address of this._current_static_table.get_anonymous_addresses()) {
                 if (temp_anonymous_address.isUsable === true) {
+                    console.log(`Reusing memory location: ${temp_anonymous_address.temp_address_leading_hex, temp_anonymous_address.temp_address_trailing_hex}`);
                     temp_anonymous_address.isUsable = false;
                     return temp_anonymous_address;
                 } // if
@@ -949,58 +966,4 @@ var NightingaleCompiler;
     } //class
     NightingaleCompiler.CodeGeneration = CodeGeneration;
 })(NightingaleCompiler || (NightingaleCompiler = {})); // module
-// Filter
-// export type IdentifierCallback = () => void;
-// export type IntegerValueCallback = () => void;
-// export type BooleanTrueValueCallback = () => void;
-// export type BooleanFalseValueCallback = () => void;
-// export type StringExpressionCallback = () => void;
-// export type IntegerExpressionCallback = () => void;
-// export type BooleanExpressionCallback = () => void;
-// export type ErrorCallback = () => void;
-// private _code_gen_value(
-//     value: string,
-//     identifierCallback: IdentifierCallback,
-//     integerValueCallback: IntegerValueCallback,
-//     booleanTrueValueCallback: BooleanTrueValueCallback,
-//     booleanFalseValueCallback: BooleanFalseValueCallback,
-//     stringExpressionCallback: StringExpressionCallback,
-//     integerExpressionCallback: IntegerExpressionCallback,
-//     booleanExpressionCallback: BooleanExpressionCallback,
-//     errorCallback: ErrorCallback,
-// ): void {
-//     // Value is an identifier
-//     if (new RegExp("^[a-z]$").test(value)) {
-//         identifierCallback;
-//     }// if
-//     // Integer
-//     else if (new RegExp("^[0-9]$").test(value)) {
-//         integerValueCallback;
-//     }// if
-//     // Value is boolean true
-//     else if (new RegExp("^(true)$").test(value)) {
-//         booleanTrueValueCallback
-//     }// else-if
-//     // Value is a boolean false
-//     else if (new RegExp("^(false)$").test(value)) {
-//         booleanFalseValueCallback
-//     }// else-if
-//     // String expression
-//     else if (value.startsWith("\"")) {
-//         stringExpressionCallback;
-//     }// else-if
-//     // Integer Expression
-//     else if (value === AST_NODE_NAME_INT_OP) {
-//         integerExpressionCallback;
-//     }// if
-//     // Boolean expression
-//     else if (value === AST_NODE_NAME_BOOLEAN_EQUALS || value == AST_NODE_NAME_BOOLEAN_NOT_EQUALS) {
-//         booleanExpressionCallback;
-//     }// else-if
-//     // Error
-//     else {
-//         errorCallback;
-//         throw Error(`Code Gen Print --> Expected [Int | Boolean Value | StringExpr | IntExpr | BooleanExpr], but got ${value}`);
-//     }// else
-// }// _code_gen_value
 //# sourceMappingURL=code_generation.js.map

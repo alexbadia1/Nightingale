@@ -251,24 +251,50 @@ const CODE_GEN_STATIC_AREA_OVERFLOW_TEST = `{
 }$
 `;
 
-const CODE_GEN_RAW_BOOLEAN_TEST = `{
-	print("boolean comparison")
+/**
+ * Boolean Comparison tests
+ */
+const CODE_GEN_BOOLEAN_VALUE_TEST = `/**
+* Ouput: false true true false true false
+*/
+{
 	print((true == false))
+	print(" ")
 	print((true != false))
+	print(" ")
 	print((true == true))
+	print(" ")
+	print((true != true))
+	print(" ")
 	print((false == false))
+	print(" ")
+	print((false != false))
+}$`;
 
-	print("int expression")
+const CODE_GEN_BOOLEAN_INTEGER_EXPRESSION_TEST = `/**
+ * Ouput: t true f false
+ * 
+ * Sadly, we only have 256 bytes of memory to work with.
+ * Given our current instruction set, boolean comparisons of 
+ * integer expression are extremely costly. Use sparingly!
+ */
+{
+	/* Integer Expression Comparisons */
+    print("t ")
 	print((1 + 2 + 3 == 3 + 2 + 1))
+    print(" f ")
 	print((1 + 2 + 3 != 3 + 2 + 1))
+}$`;
 
-	print("string expressions")
-	print(("hi" == "hi"))
-	print(("hi" != "hi"))
 
-	print("int values")
+const CODE_GEN_BOOLEAN_INTEGER_VALUE_TEST = `/**
+ * Output: false true false true
+ */
+{
+	print((1 != 1))
 	print((1 == 1))
-	print((5 != 5))
+	print((2 == 3))
+	print((3 != 4))
 }$`;
 
 const CODE_GEN_IDENTIFIER_BOOLEAN_TEST = `/* Output: int test false true bool test true false string test false true */

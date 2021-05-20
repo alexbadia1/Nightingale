@@ -16,7 +16,7 @@
     <meta name="author" content="Alex Badia" />
 
     <title>Nightingale - a browser-based virtual Compiler in TypeScript</title>
-    <link rel="shortcut icon" type="images/png" href="images/nightingale_favicon.png"/>
+    <link rel="shortcut icon" type="images/png" href="images/nightingale_favicon.png" />
 
     <!-- Personal stylesheet, bootstrap is too "cookie cutterish" -->
     <link rel="stylesheet" href="css/style.css">
@@ -137,7 +137,7 @@
         </div>
 
         <!-- lists all test files -->
-        <div id="side-nav" style = "overflow: visible;">
+        <div id="side-nav" style="overflow: visible;">
             <div class="d-flex flex-column mt-3">
                 <div class="treeview-animated w-20 mx-4 my-4">
                     <h6 class="pt-3 pl-3" style="color: white;">Tests</h6>
@@ -372,85 +372,124 @@
                                 </li>
                             </ul>
                         </li>
-               
+
                         <li class="treeview-animated-items">
                             <a class="closed">
                                 <i class="fas fa-angle-right"></i>
                                 <span style="color: white; font-size: 1.2rem;">Code Generation</span>
                             </a>
                             <ul class="nested">
-                                <li>
-                                    <div class="treeview-animated-element"
-                                        onclick="myCodeMirror.setValue(CODE_GEN_SCOPE_TEST)"><a
-                                            id="sidebar__link--tests"
-                                            onclick="myCodeMirror.setValue(CODE_GEN_SCOPE_TEST)">code_gen_scope_test.gle</a>
-                                    </div>
+                                <li class="treeview-animated-items">
+                                    <a class="closed">
+                                        <i class="fas fa-angle-right"></i>
+                                        <span style="color: white; font-size: 1.2rem;">Boolean Comparisons</span>
+                                    </a>
+                                    <ul class="nested">
+                                        <li>
+                                            <div class="treeview-animated-element"
+                                                onclick="myCodeMirror.setValue(CODE_GEN_BOOLEAN_VALUE_TEST)"><a
+                                                    id="sidebar__link--tests"
+                                                    onclick="myCodeMirror.setValue(CODE_GEN_BOOLEAN_VALUE_TEST)">boolean_boolean_values.gle</a>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <div class="treeview-animated-element"
+                                                onclick="myCodeMirror.setValue(CODE_GEN_BOOLEAN_INTEGER_EXPRESSION_TEST)">
+                                                <a id="sidebar__link--tests"
+                                                    onclick="myCodeMirror.setValue(CODE_GEN_BOOLEAN_INTEGER_EXPRESSION_TEST)">boolean_integer_expressions.gle</a>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <div class="treeview-animated-element"
+                                                onclick="myCodeMirror.setValue(CODE_GEN_BOOLEAN_INTEGER_VALUE_TEST)"><a
+                                                    id="sidebar__link--tests"
+                                                    onclick="myCodeMirror.setValue(CODE_GEN_BOOLEAN_INTEGER_VALUE_TEST)">boolean_integer_values.gle</a>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <div class="treeview-animated-element"
+                                                onclick="myCodeMirror.setValue(CODE_GEN_IDENTIFIER_BOOLEAN_TEST)"><a
+                                                    id="sidebar__link--tests"
+                                                    onclick="myCodeMirror.setValue(CODE_GEN_IDENTIFIER_BOOLEAN_TEST)">boolean_identifiers.gle</a>
+                                            </div>
+                                        </li>
+                                    </ul>
                                 </li>
-                                <li>
-                                    <div class="treeview-animated-element"
-                                        onclick="myCodeMirror.setValue(CODE_GEN_VARRIABLE_DECLARATIONS_TEST)"><a
-                                            id="sidebar__link--tests"
-                                            onclick="myCodeMirror.setValue(CODE_GEN_VARRIABLE_DECLARATIONS_TEST)">code_gen_variable_declaration_test.gle</a>
-                                    </div>
+                            </ul>
+                            <ul class="nested">
+                                <li class="treeview-animated-items">
+                                    <a class="closed">
+                                        <i class="fas fa-angle-right"></i>
+                                        <span style="color: white; font-size: 1.2rem;">Core Functions</span>
+                                    </a>
+                                    <ul class="nested">
+                                        <li>
+                                            <div class="treeview-animated-element"
+                                                onclick="myCodeMirror.setValue(CODE_GEN_SCOPE_TEST)"><a
+                                                    id="sidebar__link--tests"
+                                                    onclick="myCodeMirror.setValue(CODE_GEN_SCOPE_TEST)">basic_scopes.gle</a>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <div class="treeview-animated-element"
+                                                onclick="myCodeMirror.setValue(CODE_GEN_STRING_SCOPE_TEST)"><a
+                                                    id="sidebar__link--tests"
+                                                    onclick="myCodeMirror.setValue(CODE_GEN_STRING_SCOPE_TEST)">strings_scopes.gle</a>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <div class="treeview-animated-element"
+                                                onclick="myCodeMirror.setValue(CODE_GEN_VARRIABLE_DECLARATIONS_TEST)"><a
+                                                    id="sidebar__link--tests"
+                                                    onclick="myCodeMirror.setValue(CODE_GEN_VARRIABLE_DECLARATIONS_TEST)">variable_declarations.gle</a>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <div class="treeview-animated-element"
+                                                onclick="myCodeMirror.setValue(CODE_GEN_PRINT_TEST)"><a
+                                                    id="sidebar__link--tests"
+                                                    onclick="myCodeMirror.setValue(CODE_GEN_PRINT_TEST)">basic_prints.gle</a>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <div class="treeview-animated-element"
+                                                onclick="myCodeMirror.setValue(CODE_GEN_STRING_POINTERS_TEST)"><a
+                                                    id="sidebar__link--tests"
+                                                    onclick="myCodeMirror.setValue(CODE_GEN_STRING_POINTERS_TEST)">string_pointers.gle</a>
+                                            </div>
+                                        </li>
+                                    </ul>
                                 </li>
-                                <li>
-                                    <div class="treeview-animated-element"
-                                        onclick="myCodeMirror.setValue(CODE_GEN_PRINT_TEST)"><a
-                                            id="sidebar__link--tests"
-                                            onclick="myCodeMirror.setValue(CODE_GEN_PRINT_TEST)">code_gen_print_test.gle</a>
-                                    </div>
-                                </li>
-
-                                <li>
-                                    <div class="treeview-animated-element"
-                                        onclick="myCodeMirror.setValue(CODE_GEN_STRING_POINTERS_TEST)"><a
-                                            id="sidebar__link--tests"
-                                            onclick="myCodeMirror.setValue(CODE_GEN_STRING_POINTERS_TEST)">code_gen_string_pointers_test.gle</a>
-                                    </div>
-                                </li>
-
-                                <li>
-                                    <div class="treeview-animated-element"
-                                        onclick="myCodeMirror.setValue(CODE_GEN_BIG_INT_TEST)"><a
-                                            id="sidebar__link--tests"
-                                            onclick="myCodeMirror.setValue(CODE_GEN_BIG_INT_TEST)">code_gen_big_int_test.gle</a>
-                                    </div>
-                                </li>
-                                <li>
-                                    <div class="treeview-animated-element"
-                                        onclick="myCodeMirror.setValue(CODE_GEN_STRING_SCOPE_TEST)"><a
-                                            id="sidebar__link--tests"
-                                            onclick="myCodeMirror.setValue(CODE_GEN_STRING_SCOPE_TEST)">code_gen_string_scope_test.gle</a>
-                                    </div>
-                                </li>
-                                <li>
-                                    <div class="treeview-animated-element"
-                                        onclick="myCodeMirror.setValue(CODE_GEN_STATIC_AREA_OVERFLOW_TEST)"><a
-                                            id="sidebar__link--tests"
-                                            onclick="myCodeMirror.setValue(CODE_GEN_STATIC_AREA_OVERFLOW_TEST)">code_gen_static_area_overflow_test.gle</a>
-                                    </div>
-                                </li>
-
-                                <li>
-                                    <div class="treeview-animated-element"
-                                        onclick="myCodeMirror.setValue(CODE_GEN_BOOLEAN_HELL_TEST)"><a
-                                            id="sidebar__link--tests"
-                                            onclick="myCodeMirror.setValue(CODE_GEN_BOOLEAN_HELL_TEST)">code_gen_boolean_hell_test.gle</a>
-                                    </div>
-                                </li>
-                                <li>
-                                    <div class="treeview-animated-element"
-                                        onclick="myCodeMirror.setValue(CODE_GEN_IDENTIFIER_BOOLEAN_TEST)"><a
-                                            id="sidebar__link--tests"
-                                            onclick="myCodeMirror.setValue(CODE_GEN_IDENTIFIER_BOOLEAN_TEST)">code_gen_identifier_boolean_test.gle</a>
-                                    </div>
-                                </li>
-                                <li>
-                                    <div class="treeview-animated-element"
-                                        onclick="myCodeMirror.setValue(CODE_GEN_RAW_BOOLEAN_TEST)"><a
-                                            id="sidebar__link--tests"
-                                            onclick="myCodeMirror.setValue(CODE_GEN_RAW_BOOLEAN_TEST)">code_gen_raw_bool_test.gle</a>
-                                    </div>
+                            </ul>
+                            <ul class="nested">
+                                <li class="treeview-animated-items">
+                                    <a class="closed">
+                                        <i class="fas fa-angle-right"></i>
+                                        <span style="color: white; font-size: 1.2rem;">Edge Cases</span>
+                                    </a>
+                                    <ul class="nested">
+                                        <li>
+                                            <div class="treeview-animated-element"
+                                                onclick="myCodeMirror.setValue(CODE_GEN_BIG_INT_TEST)"><a
+                                                    id="sidebar__link--tests"
+                                                    onclick="myCodeMirror.setValue(CODE_GEN_BIG_INT_TEST)">big_int_test.gle</a>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <div class="treeview-animated-element"
+                                                onclick="myCodeMirror.setValue(CODE_GEN_STATIC_AREA_OVERFLOW_TEST)"><a
+                                                    id="sidebar__link--tests"
+                                                    onclick="myCodeMirror.setValue(CODE_GEN_STATIC_AREA_OVERFLOW_TEST)">static_area_overflow.gle</a>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <div class="treeview-animated-element"
+                                                onclick="myCodeMirror.setValue(CODE_GEN_BOOLEAN_HELL_TEST)"><a
+                                                    id="sidebar__link--tests"
+                                                    onclick="myCodeMirror.setValue(CODE_GEN_BOOLEAN_HELL_TEST)">boolean_hell_test.gle</a>
+                                            </div>
+                                        </li>
+                                    </ul>
                                 </li>
                             </ul>
                         </li>
@@ -622,7 +661,7 @@
             minWidth: 45,
             maxWidth: screen.width * .8,
 
-            stop: function( event, ui ) {
+            stop: function (event, ui) {
                 if ($('#side-nav').width() <= 45) {
                     // Inactive grey color
                     $("#sidebar__link").css({ "color": "rgba(51, 51, 51, 1)" });

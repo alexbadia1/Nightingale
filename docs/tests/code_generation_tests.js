@@ -250,3 +250,77 @@ const CODE_GEN_STATIC_AREA_OVERFLOW_TEST = `{
     string z
 }$
 `;
+
+const CODE_GEN_RAW_BOOLEAN_TEST = `{
+	print("boolean comparison")
+	print((true == false))
+	print((true != false))
+	print((true == true))
+	print((false == false))
+
+	print("int expression")
+	print((1 + 2 + 3 == 3 + 2 + 1))
+	print((1 + 2 + 3 != 3 + 2 + 1))
+
+	print("string expressions")
+	print(("hi" == "hi"))
+	print(("hi" != "hi"))
+
+	print("int values")
+	print((1 == 1))
+	print((5 != 5))
+}$`;
+
+const CODE_GEN_IDENTIFIER_BOOLEAN_TEST = `/* Output: int test false true bool test true false string test false true */
+{
+	int a
+	int b
+
+	a = 1 + 2 + 3
+	b = 5
+
+	print("int test ")
+	print(a == b)
+	print(" ")
+	print(a != b)
+
+	boolean c
+	boolean d
+
+	print("bool test ")
+	print(c == d)
+	print(" ")
+	print(c != d)
+
+	string e
+	string f
+
+	e = "hello"
+	e = "world"
+
+	print("string test ")
+	print(e == f)
+	print(" ")
+	print(e != f)
+}$`;
+
+const CODE_GEN_BOOLEAN_HELL_TEST = `/* Should print out... */
+{
+	/* Declare variables */
+	int a
+	string b
+	string c
+
+	c = "hmm"
+
+	/* Boolean Hell */
+	print((((a!=9) == ("test" != "alan")) == ((5==5) != (b == c))))
+
+	/* More Tests */
+	boolean d
+	boolean e
+
+	d = true
+	e = true
+	print((((1 + 2 + 3 != 9) == ("wow" != "wow")) == ((5==5) != (d == e))))
+}$`;

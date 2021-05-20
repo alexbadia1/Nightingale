@@ -31,7 +31,7 @@ module NightingaleCompiler {
             // Keep track of each programs static tables
             this.static_tables = new Array<StaticTableModel>();
 
-            this.main();
+            // this.main();
         }// constructor
 
         private main(): void {
@@ -349,10 +349,7 @@ module NightingaleCompiler {
             // Boolean expression
             else if (right_child_node_value === AST_NODE_NAME_BOOLEAN_EQUALS || right_child_node_value == AST_NODE_NAME_BOOLEAN_NOT_EQUALS) {
                 console.log("Code generation for print(boolean expr) ");
-                let left_boolean_ans_memory_address: Array<string>;
-
-
-                let right_boolean_ans_memory_address: Array<string>;
+                
 
                 // Load accumulator with left subexpression answer
 
@@ -454,7 +451,7 @@ module NightingaleCompiler {
             }// else-if
 
             // Integer Expression
-            else if (print_node.children_nodes[0].name === AST_NODE_NAME_INT_OP) {
+            else if (value === AST_NODE_NAME_INT_OP) {
                 console.log("Code generation for print(int expr) ");
 
                 let memory_address_of_sum: StaticDataMetadata = this._code_gen_int_expression(print_node.children_nodes[0], null, current_scope_table);
@@ -467,12 +464,22 @@ module NightingaleCompiler {
             }// if
 
             // Boolean expression
-            else if (print_node.children_nodes[0].name === AST_NODE_NAME_BOOLEAN_EQUALS || print_node.children_nodes[0].name == AST_NODE_NAME_BOOLEAN_NOT_EQUALS) {
+            else if (value === AST_NODE_NAME_BOOLEAN_EQUALS || value == AST_NODE_NAME_BOOLEAN_NOT_EQUALS) {
                 console.log("Code generation for print(boolean expr) ");
+                let memory_address_of_boolean_result: StaticDataMetadata = this._code_gen_boolean_expression(print_node.children_nodes[0], current_scope_table);
+
+                // Load the Y register with the sum of the integer expression
+                this._load_y_register_from_memory(
+                    memory_address_of_boolean_result.temp_address_leading_hex,
+                    memory_address_of_boolean_result.temp_address_trailing_hex
+                );// _load_y_register_from_memory
+
+                // Print out number
+                this._load_x_register_with_constant("02");
             }// else-if
 
             else {
-                throw Error(`Code Gen Print --> Expected [Int | Boolean Value | StringExpr | IntExpr | BooleanExpr], but got ${print_node.children_nodes[0].name}`);
+                throw Error(`Code Gen Print --> Expected [Int | Boolean Value | StringExpr | IntExpr | BooleanExpr], but got ${value}`);
             }// else
 
             // Print
@@ -599,7 +606,7 @@ module NightingaleCompiler {
             }// else
 
             // Go down as far right as possible
-            if ([AST_NODE_NAME_BOOLEAN_EQUALS, AST_NODE_NAME_BOOLEAN_NOT_EQUALS].includes(boolean_expression_node.children_nodes[1].name)) {
+            if ([AST_NODE_NAME_BOOLEAN_EQUALS, AST_NODE_NAME_BOOLEAN_NOT_EQUALS].includes(right_node_val)) {
                 right_result = this._code_gen_boolean_expression(boolean_expression_node.children_nodes[1], current_scope_table);
             }// if
 
@@ -679,12 +686,12 @@ module NightingaleCompiler {
 
                 // Child is a boolean false
                 else if (left_child_value === NODE_NAME_FALSE) {
-                    this._load_x_register_with_constant(this._current_program.get_false_address().toString(16).toUpperCase());
+                    this._load_x_register_from_memory("00", this._current_program.get_false_address().toString(16).toUpperCase());
                 }// else-if
 
                 // Child is boolean true
                 else if (left_child_value === NODE_NAME_TRUE) {
-                    this._load_x_register_with_constant(this._current_program.get_true_address().toString(16).toUpperCase());
+                    this._load_x_register_from_memory("00", this._current_program.get_true_address().toString(16).toUpperCase());
                 }// else-if
 
                 // Child is a string expression

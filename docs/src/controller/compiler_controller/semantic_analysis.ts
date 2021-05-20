@@ -773,6 +773,20 @@ module NightingaleCompiler {
                 // Note the type as it will be used to enforce type matching with the right side.
                 let left_expression_type = this._add_expression_subtree(left_expression_node, UNDEFINED);
 
+                // If it was an integer expression climb back up to the parent boolean expression node
+                if (left_expression_node.children_nodes[0].name === NODE_NAME_INT_EXPRESSION) {
+                    while (
+                        (this._current_ast.current_node !== undefined || this._current_ast.current_node !== null)
+                        && this._current_ast.current_node.name !== AST_NODE_NAME_BOOLEAN_EQUALS
+                        && this._current_ast.current_node.name !== AST_NODE_NAME_BOOLEAN_NOT_EQUALS) {
+                        if (this._current_ast.current_node.name !== AST_NODE_NAME_BOOLEAN_EQUALS 
+                            || this._current_ast.current_node.name !== AST_NODE_NAME_BOOLEAN_NOT_EQUALS ) {
+                                console.log(`climbing!`)
+                            this._current_ast.climb_one_level();
+                        }// if
+                    }// while
+                }// if
+
                 // Ensures the correct order of nested operators in the ast.
                 //
                 // Look ahead in the tree on the left side of the 
@@ -784,6 +798,19 @@ module NightingaleCompiler {
                 // Then recursively deal with the right side...
                 // To enforce type matching, use the left sides type as the parent type.
                 let right_expression_type = this._add_expression_subtree(right_expression_node, left_expression_type);
+
+                // If it was an integer expression climb back up to the parent boolean expression node
+                if (left_expression_node.children_nodes[0].name === NODE_NAME_INT_EXPRESSION) {
+                    while (
+                        (this._current_ast.current_node !== undefined || this._current_ast.current_node !== null)
+                        && this._current_ast.current_node.name !== AST_NODE_NAME_BOOLEAN_EQUALS
+                        && this._current_ast.current_node.name !== AST_NODE_NAME_BOOLEAN_NOT_EQUALS) {
+                        if (this._current_ast.current_node.name !== AST_NODE_NAME_BOOLEAN_EQUALS 
+                            || this._current_ast.current_node.name !== AST_NODE_NAME_BOOLEAN_NOT_EQUALS ) {
+                            this._current_ast.climb_one_level();
+                        }// if
+                    }// while
+                }// if
 
                 // Ensures the correct order of nested operators in the ast.
                 //

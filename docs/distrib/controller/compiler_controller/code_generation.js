@@ -519,12 +519,17 @@ var NightingaleCompiler;
                 } // else-if
                 // Child is a string expression
                 else if (right_child_value.startsWith("\"")) {
-                    this._load_register_with_string_pointer(right_child_value, (str_pointer) => this._compare_x_register_to_memory("00", str_pointer)); // this._load_register_with_string_pointer
+                    this._load_register_with_string_pointer(right_child_value, (str_pointer) => {
+                        let anonymous_address = this._get_anonymous_address();
+                        this._load_accumulator_with_constant(str_pointer);
+                        this._store_accumulator_to_memory(anonymous_address.temp_address_leading_hex, anonymous_address.temp_address_trailing_hex); // _store_accumulator_to_memory
+                        this._compare_x_register_to_memory(anonymous_address.temp_address_leading_hex, anonymous_address.temp_address_trailing_hex); // _compare_x_register_to_memory
+                        // Won't need this later, free up memory
+                        anonymous_address.isUsable = true;
+                    }); // _load_register_with_string_pointer
                 } // else-if
                 // Child is a int expression
                 else if (right_child_value === AST_NODE_NAME_INT_OP) {
-                    // memory_address_of_sum[0] = leading_hex_byte
-                    // memory_address_of_sum[1] = trailing_hex_byte
                     let memory_address_of_sum = this._code_gen_int_expression(boolean_expression_node.children_nodes[1], null, current_scope_table); // _code_gen_int_expression
                     // Load the X register with the sum of the integer expression
                     this._compare_x_register_to_memory(memory_address_of_sum.temp_address_leading_hex, memory_address_of_sum.temp_address_trailing_hex);

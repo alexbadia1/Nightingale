@@ -271,6 +271,16 @@ const CODE_GEN_BOOLEAN_VALUE_TEST = `/**
 	print((false != false))
 }$`;
 
+const CODE_GEN_BOOLEAN_INTEGER_VALUE_TEST = `/**
+ * Output: false true false true
+ */
+{
+	print((1 != 1))
+	print((1 == 1))
+	print((2 == 3))
+	print((3 != 4))
+}$`;
+
 const CODE_GEN_BOOLEAN_INTEGER_EXPRESSION_TEST = `/**
  * Ouput: t true f false
  * 
@@ -286,15 +296,19 @@ const CODE_GEN_BOOLEAN_INTEGER_EXPRESSION_TEST = `/**
 	print((1 + 2 + 3 != 3 + 2 + 1))
 }$`;
 
-
-const CODE_GEN_BOOLEAN_INTEGER_VALUE_TEST = `/**
- * Output: false true false true
+const CODE_GEN_STRING_VALUE_TEST = `/**
+ * Output: true false true false
  */
 {
-	print((1 != 1))
-	print((1 == 1))
-	print((2 == 3))
-	print((3 != 4))
+	/* Test two new entries against each other */
+	print(("hi" != "hola"))
+
+	/* Test two existing entries against each other */
+	print(("hi" == "hola"))
+
+	/* Testing a new and existing entry against each other */
+	print(("bye" == "bye"))
+	print(("adios" != "adios"))
 }$`;
 
 const CODE_GEN_IDENTIFIER_BOOLEAN_TEST = `/* Output: int test false true bool test true false string test false true */

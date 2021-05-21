@@ -193,7 +193,7 @@ var NightingaleCompiler;
         } // write_string_to_heap
         _is_valid_hex_pair(hex_pair) {
             // Allow T's and $'s for temporary locations
-            return /([A-F]|[0-9]|[T]|[\$])([A-F]|[0-9]|[T]|[\$])/.test(hex_pair);
+            return /([A-F]|[0-9]|[T]|[J]|[\$])([A-F]|[0-9]|[T]|[J]|[\$])/.test(hex_pair);
         } // is_valid_hex_pair
         /**
          * I know we're not in OS anymore but to make debugging easier...

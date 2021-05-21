@@ -532,12 +532,21 @@ module NightingaleCompiler {
             );// _compare_x_register_to_memory
 
             // Branch distance is currently unknown
-            this._branch_on_zero("JJ");
+            if (this._current_static_table.get_jump_table_size() > 15) {
+                throw Error(`Program ran out of jumps!`);
+            }// if
+            let temp_jump: string = this._current_static_table.get_jump_table_size().toString(16).toUpperCase().padStart(2, "J");
+            this._current_static_table.put_jump(temp_jump, new Jump(-1));
+            this._branch_on_zero(temp_jump);
 
-            // TODO: Make entry into the branch table
+            // Start location of while statement expression
+            let jump_base: number = this._current_program.get_code_limit();
 
             // Contents of the if statement
             this._code_gen_block(block_node);
+
+            // Update temp_distance in the jump table
+            this._current_static_table.get_jump(temp_jump).distance = this._current_program.get_code_limit() - jump_base;
         }// _code_gen_if_statement
 
         private _code_gen_while_statement(while_node: Node, current_scope_table: ScopeTableModel): void {
@@ -579,9 +588,15 @@ module NightingaleCompiler {
             );// _compare_x_register_to_memory
 
             // Branch distance is currently unknown
-            this._branch_on_zero("JJ");
+            if (this._current_static_table.get_jump_table_size() > 15) {
+                throw Error(`Program ran out of jumps!`);
+            }// if
+            let temp_jump: string = this._current_static_table.get_jump_table_size().toString(16).toUpperCase().padStart(2, "J");
+            this._current_static_table.put_jump(temp_jump, new Jump(-1));
+            this._branch_on_zero(temp_jump);
 
-            // TODO: Make entry into the branch table
+            // Start location of while statement expression
+            let jump_base: number = this._current_program.get_code_limit();
 
             // Contents of the while statement
             this._code_gen_block(block_node);
@@ -594,7 +609,9 @@ module NightingaleCompiler {
                 memory_address_of_boolean_result.temp_address_trailing_hex
             );// _compare_x_register_to_memory
             this._branch_on_zero(this._convert_decimal_to_one_byte_hex(jump_distance));
-            // Backpatch the 
+            
+            // Update jumpt table for later backpatching
+            this._current_static_table.get_jump(temp_jump).distance = this._current_program.get_code_limit() - jump_base;
         }// _code_gen_while_statement
 
         /**
@@ -1080,6 +1097,8 @@ module NightingaleCompiler {
 
         /**
          * Back patches identifiers' temporary addresses and anonymous temporary addresses.
+         * 
+         * TODO: This can be done in ONE pass through the Program Executable Image, don't be lazy and do it!
          */
         private _back_patch(): void {
             // Initialize stack base and limit
@@ -1159,6 +1178,19 @@ module NightingaleCompiler {
                 // Replace static table entry's current temp address with the real static area address
                 temp_anonymous_address.temp_address_leading_hex = leading_hex_byte;
                 temp_anonymous_address.temp_address_trailing_hex = trailing_hex_byte;
+            }// for
+
+            // Iterate through executable image and backpatch jumps
+            for (let logical_address: number = 0; logical_address < this._current_program.get_code_area_size(); ++logical_address) {
+                let curr_hex_byte: string = this._current_program.read_code_area(logical_address);
+                let curr_jump: Jump = this._current_static_table.get_jump(curr_hex_byte);
+                
+                // Found a jump to back patch
+                if (curr_jump !== null) {
+                    // Back patch jumps
+                    console.log(`Jump [${curr_hex_byte}] patched with [${curr_jump.distance.toString(16).toUpperCase().padStart(2, "0")}].`);
+                    this._current_program.write_to_code(curr_jump.distance.toString(16).toUpperCase().padStart(2, "0"), logical_address);
+                }// if
             }// for
         }// back_patch
 

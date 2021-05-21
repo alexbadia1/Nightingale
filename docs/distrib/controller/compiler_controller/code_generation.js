@@ -308,14 +308,83 @@ var NightingaleCompiler;
             this.system_call();
         } // _code_gen_print_statement
         _code_gen_if_statement(if_node, current_scope_table) {
-            this._code_gen_block(if_node.children_nodes[1]);
-            return;
-            throw Error("Unimplemented error: If statement code generation has not yet been implemented!");
+            let left_child = if_node.children_nodes[0];
+            let block_node = if_node.children_nodes[1];
+            let memory_address_of_boolean_result = null;
+            // Loads "t" into the x-regsiter
+            this._load_x_register_from_memory("00", this._current_program.get_true_address().toString(16).toUpperCase());
+            // Boolean expression
+            if (left_child.name === AST_NODE_NAME_BOOLEAN_EQUALS || left_child.name === AST_NODE_NAME_BOOLEAN_NOT_EQUALS) {
+                memory_address_of_boolean_result = this._code_gen_boolean_expression(if_node.children_nodes[0], current_scope_table); // _code_gen_boolean_expression
+            } // if
+            // true
+            else if (left_child.name === NODE_NAME_TRUE) {
+                memory_address_of_boolean_result = new NightingaleCompiler.StaticDataMetadata("00", this._current_program.get_true_address().toString(16).toUpperCase(), -1);
+            } // if
+            // false
+            else if (left_child.name === NODE_NAME_FALSE) {
+                memory_address_of_boolean_result = new NightingaleCompiler.StaticDataMetadata("00", this._current_program.get_false_address().toString(16).toUpperCase(), -1);
+            } // else if
+            else {
+                throw Error(`Code Gen If Expected [AST_NODE_NAME_BOOLEAN_EQUALS, AST_NODE_NAME_BOOLEAN_NOT_EQUALS, NODE_NAME_TRUE, NODE_NAME_FALSE] but got ${left_child.name}`);
+            } // else if
+            this._compare_x_register_to_memory(memory_address_of_boolean_result.temp_address_leading_hex, memory_address_of_boolean_result.temp_address_trailing_hex); // _compare_x_register_to_memory
+            // Branch distance is currently unknown
+            if (this._current_static_table.get_jump_table_size() > 15) {
+                throw Error(`Program ran out of jumps!`);
+            } // if
+            let temp_jump = this._current_static_table.get_jump_table_size().toString(16).toUpperCase().padStart(2, "J");
+            this._current_static_table.put_jump(temp_jump, new NightingaleCompiler.Jump(-1));
+            this._branch_on_zero(temp_jump);
+            // Start location of while statement expression
+            let jump_base = this._current_program.get_code_limit();
+            // Contents of the if statement
+            this._code_gen_block(block_node);
+            // Update temp_distance in the jump table
+            this._current_static_table.get_jump(temp_jump).distance = this._current_program.get_code_limit() - jump_base;
         } // _code_gen_if_statement
         _code_gen_while_statement(while_node, current_scope_table) {
-            this._code_gen_block(while_node.children_nodes[1]);
-            return;
-            throw Error("Unimplemented error: While statement code generation has not yet been implemented!");
+            let left_child = while_node.children_nodes[0];
+            let block_node = while_node.children_nodes[1];
+            let memory_address_of_boolean_result = null;
+            // Start location of while statement expression
+            let start = this._current_program.get_code_limit();
+            // Loads "t" into the x-regsiter
+            this._load_x_register_from_memory("00", this._current_program.get_true_address().toString(16).toUpperCase());
+            // Boolean expression
+            if (left_child.name === AST_NODE_NAME_BOOLEAN_EQUALS || left_child.name === AST_NODE_NAME_BOOLEAN_NOT_EQUALS) {
+                memory_address_of_boolean_result = this._code_gen_boolean_expression(while_node.children_nodes[0], current_scope_table); // _code_gen_boolean_expression
+            } // if
+            // true
+            else if (left_child.name === NODE_NAME_TRUE) {
+                memory_address_of_boolean_result = new NightingaleCompiler.StaticDataMetadata("00", this._current_program.get_true_address().toString(16).toUpperCase(), -1);
+            } // if
+            // false
+            else if (left_child.name === NODE_NAME_FALSE) {
+                memory_address_of_boolean_result = new NightingaleCompiler.StaticDataMetadata("00", this._current_program.get_false_address().toString(16).toUpperCase(), -1);
+            } // else if
+            else {
+                throw Error(`Code Gen If Expected [AST_NODE_NAME_BOOLEAN_EQUALS, AST_NODE_NAME_BOOLEAN_NOT_EQUALS, NODE_NAME_TRUE, NODE_NAME_FALSE] but got ${left_child.name}`);
+            } // else if
+            this._compare_x_register_to_memory(memory_address_of_boolean_result.temp_address_leading_hex, memory_address_of_boolean_result.temp_address_trailing_hex); // _compare_x_register_to_memory
+            // Branch distance is currently unknown
+            if (this._current_static_table.get_jump_table_size() > 15) {
+                throw Error(`Program ran out of jumps!`);
+            } // if
+            let temp_jump = this._current_static_table.get_jump_table_size().toString(16).toUpperCase().padStart(2, "J");
+            this._current_static_table.put_jump(temp_jump, new NightingaleCompiler.Jump(-1));
+            this._branch_on_zero(temp_jump);
+            // Start location of while statement expression
+            let jump_base = this._current_program.get_code_limit();
+            // Contents of the while statement
+            this._code_gen_block(block_node);
+            // Force branch back to the conditional statement
+            let jump_distance = MAX_MEMORY_SIZE - (MAX_MEMORY_SIZE - start);
+            this._load_x_register_from_memory("00", this._current_program.get_false_address().toString(16).toUpperCase());
+            this._compare_x_register_to_memory(memory_address_of_boolean_result.temp_address_leading_hex, memory_address_of_boolean_result.temp_address_trailing_hex); // _compare_x_register_to_memory
+            this._branch_on_zero(this._convert_decimal_to_one_byte_hex(jump_distance));
+            // Update jumpt table for later backpatching
+            this._current_static_table.get_jump(temp_jump).distance = this._current_program.get_code_limit() - jump_base;
         } // _code_gen_while_statement
         /**
          * Recursively adds two two numbers of an integer expression.
@@ -637,6 +706,8 @@ var NightingaleCompiler;
         } // _store_single_value_in_memory
         /**
          * Back patches identifiers' temporary addresses and anonymous temporary addresses.
+         *
+         * TODO: This can be done in ONE pass through the Program Executable Image, don't be lazy and do it!
          */
         _back_patch() {
             // Initialize stack base and limit
@@ -704,6 +775,17 @@ var NightingaleCompiler;
                 // Replace static table entry's current temp address with the real static area address
                 temp_anonymous_address.temp_address_leading_hex = leading_hex_byte;
                 temp_anonymous_address.temp_address_trailing_hex = trailing_hex_byte;
+            } // for
+            // Iterate through executable image and backpatch jumps
+            for (let logical_address = 0; logical_address < this._current_program.get_code_area_size(); ++logical_address) {
+                let curr_hex_byte = this._current_program.read_code_area(logical_address);
+                let curr_jump = this._current_static_table.get_jump(curr_hex_byte);
+                // Found a jump to back patch
+                if (curr_jump !== null) {
+                    // Back patch jumps
+                    console.log(`Jump [${curr_hex_byte}] patched with [${curr_jump.distance.toString(16).toUpperCase().padStart(2, "0")}].`);
+                    this._current_program.write_to_code(curr_jump.distance.toString(16).toUpperCase().padStart(2, "0"), logical_address);
+                } // if
             } // for
         } // back_patch
         /**

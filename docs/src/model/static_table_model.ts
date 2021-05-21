@@ -17,15 +17,23 @@
         ){}
     }// class
 
+    export class Jump {
+        constructor(
+            public distance: number,
+        ){}
+    }// class
+
     export class StaticTableModel {
         private _map: Map<string, StaticDataMetadata>;
         private _anonymous_address: Array<StaticDataMetadata>;
         private _strings_in_heap: Map<string, string>;
+        private _jump_table: Map<string, Jump>;
 
-        constructor(){
+        constructor() {
             this._map = new Map();
             this._anonymous_address = new Array<StaticDataMetadata>();
             this._strings_in_heap = new Map<string, string>();
+            this._jump_table = new Map<string, Jump>();
         }// constructor
 
         /**
@@ -109,5 +117,27 @@
             }// if
             return null;
         }// get_string_in_heap
+
+        public get_jump_table_size(): number {
+            return this._jump_table.size;
+        }// get_jump_table_size
+
+        public put_jump(new_jump: string, distance: Jump): void {
+            if (!this._jump_table.has(new_jump)) {
+                this._jump_table.set(new_jump, distance);
+            }// if
+        }// put_jump
+
+        public get_jump(jump: string): Jump {
+            if (this._jump_table.has(jump)) {
+                return this._jump_table.get(jump);
+            }// if
+            return null;
+        }// get_jump
+
+        public get_jump_entries(): Array<Array<any>> {
+            return Array.from(this._jump_table.entries());
+        }// get_jump_entries
+
     }// class
 }// module

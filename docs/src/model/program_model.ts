@@ -270,7 +270,7 @@ module NightingaleCompiler {
 
         private _is_valid_hex_pair(hex_pair: string) {
             // Allow T's and $'s for temporary locations
-            return /([A-F]|[0-9]|[T]|[\$])([A-F]|[0-9]|[T]|[\$])/.test(hex_pair);
+            return /([A-F]|[0-9]|[T]|[J]|[\$])([A-F]|[0-9]|[T]|[J]|[\$])/.test(hex_pair);
         }// is_valid_hex_pair
 
         /**

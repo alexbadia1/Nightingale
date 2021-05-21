@@ -17,11 +17,18 @@ var NightingaleCompiler;
         }
     } // class
     NightingaleCompiler.StaticDataMetadata = StaticDataMetadata;
+    class Jump {
+        constructor(distance) {
+            this.distance = distance;
+        }
+    } // class
+    NightingaleCompiler.Jump = Jump;
     class StaticTableModel {
         constructor() {
             this._map = new Map();
             this._anonymous_address = new Array();
             this._strings_in_heap = new Map();
+            this._jump_table = new Map();
         } // constructor
         /**
          * Simulate a hash tables "put" method
@@ -88,6 +95,23 @@ var NightingaleCompiler;
             } // if
             return null;
         } // get_string_in_heap
+        get_jump_table_size() {
+            return this._jump_table.size;
+        } // get_jump_table_size
+        put_jump(new_jump, distance) {
+            if (!this._jump_table.has(new_jump)) {
+                this._jump_table.set(new_jump, distance);
+            } // if
+        } // put_jump
+        get_jump(jump) {
+            if (this._jump_table.has(jump)) {
+                return this._jump_table.get(jump);
+            } // if
+            return null;
+        } // get_jump
+        get_jump_entries() {
+            return Array.from(this._jump_table.entries());
+        } // get_jump_entries
     } // class
     NightingaleCompiler.StaticTableModel = StaticTableModel;
 })(NightingaleCompiler || (NightingaleCompiler = {})); // module

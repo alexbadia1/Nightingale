@@ -71,21 +71,13 @@ module NightingaleCompiler {
             // End of heap starts at the heap's base, but will grow over time
             this._heap_limit = this._heap_base + 1;
 
-            // Write "null" to heap
-            // Null's location is the heap base
+            // Initialize heap with null, true, false, pointers
             this.write_string_to_heap("null");
             this._null_address = this._heap_limit;
-            console.log(`Wrote null to heap starting at ${this._null_address}`);
-
-            // Write "false" to heap, starting at FB or 251
             this.write_string_to_heap("false");
             this._false_address = this._heap_limit;
-            console.log(`Wrote false to heap starting at ${this._false_address}`);
-
-            // Write "true", starting at 246
             this.write_string_to_heap("true");
             this._true_address = this._heap_limit;
-            console.log(`Wrote true to heap starting at ${this._true_address}`);
         }// init
 
         /**
@@ -136,7 +128,7 @@ module NightingaleCompiler {
             }// if
 
             // Write to code
-            console.log(`Code: Writing ${hex_pair} to L${logical_address}:P${physical_address}[${physical_address.toString(16).toUpperCase().padStart(2, "0")}]`);
+            //console.log(`Code: Writing ${hex_pair} to L${logical_address}:P${physical_address}[${physical_address.toString(16).toUpperCase().padStart(2, "0")}]`);
             this._memory[physical_address] = hex_pair;
 
             // User did not specify a logical address, so hex_pair was written to the end of the code
@@ -194,7 +186,7 @@ module NightingaleCompiler {
             }// if
 
             // Write to stack
-            console.log(`Stack: Writing ${hex_pair} to L${logical_address}:P${physical_address}[${physical_address.toString(16).toUpperCase().padStart(2, "0")}]`);
+            // console.log(`Stack: Writing ${hex_pair} to L${logical_address}:P${physical_address}[${physical_address.toString(16).toUpperCase().padStart(2, "0")}]`);
             this._memory[physical_address] = hex_pair;
 
             // Stack just grew
@@ -251,7 +243,7 @@ module NightingaleCompiler {
             }// if
 
             // Write to heap
-            console.log(`Heap: Writing ${hex_pair} to L${logical_address}:P${physical_address}[${physical_address.toString(16).toUpperCase().padStart(2, "0")}]`);
+            // console.log(`Heap: Writing ${hex_pair} to L${logical_address}:P${physical_address}[${physical_address.toString(16).toUpperCase().padStart(2, "0")}]`);
             this._memory[physical_address] = hex_pair;
 
             // Heap just grew

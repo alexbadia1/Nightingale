@@ -320,17 +320,17 @@ const CODE_GEN_IDENTIFIER_BOOLEAN_TEST = `/* Output: int test false true bool te
 	b = 5
 
 	print("int test ")
-	print(a == b)
+	print((a == b))
 	print(" ")
-	print(a != b)
+	print((a != b))
 
 	boolean c
 	boolean d
 
 	print("bool test ")
-	print(c == d)
+	print((c == d))
 	print(" ")
-	print(c != d)
+	print((c != d))
 
 	string e
 	string f
@@ -339,9 +339,9 @@ const CODE_GEN_IDENTIFIER_BOOLEAN_TEST = `/* Output: int test false true bool te
 	e = "world"
 
 	print("string test ")
-	print(e == f)
+	print((e == f))
 	print(" ")
-	print(e != f)
+	print((e != f))
 }$`;
 
 const CODE_GEN_BOOLEAN_HELL_TEST = `/* Should print out... */

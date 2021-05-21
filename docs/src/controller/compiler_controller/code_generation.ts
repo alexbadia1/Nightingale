@@ -497,15 +497,104 @@ module NightingaleCompiler {
         }// _code_gen_print_statement
 
         private _code_gen_if_statement(if_node: Node, current_scope_table: ScopeTableModel): void {
-            this._code_gen_block(if_node.children_nodes[1]);
-            return;
-            throw Error("Unimplemented error: If statement code generation has not yet been implemented!");
+            let left_child: Node = if_node.children_nodes[0];
+            let block_node: Node = if_node.children_nodes[1];
+            let memory_address_of_boolean_result: StaticDataMetadata = null;
+
+            // Loads "t" into the x-regsiter
+            this._load_x_register_from_memory("00", this._current_program.get_true_address().toString(16).toUpperCase());
+
+            // Boolean expression
+            if (left_child.name === AST_NODE_NAME_BOOLEAN_EQUALS || left_child.name === AST_NODE_NAME_BOOLEAN_NOT_EQUALS) {
+                memory_address_of_boolean_result = this._code_gen_boolean_expression(
+                    if_node.children_nodes[0], 
+                    current_scope_table
+                );// _code_gen_boolean_expression
+            }// if
+
+            // true
+            else if (left_child.name === NODE_NAME_TRUE) {
+                memory_address_of_boolean_result = new StaticDataMetadata("00", this._current_program.get_true_address().toString(16).toUpperCase(), -1);
+            }// if
+
+            // false
+            else if (left_child.name === NODE_NAME_FALSE) {
+                memory_address_of_boolean_result = new StaticDataMetadata("00", this._current_program.get_false_address().toString(16).toUpperCase(), -1);
+            }// else if
+
+            else {
+                throw Error(`Code Gen If Expected [AST_NODE_NAME_BOOLEAN_EQUALS, AST_NODE_NAME_BOOLEAN_NOT_EQUALS, NODE_NAME_TRUE, NODE_NAME_FALSE] but got ${left_child.name}`);
+            }// else if
+
+            this._compare_x_register_to_memory(
+                memory_address_of_boolean_result.temp_address_leading_hex,
+                memory_address_of_boolean_result.temp_address_trailing_hex
+            );// _compare_x_register_to_memory
+
+            // Branch distance is currently unknown
+            this._branch_on_zero("JJ");
+
+            // TODO: Make entry into the branch table
+
+            // Contents of the if statement
+            this._code_gen_block(block_node);
         }// _code_gen_if_statement
 
         private _code_gen_while_statement(while_node: Node, current_scope_table: ScopeTableModel): void {
-            this._code_gen_block(while_node.children_nodes[1]);
-            return;
-            throw Error("Unimplemented error: While statement code generation has not yet been implemented!");
+            let left_child: Node = while_node.children_nodes[0];
+            let block_node: Node = while_node.children_nodes[1];
+            let memory_address_of_boolean_result: StaticDataMetadata = null;
+
+            // Start location of while statement expression
+            let start: number = this._current_program.get_code_limit();
+
+            // Loads "t" into the x-regsiter
+            this._load_x_register_from_memory("00", this._current_program.get_true_address().toString(16).toUpperCase());
+
+            // Boolean expression
+            if (left_child.name === AST_NODE_NAME_BOOLEAN_EQUALS || left_child.name === AST_NODE_NAME_BOOLEAN_NOT_EQUALS) {
+                memory_address_of_boolean_result = this._code_gen_boolean_expression(
+                    while_node.children_nodes[0], 
+                    current_scope_table
+                );// _code_gen_boolean_expression
+            }// if
+
+            // true
+            else if (left_child.name === NODE_NAME_TRUE) {
+                memory_address_of_boolean_result = new StaticDataMetadata("00", this._current_program.get_true_address().toString(16).toUpperCase(), -1);
+            }// if
+
+            // false
+            else if (left_child.name === NODE_NAME_FALSE) {
+                memory_address_of_boolean_result = new StaticDataMetadata("00", this._current_program.get_false_address().toString(16).toUpperCase(), -1);
+            }// else if
+
+            else {
+                throw Error(`Code Gen If Expected [AST_NODE_NAME_BOOLEAN_EQUALS, AST_NODE_NAME_BOOLEAN_NOT_EQUALS, NODE_NAME_TRUE, NODE_NAME_FALSE] but got ${left_child.name}`);
+            }// else if
+
+            this._compare_x_register_to_memory(
+                memory_address_of_boolean_result.temp_address_leading_hex,
+                memory_address_of_boolean_result.temp_address_trailing_hex
+            );// _compare_x_register_to_memory
+
+            // Branch distance is currently unknown
+            this._branch_on_zero("JJ");
+
+            // TODO: Make entry into the branch table
+
+            // Contents of the while statement
+            this._code_gen_block(block_node);
+
+            // Force branch back to the conditional statement
+            let jump_distance: number = MAX_MEMORY_SIZE - (MAX_MEMORY_SIZE - start);
+            this._load_x_register_from_memory("00", this._current_program.get_false_address().toString(16).toUpperCase());
+            this._compare_x_register_to_memory(
+                memory_address_of_boolean_result.temp_address_leading_hex,
+                memory_address_of_boolean_result.temp_address_trailing_hex
+            );// _compare_x_register_to_memory
+            this._branch_on_zero(this._convert_decimal_to_one_byte_hex(jump_distance));
+            // Backpatch the 
         }// _code_gen_while_statement
 
         /**

@@ -18,6 +18,53 @@ const CODE_GEN_BOOLEAN_VALUE_TEST = `/**
 	print((false != false))
 }$`;
 
+const CODE_GEN_BOOLEAN_EXPRESSION_TEST = `/**
+ * Albeit, we only have 256 bytes, this was impractical to implement as such
+ * comparisons take up a lot of memory (given our limited instuction set)... 
+ * 
+ * Hoewever, it works!
+ * 
+ * Boolean Expression Tests
+ */
+{
+	/* Declare variables */
+	int a
+	string b
+	string c
+	boolean z
+    c = "hmm"
+	z = (((a!=9) == ("a" != "b")) == ((5==5) != (b == c)))
+
+	/* Boolean Hell should print true */
+	print(z)
+}$
+
+/**
+ * Advanced Boolean Expression Test
+ * (5 + 2 + 3 == 9 + 1) --> true
+ * (wow != wow) --> false
+ * 
+ * true == false --> false
+ * 
+ * (3 == 5) --> false
+ * (d == e) --> (false == false) --> true
+ * 
+ * false != true --> true
+ * 
+ * Answer: false == true --> false
+ * 
+ * Should output false
+ */
+{
+	/**
+	 * This is laughably impractical, as this barely fits in memory 
+	 * 
+	 * There are a few more optimizations I could made to save a few more bytes,
+	 * but given the time and brain damage it took to implement this, I'm fine...
+	 */
+	print((((5 + 2 + 3 == 9 + 1) == ("wow" != "wow")) == ((3==5) != (true == true))))
+}$`;
+
 const CODE_GEN_BOOLEAN_INTEGER_VALUE_TEST = `/**
  * Output: false true false true
  */

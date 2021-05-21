@@ -340,21 +340,31 @@ module NightingaleCompiler {
             else if (right_child_node_value === AST_NODE_NAME_INT_OP) {
                 console.log("Code generation for print(int expr) ");
 
-                let memory_address_of_sum: StaticDataMetadata = this._code_gen_int_expression(assignment_statement_node.children_nodes[1], null, current_scope_table);
+                let memory_address_of_sum: StaticDataMetadata = this._code_gen_int_expression(
+                    assignment_statement_node.children_nodes[1], 
+                    null, 
+                    current_scope_table
+                );// _code_gen_int_expression
 
-                // Load the Y register with the sum of the integer expression
-                this._load_accumulator_from_memory(memory_address_of_sum.temp_address_leading_hex, memory_address_of_sum.temp_address_trailing_hex);
+                this._load_accumulator_from_memory(
+                    memory_address_of_sum.temp_address_leading_hex, 
+                    memory_address_of_sum.temp_address_trailing_hex
+                );// _load_accumulator_from_memory
             }// else-if
 
             // Boolean expression
             else if (right_child_node_value === AST_NODE_NAME_BOOLEAN_EQUALS || right_child_node_value == AST_NODE_NAME_BOOLEAN_NOT_EQUALS) {
                 console.log("Code generation for print(boolean expr) ");
-                
 
-                // Load accumulator with left subexpression answer
+                let memory_address_of_boolean_result: StaticDataMetadata = this._code_gen_boolean_expression(
+                    assignment_statement_node.children_nodes[1],
+                    current_scope_table
+                );// _code_gen_boolean_expression
 
-                // Compare accumulator to memory address
-
+                this._load_accumulator_from_memory(
+                    memory_address_of_boolean_result.temp_address_leading_hex, 
+                    memory_address_of_boolean_result.temp_address_trailing_hex
+                );// _load_accumulator_from_memory
             }// else-if
 
             else {
@@ -623,8 +633,10 @@ module NightingaleCompiler {
             // Compare results
             if (left_result !== null && right_result !== null) {
                 // LDX [left result]
-                this._load_x_register_from_memory(left_result.temp_address_leading_hex, left_result.temp_address_leading_hex);
-
+                this._load_x_register_from_memory(
+                    left_result.temp_address_leading_hex,
+                    left_result.temp_address_trailing_hex
+                );// _load_x_register_from_memory
                 // CPX [right result]
                 this._compare_x_register_to_memory(right_result.temp_address_leading_hex, right_result.temp_address_trailing_hex);
                 
@@ -660,6 +672,8 @@ module NightingaleCompiler {
         private _code_gen_boolean_comparison(boolean_expression_node: Node, current_scope_table): StaticDataMetadata {
             let left_child_value: string = boolean_expression_node.children_nodes[0].name;
             let right_child_value: string = boolean_expression_node.children_nodes[1].name;
+            console.log(`Left child: ${left_child_value}`);
+            console.log(`Right child: ${right_child_value}`);
 
             // Left child is not an expression
             if (left_child_value !== AST_NODE_NAME_BOOLEAN_EQUALS || left_child_value !== AST_NODE_NAME_BOOLEAN_NOT_EQUALS) {
@@ -716,7 +730,10 @@ module NightingaleCompiler {
                     );// _code_gen_int_expression
 
                     // Load the X register with the sum of the integer expression
-                    this._load_x_register_from_memory(memory_address_of_sum.temp_address_leading_hex, memory_address_of_sum.temp_address_trailing_hex);
+                    this._load_x_register_from_memory(
+                        memory_address_of_sum.temp_address_leading_hex,
+                        memory_address_of_sum.temp_address_trailing_hex
+                    );// _load_x_register_from_memory
                 }// else-if
 
                 // Throw error
@@ -729,7 +746,7 @@ module NightingaleCompiler {
             // Right child is not an expression
             if (right_child_value !== AST_NODE_NAME_BOOLEAN_EQUALS || right_child_value !== AST_NODE_NAME_BOOLEAN_NOT_EQUALS) {
                 // Child is a variable
-                if (new RegExp("^[a-z]$").test(left_child_value)) {
+                if (new RegExp("^[a-z]$").test(right_child_value)) {
                     // Find scope with the identifier
                     let scope_table_with_identifier: ScopeTableModel = this._get_scope_table_with_identifier(
                         right_child_value,
@@ -818,7 +835,10 @@ module NightingaleCompiler {
                     );// _code_gen_int_expression
 
                     // Load the X register with the sum of the integer expression
-                    this._compare_x_register_to_memory(memory_address_of_sum.temp_address_leading_hex, memory_address_of_sum.temp_address_trailing_hex);
+                    this._compare_x_register_to_memory(
+                        memory_address_of_sum.temp_address_leading_hex,
+                        memory_address_of_sum.temp_address_trailing_hex
+                    );// _compare_x_register_to_memory
 
                     // Won't need this later, free up memory
                     memory_address_of_sum.isUsable = true;

@@ -311,8 +311,6 @@ var NightingaleCompiler;
             let left_child = if_node.children_nodes[0];
             let block_node = if_node.children_nodes[1];
             let memory_address_of_boolean_result = null;
-            // Loads "t" into the x-regsiter
-            this._load_x_register_from_memory("00", this._current_program.get_true_address().toString(16).toUpperCase());
             // Boolean expression
             if (left_child.name === AST_NODE_NAME_BOOLEAN_EQUALS || left_child.name === AST_NODE_NAME_BOOLEAN_NOT_EQUALS) {
                 memory_address_of_boolean_result = this._code_gen_boolean_expression(if_node.children_nodes[0], current_scope_table); // _code_gen_boolean_expression
@@ -328,6 +326,8 @@ var NightingaleCompiler;
             else {
                 throw Error(`Code Gen If Expected [AST_NODE_NAME_BOOLEAN_EQUALS, AST_NODE_NAME_BOOLEAN_NOT_EQUALS, NODE_NAME_TRUE, NODE_NAME_FALSE] but got ${left_child.name}`);
             } // else if
+            // Loads true pointer into the x-regsiter
+            this._load_x_register_with_constant(this._current_program.get_true_address().toString(16).toUpperCase());
             this._compare_x_register_to_memory(memory_address_of_boolean_result.temp_address_leading_hex, memory_address_of_boolean_result.temp_address_trailing_hex); // _compare_x_register_to_memory
             // Branch distance is currently unknown
             if (this._current_static_table.get_jump_table_size() > 15) {
@@ -348,9 +348,7 @@ var NightingaleCompiler;
             let block_node = while_node.children_nodes[1];
             let memory_address_of_boolean_result = null;
             // Start location of while statement expression
-            let start = this._current_program.get_code_limit();
-            // Loads "t" into the x-regsiter
-            this._load_x_register_from_memory("00", this._current_program.get_true_address().toString(16).toUpperCase());
+            let while_start = this._current_program.get_code_limit();
             // Boolean expression
             if (left_child.name === AST_NODE_NAME_BOOLEAN_EQUALS || left_child.name === AST_NODE_NAME_BOOLEAN_NOT_EQUALS) {
                 memory_address_of_boolean_result = this._code_gen_boolean_expression(while_node.children_nodes[0], current_scope_table); // _code_gen_boolean_expression
@@ -366,6 +364,8 @@ var NightingaleCompiler;
             else {
                 throw Error(`Code Gen If Expected [AST_NODE_NAME_BOOLEAN_EQUALS, AST_NODE_NAME_BOOLEAN_NOT_EQUALS, NODE_NAME_TRUE, NODE_NAME_FALSE] but got ${left_child.name}`);
             } // else if
+            // Loads true pointer into the x-regsiter
+            this._load_x_register_with_constant(this._current_program.get_true_address().toString(16).toUpperCase());
             this._compare_x_register_to_memory(memory_address_of_boolean_result.temp_address_leading_hex, memory_address_of_boolean_result.temp_address_trailing_hex); // _compare_x_register_to_memory
             // Branch distance is currently unknown
             if (this._current_static_table.get_jump_table_size() > 15) {
@@ -375,16 +375,15 @@ var NightingaleCompiler;
             this._current_static_table.put_jump(temp_jump, new NightingaleCompiler.Jump(-1));
             this._branch_on_zero(temp_jump);
             // Start location of while statement expression
-            let jump_base = this._current_program.get_code_limit();
+            let jump_start = this._current_program.get_code_limit();
             // Contents of the while statement
             this._code_gen_block(block_node);
             // Force branch back to the conditional statement
-            let jump_distance = MAX_MEMORY_SIZE - (MAX_MEMORY_SIZE - start);
-            this._load_x_register_from_memory("00", this._current_program.get_false_address().toString(16).toUpperCase());
+            this._load_x_register_with_constant(this._current_program.get_false_address().toString(16).toUpperCase());
             this._compare_x_register_to_memory(memory_address_of_boolean_result.temp_address_leading_hex, memory_address_of_boolean_result.temp_address_trailing_hex); // _compare_x_register_to_memory
-            this._branch_on_zero(this._convert_decimal_to_one_byte_hex(jump_distance));
-            // Update jumpt table for later backpatching
-            this._current_static_table.get_jump(temp_jump).distance = this._current_program.get_code_limit() - jump_base;
+            this._branch_on_zero(this._convert_decimal_to_one_byte_hex(MAX_MEMORY_SIZE - this._current_program.get_code_limit() + while_start - 2));
+            // Update jump table for later backpatching
+            this._current_static_table.get_jump(temp_jump).distance = this._current_program.get_code_limit() - jump_start;
         } // _code_gen_while_statement
         /**
          * Recursively adds two two numbers of an integer expression.

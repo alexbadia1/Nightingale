@@ -1,7 +1,8 @@
 var NightingaleCompiler;
 (function (NightingaleCompiler) {
     class ProgramModel {
-        constructor() {
+        constructor(new_id) {
+            this._id = new_id;
             this.init();
         } // constructor
         init() {
@@ -32,6 +33,9 @@ var NightingaleCompiler;
             this.write_string_to_heap("true");
             this._true_address = this._heap_limit;
         } // init
+        get_id() {
+            return this._id;
+        } // get_id
         /**
          * Writes a hex pair to the code.
          *

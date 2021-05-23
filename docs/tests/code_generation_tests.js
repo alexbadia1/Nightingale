@@ -406,6 +406,21 @@ const CODE_GEN_STRING_POINTERS_TEST = `/* Sadly we're only working with 256 byte
 }
 $`;
 
+const CODE_GEN_IF_TEST = `/* If statement tests */
+{
+	/* Output: 4 4
+	int a
+	a = 3
+	int b
+	b = 4
+	a = b
+	print(a)
+	if (a== b) {
+		print(" ")
+		print(a)
+	}
+}$`;
+
 /**
  * Edge cases
  */

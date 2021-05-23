@@ -7,6 +7,7 @@ module NightingaleCompiler {
         private _warning_count: number;
 
         public programs: Array<ProgramModel>;
+        public invalid_programs: Array<number>;
         private _current_program: ProgramModel;
 
         public output: Array<Array<OutputConsoleMessage>>;
@@ -26,6 +27,7 @@ module NightingaleCompiler {
             // Keep track of code generated from programs
             // and the current program being used for code generation.
             this.programs = new Array<ProgramModel>();
+            this.invalid_programs = new Array<number>();
             this._current_program = null;
 
             // Keep track of each programs static tables
@@ -39,10 +41,6 @@ module NightingaleCompiler {
                 // New output array for each program
                 this.output.push(new Array<OutputConsoleMessage>());
                 this.verbose.push(new Array<OutputConsoleMessage>());
-                console.log("AST's received: ");
-                console.log(this._abstract_syntax_trees);
-                console.log("Invalid AST's by program id: ");
-                console.log(this._invalid_abstract_syntax_trees);
 
                 // Skips invalid semantic analyzed programs
                 if (!this._invalid_abstract_syntax_trees.includes(this._abstract_syntax_trees[astIndex].program)) {
@@ -56,26 +54,50 @@ module NightingaleCompiler {
                     );// this.output[astIndex].push
 
                     // Create a new image of the program
-                    this._current_program = new ProgramModel();
+                    this._current_program = new ProgramModel(this._abstract_syntax_trees[astIndex].program);
                     this.programs.push(this._current_program);
 
                     // Create a new static table
                     this._current_static_table = new StaticTableModel();
                     this.static_tables.push(this._current_static_table);
 
-                    // Keep track of strings already in the heap
-                    this._current_static_table.put_new_string("null", this._convert_decimal_to_one_byte_hex(this._current_program.get_null_address()));
-                    this._current_static_table.put_new_string("true", this._convert_decimal_to_one_byte_hex(this._current_program.get_true_address()));
-                    this._current_static_table.put_new_string("false", this._convert_decimal_to_one_byte_hex(this._current_program.get_false_address()));
+                    try {
+                        // Keep track of strings already in the heap
+                        this._current_static_table.put_new_string("null", this._convert_decimal_to_one_byte_hex(this._current_program.get_null_address()));
+                        this._current_static_table.put_new_string("true", this._convert_decimal_to_one_byte_hex(this._current_program.get_true_address()));
+                        this._current_static_table.put_new_string("false", this._convert_decimal_to_one_byte_hex(this._current_program.get_false_address()));
 
-                    // Traverse the valid AST, depth first in order, and generate code
-                    this.code_gen(this._abstract_syntax_trees[astIndex].root, this._abstract_syntax_trees[astIndex].scope_tree.root.getScopeTable());
+                        // Traverse the valid AST, depth first in order, and generate code
+                        this.code_gen(this._abstract_syntax_trees[astIndex].root, this._abstract_syntax_trees[astIndex].scope_tree.root.getScopeTable());
 
-                    // Teminate the program with a break, so the operating system doesn't read into the static area or heap!
-                    this._current_program.write_to_code("00");
+                        // Teminate the program with a break, so the operating system doesn't read into the static area or heap!
+                        this._current_program.write_to_code("00");
 
-                    // Back patch temp variables
-                    this._back_patch();
+                        // Back patch temp variables
+                        this._back_patch();
+                    }// try
+                    catch (error) {
+                        this._error_count++;
+
+                        this.output[this.output.length - 1].push(
+                            new OutputConsoleMessage(
+                                CODE_GENERATION,
+                                ERROR,
+                                error
+                            )// OutputConsoleMessage
+                        );// this.output[this.output.length - 1].push
+                        this.verbose[this.verbose.length - 1].push(
+                            new OutputConsoleMessage(
+                                CODE_GENERATION,
+                                ERROR,
+                                error
+                            )// OutputConsoleMessage
+                        );// this.verbose[this.output.length - 1].push
+
+                        if (!this.invalid_programs.includes(this._current_program.get_id())) {
+                            this.invalid_programs.push(this._current_program.get_id());
+                        }// if
+                    }// catch
 
                     this.programs.push(this._current_program);
 
@@ -189,9 +211,6 @@ module NightingaleCompiler {
                 current_scope_table = current_node.getScopeTable();
             }// if
 
-            console.log("Current Scope Table: ");
-            console.log(current_scope_table.entries());
-
             for (let i: number = 0; i < current_node.children_nodes.length; ++i) {
                 if (current_node.children_nodes[i].name === NODE_NAME_BLOCK) {
                     this._code_gen_block(current_node.children_nodes[i]);
@@ -235,7 +254,13 @@ module NightingaleCompiler {
 
             // Integers and boolean
             if (type === INT) {
-                console.log("Code generation for VarDecl(int)");
+                this.verbose[this.verbose.length - 1].push(
+                    new OutputConsoleMessage(
+                        CODE_GENERATION,
+                        INFO,
+                        `Code generation for integer value variable declaration`
+                    )// OutputConsoleMessage
+                );// this.verbose[this.output.length - 1].push
 
                 // Initialize the variable to zero and store it in memory,
                 // where the exact location is to be determined in backtracking.
@@ -243,7 +268,13 @@ module NightingaleCompiler {
             }// if 
 
             else if (type === BOOLEAN) {
-                console.log("Code generation for VarDecl(boolean)");
+                this.verbose[this.verbose.length - 1].push(
+                    new OutputConsoleMessage(
+                        CODE_GENERATION,
+                        INFO,
+                        `Code generation for boolean variable declaration`
+                    )// OutputConsoleMessage
+                );// this.verbose[this.output.length - 1].push
 
                 // Booleans get initialized to the string "false" in the heap
                 this._load_accumulator_with_constant(this._current_program.get_false_address().toString(16).toUpperCase());
@@ -251,7 +282,13 @@ module NightingaleCompiler {
 
             // Strings
             else if (type === STRING) {
-                console.log("Code generation for VarDecl(string)");
+                this.verbose[this.verbose.length - 1].push(
+                    new OutputConsoleMessage(
+                        CODE_GENERATION,
+                        INFO,
+                        `Code generation for string variable declaration`
+                    )// OutputConsoleMessage
+                );// this.verbose[this.output.length - 1].push
 
                 // Initialize strings to the string "null" in the heap
                 this._load_accumulator_with_constant(this._current_program.get_null_address().toString(16).toUpperCase());
@@ -282,7 +319,13 @@ module NightingaleCompiler {
 
             // Assigning to another identifier
             if (new RegExp("^[a-z]$").test(right_child_node_value)) {
-                console.log("Code generation for Assigment Statement(identifier) ");
+                this.verbose[this.verbose.length - 1].push(
+                    new OutputConsoleMessage(
+                        CODE_GENERATION,
+                        INFO,
+                        `Code generation for string assignment statement`
+                    )// OutputConsoleMessage
+                );// this.verbose[this.output.length - 1].push
 
                 // Find scope table with the identifier
                 let scope_table_with_right_identifier: ScopeTableModel = this._get_scope_table_with_identifier(
@@ -305,7 +348,13 @@ module NightingaleCompiler {
 
             // Integer
             else if (new RegExp("^[0-9]$").test(right_child_node_value)) {
-                console.log("Code generation for Assigment Statement(integer) ");
+                this.verbose[this.verbose.length - 1].push(
+                    new OutputConsoleMessage(
+                        CODE_GENERATION,
+                        INFO,
+                        `Code generation for integer assignment statement`
+                    )// OutputConsoleMessage
+                );// this.verbose[this.output.length - 1].push
 
                 // Load accumulator with right hand integer
                 this._load_accumulator_with_constant(this._convert_decimal_to_one_byte_hex(parseInt(right_child_node_value, 10)));
@@ -313,7 +362,13 @@ module NightingaleCompiler {
 
             // Value is a boolean false
             else if (new RegExp("^(false)$").test(right_child_node_value)) {
-                console.log("Code generation for Assigment Statement(false) ");
+                this.verbose[this.verbose.length - 1].push(
+                    new OutputConsoleMessage(
+                        CODE_GENERATION,
+                        INFO,
+                        `Code generation for boolean false assignment statement`
+                    )// OutputConsoleMessage
+                );// this.verbose[this.output.length - 1].push
 
                 // Load the accumulator with pointer to "false" in the heap
                 this._load_accumulator_with_constant(this._current_program.get_false_address().toString(16).toUpperCase());
@@ -321,7 +376,13 @@ module NightingaleCompiler {
 
             // Value is boolean true
             else if (new RegExp("^(true)$").test(right_child_node_value)) {
-                console.log("Code generation for Assigment Statement(true) ");
+                this.verbose[this.verbose.length - 1].push(
+                    new OutputConsoleMessage(
+                        CODE_GENERATION,
+                        INFO,
+                        `Code generation for boolean true assignment statement`
+                    )// OutputConsoleMessage
+                );// this.verbose[this.output.length - 1].push
 
                 // Load the accumulator with pointer to "true" in the heap
                 this._load_accumulator_with_constant(this._current_program.get_true_address().toString(16).toUpperCase());
@@ -329,7 +390,13 @@ module NightingaleCompiler {
 
             // String expression
             else if (right_child_node_value.startsWith("\"")) {
-                console.log("Code generation for Assigment Statement(string expr) ");
+                this.verbose[this.verbose.length - 1].push(
+                    new OutputConsoleMessage(
+                        CODE_GENERATION,
+                        INFO,
+                        `Code generation for string assignment statement`
+                    )// OutputConsoleMessage
+                );// this.verbose[this.output.length - 1].push
                 this._load_register_with_string_pointer(
                     right_child_node_value,
                     (hex_pair: string) => this._load_accumulator_with_constant(hex_pair)
@@ -338,7 +405,13 @@ module NightingaleCompiler {
 
             // Integer Expression
             else if (right_child_node_value === AST_NODE_NAME_INT_OP) {
-                console.log("Code generation for print(int expr) ");
+                this.verbose[this.verbose.length - 1].push(
+                    new OutputConsoleMessage(
+                        CODE_GENERATION,
+                        INFO,
+                        `Code generation for integer expression assignment statement`
+                    )// OutputConsoleMessage
+                );// this.verbose[this.output.length - 1].push
 
                 let memory_address_of_sum: StaticDataMetadata = this._code_gen_int_expression(
                     assignment_statement_node.children_nodes[1], 
@@ -354,7 +427,13 @@ module NightingaleCompiler {
 
             // Boolean expression
             else if (right_child_node_value === AST_NODE_NAME_BOOLEAN_EQUALS || right_child_node_value == AST_NODE_NAME_BOOLEAN_NOT_EQUALS) {
-                console.log("Code generation for print(boolean expr) ");
+                this.verbose[this.verbose.length - 1].push(
+                    new OutputConsoleMessage(
+                        CODE_GENERATION,
+                        INFO,
+                        `Code generation for boolean expression assignment statement`
+                    )// OutputConsoleMessage
+                );// this.verbose[this.output.length - 1].push
 
                 let memory_address_of_boolean_result: StaticDataMetadata = this._code_gen_boolean_expression(
                     assignment_statement_node.children_nodes[1],
@@ -391,7 +470,13 @@ module NightingaleCompiler {
             let value: string = print_node.children_nodes[0].name;
             // Value is an identifier
             if (new RegExp("^[a-z]$").test(value)) {
-                console.log("Code generation for print(identifier) ");
+                this.verbose[this.verbose.length - 1].push(
+                    new OutputConsoleMessage(
+                        CODE_GENERATION,
+                        INFO,
+                        `Code generation for print identifier`
+                    )// OutputConsoleMessage
+                );// this.verbose[this.output.length - 1].push
 
                 // Find scope with the identifier
                 let scope_table_with_identifier: ScopeTableModel = this._get_scope_table_with_identifier(value, current_scope_table);
@@ -428,7 +513,13 @@ module NightingaleCompiler {
 
             // Integer
             else if (new RegExp("^[0-9]$").test(value)) {
-                console.log("Code generation for print(integer) ");
+                this.verbose[this.verbose.length - 1].push(
+                    new OutputConsoleMessage(
+                        CODE_GENERATION,
+                        INFO,
+                        `Code generation for print integer`
+                    )// OutputConsoleMessage
+                );// this.verbose[this.output.length - 1].push
 
                 // Load constant to Y register
                 this._load_y_register_with_constant(this._convert_decimal_to_one_byte_hex(parseInt(value, 10)));
@@ -437,21 +528,39 @@ module NightingaleCompiler {
 
             // Value is a boolean false
             else if (new RegExp("^(false)$").test(value)) {
-                console.log("Code generation for print(false) ");
+                this.verbose[this.verbose.length - 1].push(
+                    new OutputConsoleMessage(
+                        CODE_GENERATION,
+                        INFO,
+                        `Code generation for print false`
+                    )// OutputConsoleMessage
+                );// this.verbose[this.output.length - 1].push
                 this._load_y_register_with_constant(this._current_program.get_false_address().toString(16).toUpperCase());
                 this._load_x_register_with_constant("02");
             }// else-if
 
             // Value is boolean true
             else if (new RegExp("^(true)$").test(value)) {
-                console.log("Code generation for print(true) ");
+                this.verbose[this.verbose.length - 1].push(
+                    new OutputConsoleMessage(
+                        CODE_GENERATION,
+                        INFO,
+                        `Code generation for print true`
+                    )// OutputConsoleMessage
+                );// this.verbose[this.output.length - 1].push
                 this._load_y_register_with_constant(this._current_program.get_true_address().toString(16).toUpperCase());
                 this._load_x_register_with_constant("02");
             }// else-if
 
             // String expression
             else if (value.startsWith("\"")) {
-                console.log("Code generation for print(string expr) ");
+                this.verbose[this.verbose.length - 1].push(
+                    new OutputConsoleMessage(
+                        CODE_GENERATION,
+                        INFO,
+                        `Code generation for print string expression`
+                    )// OutputConsoleMessage
+                );// this.verbose[this.output.length - 1].push
                 this._load_register_with_string_pointer(
                     value,
                     (hex_pair: string) => this._load_y_register_with_constant(hex_pair)
@@ -462,7 +571,13 @@ module NightingaleCompiler {
 
             // Integer Expression
             else if (value === AST_NODE_NAME_INT_OP) {
-                console.log("Code generation for print(int expr) ");
+                this.verbose[this.verbose.length - 1].push(
+                    new OutputConsoleMessage(
+                        CODE_GENERATION,
+                        INFO,
+                        `Code generation for print integer expression`
+                    )// OutputConsoleMessage
+                );// this.verbose[this.output.length - 1].push
 
                 let memory_address_of_sum: StaticDataMetadata = this._code_gen_int_expression(print_node.children_nodes[0], null, current_scope_table);
 
@@ -475,7 +590,13 @@ module NightingaleCompiler {
 
             // Boolean expression
             else if (value === AST_NODE_NAME_BOOLEAN_EQUALS || value == AST_NODE_NAME_BOOLEAN_NOT_EQUALS) {
-                console.log("Code generation for print(boolean expr) ");
+                this.verbose[this.verbose.length - 1].push(
+                    new OutputConsoleMessage(
+                        CODE_GENERATION,
+                        INFO,
+                        `Code generation for print boolean expression`
+                    )// OutputConsoleMessage
+                );// this.verbose[this.output.length - 1].push
                 let memory_address_of_boolean_result: StaticDataMetadata = this._code_gen_boolean_expression(print_node.children_nodes[0], current_scope_table);
 
                 // Load the Y register with the sum of the integer expression
@@ -503,6 +624,13 @@ module NightingaleCompiler {
 
             // Boolean expression
             if (left_child.name === AST_NODE_NAME_BOOLEAN_EQUALS || left_child.name === AST_NODE_NAME_BOOLEAN_NOT_EQUALS) {
+                this.verbose[this.verbose.length - 1].push(
+                    new OutputConsoleMessage(
+                        CODE_GENERATION,
+                        INFO,
+                        `Code generation for if statement boolean expression`
+                    )// OutputConsoleMessage
+                );// this.verbose[this.output.length - 1].push
                 memory_address_of_boolean_result = this._code_gen_boolean_expression(
                     if_node.children_nodes[0], 
                     current_scope_table
@@ -511,11 +639,25 @@ module NightingaleCompiler {
 
             // true
             else if (left_child.name === NODE_NAME_TRUE) {
+                this.verbose[this.verbose.length - 1].push(
+                    new OutputConsoleMessage(
+                        CODE_GENERATION,
+                        INFO,
+                        `Code generation for if statement true`
+                    )// OutputConsoleMessage
+                );// this.verbose[this.output.length - 1].push
                 memory_address_of_boolean_result = new StaticDataMetadata("00", this._current_program.get_true_address().toString(16).toUpperCase(), -1);
             }// if
 
             // false
             else if (left_child.name === NODE_NAME_FALSE) {
+                this.verbose[this.verbose.length - 1].push(
+                    new OutputConsoleMessage(
+                        CODE_GENERATION,
+                        INFO,
+                        `Code generation for if statement false`
+                    )// OutputConsoleMessage
+                );// this.verbose[this.output.length - 1].push
                 memory_address_of_boolean_result = new StaticDataMetadata("00", this._current_program.get_false_address().toString(16).toUpperCase(), -1);
             }// else if
 
@@ -559,6 +701,13 @@ module NightingaleCompiler {
 
             // Boolean expression
             if (left_child.name === AST_NODE_NAME_BOOLEAN_EQUALS || left_child.name === AST_NODE_NAME_BOOLEAN_NOT_EQUALS) {
+                this.verbose[this.verbose.length - 1].push(
+                    new OutputConsoleMessage(
+                        CODE_GENERATION,
+                        INFO,
+                        `Code generation for while statement boolean expression`
+                    )// OutputConsoleMessage
+                );// this.verbose[this.output.length - 1].push
                 memory_address_of_boolean_result = this._code_gen_boolean_expression(
                     while_node.children_nodes[0], 
                     current_scope_table
@@ -567,11 +716,25 @@ module NightingaleCompiler {
 
             // true
             else if (left_child.name === NODE_NAME_TRUE) {
+                this.verbose[this.verbose.length - 1].push(
+                    new OutputConsoleMessage(
+                        CODE_GENERATION,
+                        INFO,
+                        `Code generation for while statement true`
+                    )// OutputConsoleMessage
+                );// this.verbose[this.output.length - 1].push
                 memory_address_of_boolean_result = new StaticDataMetadata("00", this._current_program.get_true_address().toString(16).toUpperCase(), -1);
             }// if
 
             // false
             else if (left_child.name === NODE_NAME_FALSE) {
+                this.verbose[this.verbose.length - 1].push(
+                    new OutputConsoleMessage(
+                        CODE_GENERATION,
+                        INFO,
+                        `Code generation for while statement false`
+                    )// OutputConsoleMessage
+                );// this.verbose[this.output.length - 1].push
                 memory_address_of_boolean_result = new StaticDataMetadata("00", this._current_program.get_false_address().toString(16).toUpperCase(), -1);
             }// else if
 
@@ -707,31 +870,26 @@ module NightingaleCompiler {
             // left and right node are two comparable values
             if (![AST_NODE_NAME_BOOLEAN_EQUALS, AST_NODE_NAME_BOOLEAN_NOT_EQUALS].includes(left_node_val)
                 && ![AST_NODE_NAME_BOOLEAN_EQUALS, AST_NODE_NAME_BOOLEAN_NOT_EQUALS].includes(boolean_expression_node.children_nodes[1].name)) {
-                    console.log(`Boolean expression left child and right child are two comparable values!`);
                 return this._code_gen_boolean_comparison(boolean_expression_node, current_scope_table);
             }// if
 
             // Go down as far left as possible
             if ([AST_NODE_NAME_BOOLEAN_EQUALS, AST_NODE_NAME_BOOLEAN_NOT_EQUALS].includes(left_node_val)) {
-                console.log(`Traversing to left boolean expression node [${left_node_val}]`);
                 left_result = this._code_gen_boolean_expression(boolean_expression_node.children_nodes[0], current_scope_table);
             }// if
 
             // Store single value in memory
             else {
-                console.log(`Boolean expression node left child is a value [${left_node_val}]`);
                 left_result = this._store_single_value_in_memory(left_node_val, boolean_expression_node.children_nodes[0], current_scope_table);
             }// else
 
             // Go down as far right as possible
             if ([AST_NODE_NAME_BOOLEAN_EQUALS, AST_NODE_NAME_BOOLEAN_NOT_EQUALS].includes(right_node_val)) {
-                console.log(`Traversing to right boolean expression node [${right_node_val}]`);
                 right_result = this._code_gen_boolean_expression(boolean_expression_node.children_nodes[1], current_scope_table);
             }// if
 
             // Store single value in memory
             else {
-                console.log(`Boolean expression node right child is a value [${right_node_val}]`);
                 right_result = this._store_single_value_in_memory(right_node_val, boolean_expression_node.children_nodes[1], current_scope_table);
             }// else
 
@@ -777,8 +935,6 @@ module NightingaleCompiler {
         private _code_gen_boolean_comparison(boolean_expression_node: Node, current_scope_table): StaticDataMetadata {
             let left_child_value: string = boolean_expression_node.children_nodes[0].name;
             let right_child_value: string = boolean_expression_node.children_nodes[1].name;
-            console.log(`Left child: ${left_child_value}`);
-            console.log(`Right child: ${right_child_value}`);
 
             // Left child is not an expression
             if (left_child_value !== AST_NODE_NAME_BOOLEAN_EQUALS || left_child_value !== AST_NODE_NAME_BOOLEAN_NOT_EQUALS) {
@@ -1104,15 +1260,26 @@ module NightingaleCompiler {
             this._current_program.initialize_stack();
 
             // Back patch all identifiers using the static area
-            console.log(`Back patching identifiers...`);
+            this.verbose[this.verbose.length - 1].push(
+                new OutputConsoleMessage(
+                    CODE_GENERATION,
+                    INFO,
+                    `Back patching identifiers...`
+                )// OutputConsoleMessage
+            );// this.verbose[this.output.length - 1].push
             for (let identifier_metadata of this._current_static_table.values()) {
 
                 // Convert the logical stack address to a physical address in memory
                 let physical_address: string = (this._current_program.get_stack_base() + identifier_metadata.logical_stack_address).toString(16).toUpperCase().padStart(4, "0");
                 let leading_hex_byte: string = physical_address.substring(0, 2);
                 let trailing_hex_byte: string = physical_address.substring(2, 4);
-
-                console.log(`Identifier [${identifier_metadata.temp_address_leading_hex} ${identifier_metadata.temp_address_trailing_hex}] patched with [${physical_address}].`);
+                this.verbose[this.verbose.length - 1].push(
+                    new OutputConsoleMessage(
+                        CODE_GENERATION,
+                        INFO,
+                        `Identifier [${identifier_metadata.temp_address_leading_hex} ${identifier_metadata.temp_address_trailing_hex}] patched with [${physical_address}].`
+                    )// OutputConsoleMessage
+                );// this.verbose[this.output.length - 1].push
 
                 // Search for occurences of the temp address in the code area to backpatch
                 for (let logical_address: number = 0; logical_address < this._current_program.get_code_area_size(); ++logical_address) {
@@ -1143,14 +1310,26 @@ module NightingaleCompiler {
             }// for
 
             // Back patch anonymous address
-            console.log(`Back patching anonymous addresses...`);
+            this.verbose[this.verbose.length - 1].push(
+                new OutputConsoleMessage(
+                    CODE_GENERATION,
+                    INFO,
+                    `Backpatching anonynmous addresses...`
+                )// OutputConsoleMessage
+            );// this.verbose[this.output.length - 1].push
             for (let temp_anonymous_address of this._current_static_table.get_anonymous_addresses()) {
                 // Convert the logical stack address to a physical address in memory
                 let physical_address: string = (this._current_program.get_stack_base() + temp_anonymous_address.logical_stack_address).toString(16).toUpperCase().padStart(4, "0");
                 let leading_hex_byte: string = physical_address.substring(0, 2);
                 let trailing_hex_byte: string = physical_address.substring(2, 4);
+                this.verbose[this.verbose.length - 1].push(
+                    new OutputConsoleMessage(
+                        CODE_GENERATION,
+                        INFO,
+                        `Anonymous address [${temp_anonymous_address.temp_address_leading_hex} ${temp_anonymous_address.temp_address_trailing_hex}] patched with [${physical_address}].`
+                    )// OutputConsoleMessage
+                );// this.verbose[this.output.length - 1].push
 
-                console.log(`Anonymous address [${temp_anonymous_address.temp_address_leading_hex} ${temp_anonymous_address.temp_address_trailing_hex}] patched with [${physical_address}].`);
                 // Search for occurences of the temp address in the code area to backpatch
                 for (let logical_address: number = 0; logical_address < this._current_program.get_code_area_size(); ++logical_address) {
 
@@ -1180,6 +1359,13 @@ module NightingaleCompiler {
             }// for
 
             // Iterate through executable image and backpatch jumps
+            this.verbose[this.verbose.length - 1].push(
+                new OutputConsoleMessage(
+                    CODE_GENERATION,
+                    INFO,
+                    `Backpatching jumps...`
+                )// OutputConsoleMessage
+            );// this.verbose[this.output.length - 1].push
             for (let logical_address: number = 0; logical_address < this._current_program.get_code_area_size(); ++logical_address) {
                 let curr_hex_byte: string = this._current_program.read_code_area(logical_address);
                 let curr_jump: Jump = this._current_static_table.get_jump(curr_hex_byte);
@@ -1187,7 +1373,13 @@ module NightingaleCompiler {
                 // Found a jump to back patch
                 if (curr_jump !== null) {
                     // Back patch jumps
-                    console.log(`Jump [${curr_hex_byte}] patched with [${curr_jump.distance.toString(16).toUpperCase().padStart(2, "0")}].`);
+                    this.verbose[this.verbose.length - 1].push(
+                        new OutputConsoleMessage(
+                            CODE_GENERATION,
+                            INFO,
+                            `Jump [${curr_hex_byte}] patched with [${curr_jump.distance.toString(16).toUpperCase().padStart(2, "0")}].`
+                        )// OutputConsoleMessage
+                    );// this.verbose[this.output.length - 1].push
                     this._current_program.write_to_code(curr_jump.distance.toString(16).toUpperCase().padStart(2, "0"), logical_address);
                 }// if
             }// for
@@ -1201,7 +1393,13 @@ module NightingaleCompiler {
         private _get_anonymous_address(): StaticDataMetadata {
             for (let temp_anonymous_address of this._current_static_table.get_anonymous_addresses()) {
                 if (temp_anonymous_address.isUsable === true) {
-                    console.log(`Reusing memory location: ${temp_anonymous_address.temp_address_leading_hex, temp_anonymous_address.temp_address_trailing_hex}`);
+                    this.verbose[this.verbose.length - 1].push(
+                        new OutputConsoleMessage(
+                            CODE_GENERATION,
+                            INFO,
+                            `Reusing memory location: ${temp_anonymous_address.temp_address_leading_hex, temp_anonymous_address.temp_address_trailing_hex}`
+                        )// OutputConsoleMessage
+                    );// this.verbose[this.output.length - 1].push
                     temp_anonymous_address.isUsable = false;
                     return temp_anonymous_address;
                 }// if
@@ -1289,14 +1487,12 @@ module NightingaleCompiler {
 
             // String already exists in the heap, point to it instead of making a new entry.
             if (string_in_heap_address !== null) {
-                console.log(`Found heap instance of ${str} at ${string_in_heap_address}!`);
                 load_register_callback(string_in_heap_address);
                 return string_in_heap_address;
             }// if
 
             // Make new entry in heap for new string
             else {
-                console.log(`No heap instance of ${str}, making new entry!`);
                 let string_start_address: string = this._current_program.write_string_to_heap(str);
                 this._current_static_table.put_new_string(str, string_start_address);
                 load_register_callback(string_start_address);
@@ -1315,7 +1511,13 @@ module NightingaleCompiler {
                 throw Error(`Program static area is not big enough to support LDA [${hex_pair_constant}]!`);
             }// if
 
-            console.log(`LDA [${hex_pair_constant}]`);
+            this.verbose[this.verbose.length - 1].push(
+                new OutputConsoleMessage(
+                    CODE_GENERATION,
+                    INFO,
+                    `LDA [${hex_pair_constant}]`
+                )// OutputConsoleMessage
+            );// this.verbose[this.output.length - 1].push
             this._current_program.write_to_code("A9");
             this._current_program.write_to_code(hex_pair_constant);
         }// loadAccumulatorWithConstant
@@ -1332,8 +1534,13 @@ module NightingaleCompiler {
                 throw Error(`Program static area is not big enough to support LDA [${leading_hex_pair} ${trailing_hex_pair}]!`);
             }// if
 
-            console.log(`LDA [${leading_hex_pair} ${trailing_hex_pair}]`);
-
+            this.verbose[this.verbose.length - 1].push(
+                new OutputConsoleMessage(
+                    CODE_GENERATION,
+                    INFO,
+                    `LDA [${leading_hex_pair} ${trailing_hex_pair}]`
+                )// OutputConsoleMessage
+            );// this.verbose[this.output.length - 1].push
             this._current_program.write_to_code("AD");
 
             // Remember to reverse the order, as this used to be 
@@ -1354,10 +1561,15 @@ module NightingaleCompiler {
                 throw Error(`Program static area is not big enough to support STA [${leading_hex_pair} ${trailing_hex_pair}]!`);
             }// if
 
-            console.log(`STA [${leading_hex_pair} ${trailing_hex_pair}]`);
+            this.verbose[this.verbose.length - 1].push(
+                new OutputConsoleMessage(
+                    CODE_GENERATION,
+                    INFO,
+                    `STA [${leading_hex_pair} ${trailing_hex_pair}]`
+                )// OutputConsoleMessage
+            );// this.verbose[this.output.length - 1].push
 
             this._current_program.write_to_code("8D");
-
             // Remember to reverse the order, as this used to be 
             // an optimaztion for direct addressing in the old 6502a days.
             this._current_program.write_to_code(trailing_hex_pair);
@@ -1377,7 +1589,13 @@ module NightingaleCompiler {
                 throw Error(`Program static area is not big enough to support ADC [${leading_hex_pair} ${trailing_hex_pair}]!`);
             }// if
 
-            console.log(`ADC [${leading_hex_pair} ${trailing_hex_pair}]`);
+            this.verbose[this.verbose.length - 1].push(
+                new OutputConsoleMessage(
+                    CODE_GENERATION,
+                    INFO,
+                    `ADC [${leading_hex_pair} ${trailing_hex_pair}]`
+                )// OutputConsoleMessage
+            );// this.verbose[this.output.length - 1].push
             this._current_program.write_to_code("6D");
 
             // Remember to reverse the order, as this used to be 
@@ -1397,8 +1615,13 @@ module NightingaleCompiler {
                 throw Error(`Program static area is not big enough to support LDX [${hex_pair_constant}]!`);
             }// if
 
-            console.log(`LDX [${hex_pair_constant}]`);
-
+            this.verbose[this.verbose.length - 1].push(
+                new OutputConsoleMessage(
+                    CODE_GENERATION,
+                    INFO,
+                    `LDX [${hex_pair_constant}]`
+                )// OutputConsoleMessage
+            );// this.verbose[this.output.length - 1].push
             this._current_program.write_to_code("A2");
             this._current_program.write_to_code(hex_pair_constant);
         }// load_x_register_with_constant
@@ -1415,8 +1638,13 @@ module NightingaleCompiler {
                 throw Error(`Program static area is not big enough to support LDX [${leading_hex_pair} ${trailing_hex_pair}]!`);
             }// if
 
-            console.log(`LDX [${leading_hex_pair} ${trailing_hex_pair}]`);
-
+            this.verbose[this.verbose.length - 1].push(
+                new OutputConsoleMessage(
+                    CODE_GENERATION,
+                    INFO,
+                    `LDX [${leading_hex_pair} ${trailing_hex_pair}]`
+                )// OutputConsoleMessage
+            );// this.verbose[this.output.length - 1].push
             this._current_program.write_to_code("AE");
 
             // Remember to reverse the order, as this used to be 
@@ -1436,7 +1664,13 @@ module NightingaleCompiler {
                 throw Error(`Program static area is not big enough to support LDY [${hex_pair_constant}]!`);
             }// if
 
-            console.log(`LDY [${hex_pair_constant}]`);
+            this.verbose[this.verbose.length - 1].push(
+                new OutputConsoleMessage(
+                    CODE_GENERATION,
+                    INFO,
+                    `LDY [${hex_pair_constant}]`
+                )// OutputConsoleMessage
+            );// this.verbose[this.output.length - 1].push
             this._current_program.write_to_code("A0");
             this._current_program.write_to_code(hex_pair_constant);
         }// _load_y_register_with_constant
@@ -1452,9 +1686,13 @@ module NightingaleCompiler {
             if (this._current_static_table.size() - this._current_static_table.get_number_of_anonymous_address() >= max_static_area_size) {
                 throw Error(`Program static area is not big enough to support LDY [${leading_hex_pair} ${trailing_hex_pair}]!`);
             }// if
-
-            console.log(`LDY [${leading_hex_pair} ${trailing_hex_pair}]`);
-
+            this.verbose[this.verbose.length - 1].push(
+                new OutputConsoleMessage(
+                    CODE_GENERATION,
+                    INFO,
+                    `LDY [${leading_hex_pair} ${trailing_hex_pair}]`
+                )// OutputConsoleMessage
+            );// this.verbose[this.output.length - 1].push
             this._current_program.write_to_code("AC");
 
             // Remember to reverse the order, as this used to be 
@@ -1476,8 +1714,13 @@ module NightingaleCompiler {
                 throw Error(`Program static area is not big enough to support CPX [${leading_hex_pair} ${trailing_hex_pair}]!`);
             }// if
 
-            console.log(`CPX [${leading_hex_pair} ${trailing_hex_pair}]`);
-
+            this.verbose[this.verbose.length - 1].push(
+                new OutputConsoleMessage(
+                    CODE_GENERATION,
+                    INFO,
+                    `CPX [${leading_hex_pair} ${trailing_hex_pair}]`
+                )// OutputConsoleMessage
+            );// this.verbose[this.output.length - 1].push
             this._current_program.write_to_code("EC");
 
             // Remember to reverse the order, as this used to be 
@@ -1497,7 +1740,13 @@ module NightingaleCompiler {
                 throw Error(`Program static area is not big enough to support BNE [${hex_pair}]!`);
             }// if
 
-            console.log(`BNE [${hex_pair}]`);
+            this.verbose[this.verbose.length - 1].push(
+                new OutputConsoleMessage(
+                    CODE_GENERATION,
+                    INFO,
+                    `BNE [${hex_pair}]`
+                )// OutputConsoleMessage
+            );// this.verbose[this.output.length - 1].push
             this._current_program.write_to_code("D0");
 
             // Bytes to skip
@@ -1510,10 +1759,16 @@ module NightingaleCompiler {
         private system_call(): void {
             let max_static_area_size = this._current_program.get_heap_limit() - this._current_program.get_code_limit() - 1;
             if (this._current_static_table.size() - this._current_static_table.get_number_of_anonymous_address() >= max_static_area_size) {
-                throw Error(`Program static area is not big enough to support SYS Call [FF]!`);
+                throw Error(`Program static area is not big enough to support SYS CALL [FF]!`);
             }// if
 
-            console.log(`SYS Call`);
+            this.verbose[this.verbose.length - 1].push(
+                new OutputConsoleMessage(
+                    CODE_GENERATION,
+                    INFO,
+                    `SYS CALL`
+                )// OutputConsoleMessage
+            );// this.verbose[this.output.length - 1].push
             this._current_program.write_to_code("FF");
         }// system_call
     }//class

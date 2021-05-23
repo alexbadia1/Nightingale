@@ -12,7 +12,7 @@
 var NightingaleCompiler;
 (function (NightingaleCompiler) {
     class OutputConsoleModel {
-        constructor(lexer_output, cst_controller, ast_controller, scope_tree_controller, parser_output, semantic_output, invalid_parsed_programs) {
+        constructor(lexer_output, cst_controller, ast_controller, scope_tree_controller, parser_output, semantic_output, invalid_parsed_programs, code_gen_output, code_gen_programs, code_gen_invalid_programs) {
             this.lexer_output = lexer_output;
             this.cst_controller = cst_controller;
             this.ast_controller = ast_controller;
@@ -20,6 +20,9 @@ var NightingaleCompiler;
             this.parser_output = parser_output;
             this.semantic_output = semantic_output;
             this.invalid_parsed_programs = invalid_parsed_programs;
+            this.code_gen_output = code_gen_output;
+            this.code_gen_programs = code_gen_programs;
+            this.code_gen_invalid_programs = code_gen_invalid_programs;
             this.show_output();
         } // constuctor
         show_output() {
@@ -149,6 +152,70 @@ var NightingaleCompiler;
                         this.ast_controller.add_tree_to_gui(ast_output, program_number);
                         this.scope_tree_controller.add_tree_to_output_console(output_console, program_number);
                         this.scope_tree_controller.add_tree_to_gui(scope_tree_output, program_number);
+                    } // if
+                } // if
+                // Code generation output
+                if (this.code_gen_output[program_number] !== null || this.code_gen_output[program_number] !== null) {
+                    for (let i = 0; i < this.code_gen_output[program_number].length; ++i) {
+                        let listItem = document.createElement("li");
+                        listItem.className = `token_${i}`;
+                        listItem.style.listStyle = "none";
+                        listItem.style.fontSize = "1rem";
+                        listItem.style.marginLeft = "15px";
+                        listItem.style.color = "white";
+                        if (i == 0) {
+                            listItem.style.marginTop = "15px";
+                        } // if
+                        if (this.code_gen_output[program_number][i].type == INFO) {
+                            listItem.innerHTML =
+                                `${this.code_gen_output[program_number][i].source} `
+                                    + `<span  style = "color: white;">${this.code_gen_output[program_number][i].type}</span>`
+                                    + ` - ${this.code_gen_output[program_number][i].message}`;
+                        } // if
+                        else if (this.code_gen_output[program_number][i].type == WARNING) {
+                            listItem.innerHTML =
+                                `${this.code_gen_output[program_number][i].source} `
+                                    + `<span  style = "color: yellow;">${this.code_gen_output[program_number][i].type}</span>`
+                                    + ` - ${this.code_gen_output[program_number][i].message}`;
+                        } // else-if
+                        else if (this.code_gen_output[program_number][i].type == ERROR) {
+                            listItem.innerHTML =
+                                `${this.code_gen_output[program_number][i].source} `
+                                    + `<span  style = "color: red;">${this.code_gen_output[program_number][i].type}</span>`
+                                    + ` - ${this.code_gen_output[program_number][i].message}`;
+                        } // else-if
+                        output_console.appendChild(listItem);
+                    } // for: add new children
+                    // Program exectuable images
+                    if (this.code_gen_programs[program_number] !== undefined && this.code_gen_programs[program_number] !== null) {
+                        if (!this.code_gen_invalid_programs.includes(this.code_gen_programs[program_number].get_id())) {
+                            let header = document.createElement("li");
+                            header.style.width = "35%";
+                            header.style.overflowWrap = "normal";
+                            header.style.listStyle = "none";
+                            header.style.fontSize = "1rem";
+                            header.style.marginTop = "15px";
+                            header.style.marginLeft = "15px";
+                            header.style.color = "white";
+                            header.innerHTML = `Program ${this.code_gen_programs[program_number].get_id() + 1} Executable Image`;
+                            output_console.appendChild(header);
+                            let divider = document.createElement("li");
+                            divider.style.listStyle = "none";
+                            divider.style.fontSize = "1rem";
+                            divider.style.marginLeft = "15px";
+                            divider.style.color = "white";
+                            divider.innerHTML += `----------------------------------------------------------------------------------`;
+                            output_console.appendChild(divider);
+                            let listItem = document.createElement("li");
+                            listItem.style.width = "35%";
+                            listItem.style.overflowWrap = "normal";
+                            listItem.style.listStyle = "none";
+                            listItem.style.fontSize = "1rem";
+                            listItem.style.marginLeft = "15px";
+                            listItem.style.color = "white";
+                            listItem.innerHTML = this.code_gen_programs[program_number].memory();
+                            output_console.appendChild(listItem);
+                        } // if
                     } // if
                 } // if
             } // for: each program

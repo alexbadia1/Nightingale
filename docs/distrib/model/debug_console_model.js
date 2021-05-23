@@ -12,10 +12,11 @@
 var NightingaleCompiler;
 (function (NightingaleCompiler) {
     class DebugConsoleModel {
-        constructor(debugTokens, parserDebug, semanticVerbose) {
+        constructor(debugTokens, parserDebug, semanticVerbose, codeGenVerbose) {
             this.debugTokens = debugTokens;
             this.parserDebug = parserDebug;
             this.semanticVerbose = semanticVerbose;
+            this.codeGenVerbose = codeGenVerbose;
             this.isInString = false;
             this.heartFaceEmojii = `<svg xmlns="http://www.w3.org/2000/svg" width="1.5rem" height="1.5rem" fill="green" class="bi bi-play-fill" viewBox="0 0 16 16">
             <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zM4.756 4.566c.763-1.424 4.02-.12.952 3.434-4.496-1.596-2.35-4.298-.952-3.434zm6.559 5.448a.5.5 0 0 1 .548.736A4.498 4.498 0 0 1 7.965 13a4.498 4.498 0 0 1-3.898-2.25.5.5 0 0 1 .548-.736h.005l.017.005.067.015.252.055c.215.046.515.108.857.169.693.124 1.522.242 2.152.242.63 0 1.46-.118 2.152-.242a26.58 26.58 0 0 0 1.109-.224l.067-.015.017-.004.005-.002zm-.07-5.448c1.397-.864 3.543 1.838-.953 3.434-3.067-3.554.19-4.858.952-3.434z" /> </svg>`;
@@ -146,6 +147,7 @@ var NightingaleCompiler;
                     debugConsoleList.appendChild(listItem);
                 } // for
             } // for
+            // Semantic Analysis
             for (var semanticProgramNumber = 0; semanticProgramNumber < this.semanticVerbose.length; ++semanticProgramNumber) {
                 // Stops showing the extra last program
                 if (this.semanticVerbose[semanticProgramNumber].length === undefined || this.semanticVerbose[semanticProgramNumber].length === null || this.semanticVerbose[semanticProgramNumber].length === 0) {
@@ -164,6 +166,28 @@ var NightingaleCompiler;
                     listItem.style.margin = "0px 15px 3px 15px";
                     listItem.className = `semantic_message_${indexOfMessage}`;
                     listItem.innerHTML += `<span style = "font-size: 1rem; color: white;">${this.semanticVerbose[semanticProgramNumber][indexOfMessage].message}</span>`;
+                    debugConsoleList.appendChild(listItem);
+                } // for
+            } // for
+            // Code Generation
+            for (var codegenNumber = 0; codegenNumber < this.codeGenVerbose.length; ++codegenNumber) {
+                // Stops showing the extra last program
+                if (this.codeGenVerbose[codegenNumber].length === undefined || this.codeGenVerbose[codegenNumber].length === null || this.codeGenVerbose[codegenNumber].length === 0) {
+                    continue;
+                } // if
+                // Show semantic analysis in batches
+                let sematicHeader = document.createElement("a");
+                sematicHeader.style.margin = "15px 0px 5px 17px";
+                sematicHeader.className = `semantic_program_${codegenNumber}`;
+                sematicHeader.innerHTML = `<span style = "font-size: 1rem; color: white;">Semantic Analysis ${codegenNumber + 1}</span>`;
+                debugConsoleList.appendChild(sematicHeader);
+                // Add All tokens consumed in PARSE and their validity
+                for (let indexOfMessage = 0; indexOfMessage < this.codeGenVerbose[codegenNumber].length; ++indexOfMessage) {
+                    let listItem = document.createElement("a");
+                    listItem.className = `semantic_message_${indexOfMessage}`;
+                    listItem.style.margin = "0px 15px 3px 15px";
+                    listItem.className = `semantic_message_${indexOfMessage}`;
+                    listItem.innerHTML += `<span style = "font-size: 1rem; color: white;">${this.codeGenVerbose[codegenNumber][indexOfMessage].message}</span>`;
                     debugConsoleList.appendChild(listItem);
                 } // for
             } // for

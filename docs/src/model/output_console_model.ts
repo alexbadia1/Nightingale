@@ -20,6 +20,9 @@ module NightingaleCompiler {
             public parser_output: Array<Array<OutputConsoleMessage>>,
             public semantic_output: Array<Array<OutputConsoleMessage>>,
             public invalid_parsed_programs: Array<number>,
+            public code_gen_output: Array<Array<OutputConsoleMessage>>,
+            public code_gen_programs: Array<ProgramModel>,
+            public code_gen_invalid_programs: Array<number>,
         ) {
             this.show_output();
         }// constuctor
@@ -180,6 +183,80 @@ module NightingaleCompiler {
                     }// if
                 }// if
 
+
+                // Code generation output
+                if (this.code_gen_output[program_number] !== null || this.code_gen_output[program_number] !== null) {
+                    for (let i: number = 0; i < this.code_gen_output[program_number].length; ++i) {
+                        let listItem: HTMLLIElement = document.createElement("li");
+                        listItem.className = `token_${i}`;
+                        listItem.style.listStyle = "none";
+                        listItem.style.fontSize = "1rem";
+                        listItem.style.marginLeft = "15px";
+                        listItem.style.color = "white";
+
+                        if (i == 0) {
+                            listItem.style.marginTop = "15px";
+                        }// if
+
+                        if (this.code_gen_output[program_number][i].type == INFO) {
+                            listItem.innerHTML =
+                                `${this.code_gen_output[program_number][i].source} `
+                                + `<span  style = "color: white;">${this.code_gen_output[program_number][i].type}</span>`
+                                + ` - ${this.code_gen_output[program_number][i].message}`;
+                        }// if
+
+                        else if (this.code_gen_output[program_number][i].type == WARNING) {
+                            listItem.innerHTML =
+                                `${this.code_gen_output[program_number][i].source} `
+                                + `<span  style = "color: yellow;">${this.code_gen_output[program_number][i].type}</span>`
+                                + ` - ${this.code_gen_output[program_number][i].message}`;
+                        }// else-if
+
+                        else if (this.code_gen_output[program_number][i].type == ERROR) {
+                            listItem.innerHTML =
+                                `${this.code_gen_output[program_number][i].source} `
+                                + `<span  style = "color: red;">${this.code_gen_output[program_number][i].type}</span>`
+                                + ` - ${this.code_gen_output[program_number][i].message}`;
+                        }// else-if
+
+                        output_console.appendChild(listItem);
+                    }// for: add new children
+
+                    // Program exectuable images
+                    if (this.code_gen_programs[program_number] !== undefined && this.code_gen_programs[program_number] !== null) {
+                        if (!this.code_gen_invalid_programs.includes(this.code_gen_programs[program_number].get_id())) {
+
+                            let header: HTMLLIElement = document.createElement("li");
+                            header.style.width = "35%";
+                            header.style.overflowWrap = "normal"
+                            header.style.listStyle = "none";
+                            header.style.fontSize = "1rem";
+                            header.style.marginTop = "15px";
+                            header.style.marginLeft = "15px";
+                            header.style.color = "white";
+                            header.innerHTML = `Program ${this.code_gen_programs[program_number].get_id() + 1} Executable Image`;
+                            output_console.appendChild(header);
+
+                            let divider: HTMLLIElement = document.createElement("li");
+                            divider.style.listStyle = "none";
+                            divider.style.fontSize = "1rem";
+                            divider.style.marginLeft = "15px";
+                            divider.style.color = "white";
+                            divider.innerHTML += `----------------------------------------------------------------------------------`;
+                            output_console.appendChild(divider);
+
+                            let listItem: HTMLLIElement = document.createElement("li");
+                            listItem.style.width = "35%";
+                            listItem.style.overflowWrap = "normal"
+                            listItem.style.listStyle = "none";
+                            listItem.style.fontSize = "1rem";
+                            listItem.style.marginLeft = "15px";
+                            listItem.style.color = "white";
+                            listItem.innerHTML = this.code_gen_programs[program_number].memory();
+                            output_console.appendChild(listItem);
+                        }// if
+                    }// if
+                }// if
             }// for: each program
 
 

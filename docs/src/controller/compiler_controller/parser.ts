@@ -45,6 +45,12 @@ module NightingaleCompiler {
              */
             private _lexically_invalid_programs: Array<number> = [],
         ) {
+            console.log("invalid lex programs");
+            console.log(this._lexically_invalid_programs);
+            for(let invalid_lex_program of this._lexically_invalid_programs) {
+                this.invalid_parsed_programs.push(invalid_lex_program);
+            }// for
+
             for (this._current_program_number; this._current_program_number < this._token_stream.length; ++this._current_program_number) {
                 // Try parsing the program
                 try {

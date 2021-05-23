@@ -1,6 +1,8 @@
 module NightingaleCompiler {
     export class ProgramModel {
 
+        private _id;
+
         /**
          * Memory is simulated with an array of strings.
          * 
@@ -39,7 +41,8 @@ module NightingaleCompiler {
         private _true_address: number;
         private _null_address: number;
 
-        constructor() {
+        constructor(new_id: number) {
+            this._id = new_id;
             this.init();
         }// constructor
 
@@ -79,6 +82,10 @@ module NightingaleCompiler {
             this.write_string_to_heap("true");
             this._true_address = this._heap_limit;
         }// init
+
+        public get_id(): number {
+            return this._id;
+        }// get_id
 
         /**
          * Writes a hex pair to the code.

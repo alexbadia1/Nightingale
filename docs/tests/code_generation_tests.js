@@ -406,8 +406,7 @@ const CODE_GEN_STRING_POINTERS_TEST = `/* Sadly we're only working with 256 byte
 }
 $`;
 
-const CODE_GEN_IF_TEST = `/* If statement tests */
-{
+const CODE_GEN_IF_TEST = `{
 	/* Output: a equals b showing a 4 a not equals b showing b 5 */
 	int a
 	a = 3
@@ -428,9 +427,12 @@ const CODE_GEN_IF_TEST = `/* If statement tests */
 	}
 }$
 
-/* Advanced Case */
+/**
+ * Another Code Generation Example
+ * 
+ * Output: 2 alan
+ */
 {
-	/* Output: 2 alan */
 	int a
 	a = 1
 	{
@@ -446,8 +448,46 @@ const CODE_GEN_IF_TEST = `/* If statement tests */
 	}
 }$
 
+/**
+ * Now let’s make it more complicated by
+ *   - adding another string 
+ *   - changing the value of an existing string
+ * 
+ * Ouput: 2 alan null blackstone james
+ */
+{
+	int a
+	a = 1
 
-`;
+	{
+		int a
+		a = 2
+		print(a)
+	}
+
+	string b
+	b = "alan"
+
+	if(a == 1) {
+		print(" ")
+		print(b)
+	}
+
+	string c
+
+	/* Show null pointer */
+	print(" ")
+	print(c)
+
+	c = "james"
+
+	b = "blackstone"
+
+	print(" ")
+	print(b)
+	print(" ")
+	print(c)
+   }$`;
 
 /**
  * Edge cases

@@ -12,6 +12,7 @@ const CODE_EDITOR_TAB_LENGTH = 4;
 const LEXER = "LEXER";
 const PARSER = "PARSER";
 const SEMANTIC_ANALYSIS = "SEMANTIC ANALYSIS";
+const CODE_GENERATION = "CODE GENERATION";
 // Output console mesages' types
 const ERROR = "ERROR";
 const WARNING = "WARNING";
@@ -122,6 +123,15 @@ const NODE_NAME_DIGIT = "Digit";
 const NODE_NAME_BOOLEAN_OPERATION = "Boolean Operation";
 const NODE_NAME_BOOLEAN_VALUE = "Boolean Value";
 const NODE_NAME_INT_OPERATION = "Int Operation";
+const AST_NODE_NAME_IF = "if";
+const AST_NODE_NAME_WHILE = "while";
+const NODE_NAME_TRUE = "true";
+const NODE_NAME_FALSE = "false";
+const AST_NODE_NAME_INT_OP = "+";
+const AST_NODE_NAME_BOOLEAN_EQUALS = "==";
+const AST_NODE_NAME_BOOLEAN_NOT_EQUALS = "!=";
 // Scope Tree Node Names
 const NODE_NAME_SCOPE = "Scope";
+// Code Generation
+const MAX_MEMORY_SIZE = 256;
 //# sourceMappingURL=global.js.map

@@ -47,6 +47,14 @@ module NightingaleCompiler {
          */
         public static semantic_analysis: NightingaleCompiler.SemanticAnalysis;
 
+        /**
+         * Semantic analysis, enforces scope, or type checking, and other rules of the grammar.
+         * 
+         * Semantic analysis will generate an Abstract Syntax Tree, from the Parser's 
+         * Concrete Syntax Tree which is the Intermediate Representation sent to code generation. 
+         */
+        public static code_generation: NightingaleCompiler.CodeGeneration;
+
         //
         // TODO: Implement more stages...
         //
@@ -63,32 +71,42 @@ module NightingaleCompiler {
             this.lexer = new NightingaleCompiler.Lexer(trimmedSourceCode);
 
             // Step 2: Parse
-            this.parser = new  NightingaleCompiler.Parser(this.lexer.token_stream, this.lexer.invalid_programs);
-            let cst_controller = new ConcreteSyntaxTreeController(this.parser.concrete_syntax_trees);
+            this.parser = new NightingaleCompiler.Parser(this.lexer.token_stream, this.lexer.invalid_programs);
+            let cst_controller = new NightingaleCompiler.ConcreteSyntaxTreeController(this.parser.concrete_syntax_trees);
 
             // Step 3: Semantic Analysis
-            this.semantic_analysis = new SemanticAnalysis(this.parser.concrete_syntax_trees, this.parser.invalid_parsed_programs);
-            let ast_controller = new AbstractSyntaxTreeController(this.semantic_analysis.abstract_syntax_trees);
-            let scope_tree_controller = new ScopeTreeController(this.semantic_analysis.scope_trees);
+            this.semantic_analysis = new NightingaleCompiler.SemanticAnalysis(this.parser.concrete_syntax_trees, this.parser.invalid_parsed_programs);
+            let ast_controller = new NightingaleCompiler.AbstractSyntaxTreeController(this.semantic_analysis.abstract_syntax_trees);
+            let scope_tree_controller = new NightingaleCompiler.ScopeTreeController(this.semantic_analysis.scope_trees);
+
+            // Step 4: Code Generation
+            this.code_generation = new NightingaleCompiler.CodeGeneration(this.semantic_analysis.abstract_syntax_trees, this.semantic_analysis.invalid_semantic_programs);
 
             // Final output
-             let output_console_model: OutputConsoleModel = new OutputConsoleModel(
-                                                                this.lexer.output, 
-                                                                cst_controller, 
-                                                                ast_controller,
-                                                                scope_tree_controller,
-                                                                this.parser.output, 
-                                                                this.semantic_analysis.output,
-                                                                this.parser.invalid_parsed_programs,
-                                                            );
-             let debug_console_model: DebugConsoleModel = new DebugConsoleModel(
-                 this.lexer.debug_token_stream, 
-                 this.parser.debug,
-                 this.semantic_analysis.verbose);
-             let stacktrace_console_model: StacktraceConsoleModel = new StacktraceConsoleModel(this.lexer.stacktrace_stack);
-             let footer_model: FooterModel = new FooterModel(
-                (this.lexer.errors_stream.length + this.parser.getErrorCount() + this.semantic_analysis.getErrorCount()),
-                (this.lexer.warnings_stream.length));
+            let output_console_model: OutputConsoleModel = new OutputConsoleModel(
+                this.lexer.output,
+                cst_controller,
+                ast_controller,
+                scope_tree_controller,
+                this.parser.output,
+                this.semantic_analysis.output,
+                this.parser.invalid_parsed_programs,
+                this.code_generation.output,
+                this.code_generation.programs,
+                this.code_generation.invalid_programs,
+            );
+
+            let debug_console_model: DebugConsoleModel = new DebugConsoleModel(
+                this.lexer.debug_token_stream,
+                this.parser.debug,
+                this.semantic_analysis.verbose,
+                this.code_generation.verbose,
+            );
+            // let stacktrace_console_model: StacktraceConsoleModel = new StacktraceConsoleModel(this.lexer.stacktrace_stack);
+            let footer_model: FooterModel = new FooterModel(
+                (this.lexer.errors_stream.length + this.parser.get_error_count() + this.semantic_analysis.get_error_count() + this.code_generation.get_error_count()),
+                (this.lexer.warnings_stream.length + this.parser.get_warning_count() + this.semantic_analysis.get_warning_count() + this.code_generation.get_warning_count())
+            );// footer_model
         }// compilerControllerBtnCompile_click
 
         /**
@@ -108,20 +126,20 @@ module NightingaleCompiler {
 
             // Get the starting node from DOM
             let current_node;
-            
+
             // TODO: Change this curde implementation of abstracting the button!
             if (cst_or_ast_or_scope_tree === "CST") {
                 current_node = document.getElementById(`cst_p${program_num}_li_node_id_${node_id}`);
             }// if
 
-            else if (cst_or_ast_or_scope_tree === "AST"){
+            else if (cst_or_ast_or_scope_tree === "AST") {
                 current_node = document.getElementById(`ast_p${program_num}_li_node_id_${node_id}`);
             }// else if
 
             else if (cst_or_ast_or_scope_tree === "SCOPETREE") {
                 current_node = document.getElementById(`scope-tree_p${program_num}_li_node_id_${node_id}`);
             }// else if
-            
+
             else {
                 return;
             }// else
@@ -133,7 +151,7 @@ module NightingaleCompiler {
             // Starting node is already highlighted, thus unhighlight starting node and it's descendants.
             if (children.namedItem("node-anchor-tag").classList.contains("anchor-node__active")) {
 
-                if (current_node instanceof HTMLAnchorElement) { 
+                if (current_node instanceof HTMLAnchorElement) {
                     // Remove the CSS class that highlights the node
                     current_node.classList.remove("anchor-node__active");
                 }// if
@@ -166,7 +184,7 @@ module NightingaleCompiler {
             // Highlight current nod and its descendants
             else {
 
-                if (current_node instanceof HTMLAnchorElement) { 
+                if (current_node instanceof HTMLAnchorElement) {
                     // Add the CSS class that highlights the node
                     current_node.classList.add("anchor-node__active");
                 }// if

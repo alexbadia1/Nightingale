@@ -16,6 +16,8 @@
 
  module NightingaleCompiler {
     export class AbstractSyntaxTree {
+        public scope_tree: ScopeTreeModel;
+        
         constructor(
             /**
              * Root node of the tree.
@@ -46,7 +48,7 @@
          * @param new_name Name of the node, could be a string or lexeme
          * @param kind Root, Branch, or Leaf Node?
          */
-        public add_node(new_name: string, kind: string, hasError: boolean = false, hasWarning: boolean = false, lex_token: LexicalToken = null) {
+        public add_node(new_name: string, kind: string, hasError: boolean = false, hasWarning: boolean = false, lex_token: LexicalToken = null, scope_table: ScopeTableModel = null) {
             this._node_count++
 
             // Construct the node object.
@@ -54,6 +56,7 @@
             new_node.errorFlag = hasError;
             new_node.warningFlag = hasWarning;
             new_node.setToken(lex_token);
+            new_node.setScopeTable(scope_table);
             
             // Check to see if it needs to be the root node.
             if ((this.root == null) || (!this.root)) {

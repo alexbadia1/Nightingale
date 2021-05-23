@@ -41,6 +41,9 @@ var NightingaleCompiler;
             this.concrete_syntax_trees = [];
             this._error_count = 0;
             this._warning_count = 0;
+            for (let invalid_lex_program of this._lexically_invalid_programs) {
+                this.invalid_parsed_programs.push(invalid_lex_program);
+            } // for
             for (this._current_program_number; this._current_program_number < this._token_stream.length; ++this._current_program_number) {
                 // Try parsing the program
                 try {
@@ -49,6 +52,10 @@ var NightingaleCompiler;
                 // Catch a fatal parse error
                 catch (e) {
                     if (e instanceof NightingaleCompiler.OutputConsoleMessage) {
+                        // Record that this program has an error, if no already done so
+                        if (!this.invalid_parsed_programs.includes(this._current_program_number)) {
+                            this.invalid_parsed_programs.push(this._current_program_number);
+                        } // if
                         this.output[this._current_program_number].push(e);
                         this.debug[this._current_program_number].push(e);
                     } // if
@@ -398,10 +405,10 @@ var NightingaleCompiler;
             } // for
             return false;
         } // token_is_statement
-        getErrorCount() {
+        get_error_count() {
             return this._error_count;
         } // getErrorCount
-        getWarningCount() {
+        get_warning_count() {
             return this._warning_count;
         } // getWarningCount
     } // class

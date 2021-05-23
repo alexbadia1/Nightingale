@@ -750,11 +750,13 @@ module NightingaleCompiler {
             if (this.isInComment) {
                 this.output[this.program_number].push(new OutputConsoleMessage(LEXER, WARNING, `Missing End End Comment. Try adding */ to line ${this._code_editor_line_number}`));
                 this.emit_token_to_stream(new LexicalToken(MISSING_TOKEN, null, "*/", this._code_editor_line_number, -1));
+                this.invalid_programs.push(this.program_number);
             }// if
 
             if (this.isInString) {
                 this.output[this.program_number].push(new OutputConsoleMessage(LEXER, WARNING, `Missing End String Boundary Expression. Try adding \" to line ${this._code_editor_line_number}`));
                 this.emit_token_to_stream(new LexicalToken(MISSING_TOKEN, null, "\"", this._code_editor_line_number, -1));
+                this.invalid_programs.push(this.program_number);
             }// if
         }// post_check_for_errors
 

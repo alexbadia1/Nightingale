@@ -9,42 +9,43 @@
 const APP_NAME: string = "NightingaleCompiler";
 const APP_VERSION: string = "0.01";
 
-const CODE_EDITOR_TAB_LENGTH = 4;
+const CODE_EDITOR_TAB_LENGTH: number = 4;
 
 // Output console mesages' sources
-const LEXER = "LEXER";
-const PARSER = "PARSER";
-const SEMANTIC_ANALYSIS = "SEMANTIC ANALYSIS";
+const LEXER: string = "LEXER";
+const PARSER: string = "PARSER";
+const SEMANTIC_ANALYSIS: string = "SEMANTIC ANALYSIS";
+const CODE_GENERATION: string = "CODE GENERATION";
 
 // Output console mesages' types
-const ERROR = "ERROR";
-const WARNING = "WARNING";
-const INFO = "INFO";
+const ERROR: string = "ERROR";
+const WARNING: string = "WARNING";
+const INFO: string = "INFO";
 
 /**
  * Lexical Tokens
  */
 
 // Keyword loops
-const KEYWORD_WHILE = "KEYWORD_WHILE";
+const KEYWORD_WHILE: string = "KEYWORD_WHILE";
 
 // Keyword branches
-const KEYWORD_IF = "KEYWORD_IF";
+const KEYWORD_IF: string = "KEYWORD_IF";
 
 // Keyword standard output
-const KEYWORD_PRINT = "KEYWORD_PRINT";
+const KEYWORD_PRINT: string = "KEYWORD_PRINT";
 
 // Keyword types
-const KEYWORD_INT = "KEYWORD_INT";
-const KEYWORD_STRING = "KEYWORD_STRING";
-const KEYWORD_BOOLEAN = "KEYWORD_BOOLEAN";
+const KEYWORD_INT: string = "KEYWORD_INT";
+const KEYWORD_STRING: string = "KEYWORD_STRING";
+const KEYWORD_BOOLEAN: string = "KEYWORD_BOOLEAN";
 
 // Keyword booleans
-const KEYWORD_TRUE = "KEYWORD_TRUE";
-const KEYWORD_FALSE = "KEYWORD_FALSE";
+const KEYWORD_TRUE: string = "KEYWORD_TRUE";
+const KEYWORD_FALSE: string = "KEYWORD_FALSE";
 
 // Identifiers (Single character variables)
-const IDENTIFIER = "IDENTIFIER";
+const IDENTIFIER: string = "IDENTIFIER";
 
 /**
  * Yes, there are tokens for comments...
@@ -52,36 +53,36 @@ const IDENTIFIER = "IDENTIFIER";
  * Many languages will lex comments as tokens, which are useful
  * for say creating javadoc, or even adding tags like "@override".
  */
-const START_BLOCK_COMMENT = "START_BLOCK_COMMENT";
-const END_BLOCK_COMMENT = "END_BLOCK_COMMENT";
+const START_BLOCK_COMMENT: string = "START_BLOCK_COMMENT";
+const END_BLOCK_COMMENT: string = "END_BLOCK_COMMENT";
 
 // String quotations (")
-const STRING_EXPRESSION_BOUNDARY = "STRING_EXPRESSION_BOUNDARY";
+const STRING_EXPRESSION_BOUNDARY: string = "STRING_EXPRESSION_BOUNDARY";
 
 // Symbol 
-const SYMBOL = "SYMBOL";
+const SYMBOL: string = "SYMBOL";
 
 // Open/Close blocks
-const SYMBOL_OPEN_BLOCK = "SYMBOL_OPEN_BLOCK";
-const SYMBOL_CLOSE_BLOCK = "SYMBOL_CLOSE_BLOCK";
+const SYMBOL_OPEN_BLOCK: string = "SYMBOL_OPEN_BLOCK";
+const SYMBOL_CLOSE_BLOCK: string = "SYMBOL_CLOSE_BLOCK";
 
 // Open/Close arguments
-const SYMBOL_OPEN_ARGUMENT = "SYMBOL_OPEN_ARGUMENT";
-const SYMBOL_CLOSE_ARGUMENT = "SYMBOL_CLOSE_ARGUMENT";
+const SYMBOL_OPEN_ARGUMENT: string = "SYMBOL_OPEN_ARGUMENT";
+const SYMBOL_CLOSE_ARGUMENT: string = "SYMBOL_CLOSE_ARGUMENT";
 
 // Operands
-const SYMBOL_INT_OP = "SYMBOL_INT_OP";
-const SYMBOL_BOOL_OP_EQUALS = "SYMBOL_BOOL_OP_EQUALS";
-const SYMBOL_BOOL_OP_NOT_EQUALS = "SYMBOL_BOOL_OP_NOT_EQUALS";
+const SYMBOL_INT_OP: string = "SYMBOL_INT_OP";
+const SYMBOL_BOOL_OP_EQUALS: string = "SYMBOL_BOOL_OP_EQUALS";
+const SYMBOL_BOOL_OP_NOT_EQUALS: string = "SYMBOL_BOOL_OP_NOT_EQUALS";
 
 // Assignments
-const SYMBOL_ASSIGNMENT_OP = "SYMBOL_ASSIGNMENT_OP";
+const SYMBOL_ASSIGNMENT_OP: string = "SYMBOL_ASSIGNMENT_OP";
 
 // Digits
-const DIGIT = "DIGIT";
+const DIGIT: string = "DIGIT";
 
 // Characters
-const CHARACTER = "CHARACTER";
+const CHARACTER: string = "CHARACTER";
 /**
  * Yes, there are tokens for spaces...
  * 
@@ -89,12 +90,12 @@ const CHARACTER = "CHARACTER";
  * Where indents signify code blocks, instead of a say Java 
  * like language where brackets {}, indicate code blocks.
  */
-const SPACE_SINGLE = "SPACE_SINGLE";
-const SPACE_TAB = "SPACE_TAB";
-const SPACE_END_OF_LINE = "SPACE_END_OF_LINE";
+const SPACE_SINGLE: string = "SPACE_SINGLE";
+const SPACE_TAB: string = "SPACE_TAB";
+const SPACE_END_OF_LINE: string = "SPACE_END_OF_LINE";
 
 // End of Program
-const END_OF_PROGRAM = "END_OF_PROGRAM";
+const END_OF_PROGRAM: string = "END_OF_PROGRAM";
 
 /**
  * Token Types
@@ -102,9 +103,9 @@ const END_OF_PROGRAM = "END_OF_PROGRAM";
  * Lex will provide errors such as invalid characters, warnings, and missing 
  * tokens for mistakes involving, for example, missing end of program tokens.
  */
-const INVALID_TOKEN = "INVALID_TOKEN";
-const WARNING_TOKEN = "WARNING_TOKEN";
-const MISSING_TOKEN = "MISSING_TOKEN";
+const INVALID_TOKEN: string = "INVALID_TOKEN";
+const WARNING_TOKEN: string = "WARNING_TOKEN";
+const MISSING_TOKEN: string = "MISSING_TOKEN";
 
 /**
  * Language types
@@ -115,38 +116,48 @@ const MISSING_TOKEN = "MISSING_TOKEN";
  *   - boolean
  * Note: During parser, the type inserted into the CST is based on the lex token
  */
-const INT = "int";
-const STRING = "string";
-const BOOLEAN = "boolean";
-const UNDEFINED = "undefined";
+const INT: string = "int";
+const STRING: string = "string";
+const BOOLEAN: string = "boolean";
+const UNDEFINED: string = "undefined";
 
 // Syntax Trees Types of Nodes
-const NODE_TYPE_BRANCH = "BRANCH";
-const NODE_TYPE_LEAF = "LEAF";
+const NODE_TYPE_BRANCH: string = "BRANCH";
+const NODE_TYPE_LEAF: string = "LEAF";
 
 // Syntax Tree Names of Nodes
-const NODE_NAME_PROGRAM = "Program";
-const NODE_NAME_BLOCK = "Block";
-const NODE_NAME_STATEMENT_LIST = "Statement List";
-const NODE_NAME_STATEMENT = "Statement";
-const NODE_NAME_PRINT_STATEMENT = "Print Statement";
-const NODE_NAME_ASSIGNMENT_STATEMENT = "Assignment Statement";
-const NODE_NAME_VARIABLE_DECLARATION = "Variable Declaration";
-const NODE_NAME_WHILE_STATEMENT = "While Statement";
-const NODE_NAME_IF_STATEMENT = "If Statement";
-const NODE_NAME_EXPRESSION = "Expression";
-const NODE_NAME_INT_EXPRESSION = "Int Expression";
-const NODE_NAME_STRING_EXPRESSION = "String Expression";
-const NODE_NAME_BOOLEAN_EXPRESSION = "Boolean Expression";
-const NODE_NAME_IDENTIFIER = "Identifier";
-const NODE_NAME_TYPE = "Type";
-const NODE_NAME_CHARACTER_LIST = "Character List";
-const NODE_NAME_CHARACTER = "Character";
-const NODE_NAME_SPACE = "Space";
-const NODE_NAME_DIGIT = "Digit";
-const NODE_NAME_BOOLEAN_OPERATION = "Boolean Operation";
-const NODE_NAME_BOOLEAN_VALUE = "Boolean Value";
-const NODE_NAME_INT_OPERATION = "Int Operation";
+const NODE_NAME_PROGRAM: string = "Program";
+const NODE_NAME_BLOCK: string = "Block";
+const NODE_NAME_STATEMENT_LIST: string = "Statement List";
+const NODE_NAME_STATEMENT: string = "Statement";
+const NODE_NAME_PRINT_STATEMENT: string = "Print Statement";
+const NODE_NAME_ASSIGNMENT_STATEMENT: string = "Assignment Statement";
+const NODE_NAME_VARIABLE_DECLARATION: string = "Variable Declaration";
+const NODE_NAME_WHILE_STATEMENT: string = "While Statement";
+const NODE_NAME_IF_STATEMENT: string = "If Statement";
+const NODE_NAME_EXPRESSION: string = "Expression";
+const NODE_NAME_INT_EXPRESSION: string = "Int Expression";
+const NODE_NAME_STRING_EXPRESSION: string = "String Expression";
+const NODE_NAME_BOOLEAN_EXPRESSION: string = "Boolean Expression";
+const NODE_NAME_IDENTIFIER: string = "Identifier";
+const NODE_NAME_TYPE: string = "Type";
+const NODE_NAME_CHARACTER_LIST: string = "Character List";
+const NODE_NAME_CHARACTER: string = "Character";
+const NODE_NAME_SPACE: string = "Space";
+const NODE_NAME_DIGIT: string = "Digit";
+const NODE_NAME_BOOLEAN_OPERATION: string = "Boolean Operation";
+const NODE_NAME_BOOLEAN_VALUE: string = "Boolean Value";
+const NODE_NAME_INT_OPERATION: string = "Int Operation";
+const AST_NODE_NAME_IF: string = "if";
+const AST_NODE_NAME_WHILE: string = "while";
+const NODE_NAME_TRUE: string = "true";
+const NODE_NAME_FALSE: string = "false";
+const AST_NODE_NAME_INT_OP: string = "+";
+const AST_NODE_NAME_BOOLEAN_EQUALS: string = "==";
+const AST_NODE_NAME_BOOLEAN_NOT_EQUALS: string = "!=";
 
 // Scope Tree Node Names
-const NODE_NAME_SCOPE = "Scope";
+const NODE_NAME_SCOPE: string = "Scope";
+
+// Code Generation
+const MAX_MEMORY_SIZE: number = 256;

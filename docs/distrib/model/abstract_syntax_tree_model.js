@@ -46,13 +46,14 @@ var NightingaleCompiler;
          * @param new_name Name of the node, could be a string or lexeme
          * @param kind Root, Branch, or Leaf Node?
          */
-        add_node(new_name, kind, hasError = false, hasWarning = false, lex_token = null) {
+        add_node(new_name, kind, hasError = false, hasWarning = false, lex_token = null, scope_table = null) {
             this._node_count++;
             // Construct the node object.
             let new_node = new NightingaleCompiler.Node(new_name, this._node_count, kind);
             new_node.errorFlag = hasError;
             new_node.warningFlag = hasWarning;
             new_node.setToken(lex_token);
+            new_node.setScopeTable(scope_table);
             // Check to see if it needs to be the root node.
             if ((this.root == null) || (!this.root)) {
                 this.root = new_node;

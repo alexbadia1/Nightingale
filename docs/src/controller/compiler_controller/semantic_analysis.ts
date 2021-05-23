@@ -35,7 +35,7 @@ module NightingaleCompiler {
 
         // Scope Tables
         private _current_scope_tree: ScopeTreeModel = null;
-        public scope_trees: Array<ScopeTreeModel> =  Array<ScopeTreeModel>();
+        public scope_trees: Array<ScopeTreeModel> = [];
 
         // Messages to Consoles
         public output: Array<Array<OutputConsoleMessage>> = [];
@@ -57,7 +57,7 @@ module NightingaleCompiler {
 
         private main(): void {
             for (var cstIndex: number = 0; cstIndex < this.concrete_syntax_trees.length; ++cstIndex) {
-                // Capture messages from lexer for each program
+                // Capture messages from semanntic analysis for each program
                 this.output.push(new Array<OutputConsoleMessage>());
                 this.verbose.push(new Array<OutputConsoleMessage>());
 
@@ -104,6 +104,8 @@ module NightingaleCompiler {
 
                 // Tell user, skipped the program
                 else {
+                    this._warning_count++;
+                    this.invalid_semantic_programs.push(this.concrete_syntax_trees[cstIndex].program);
                     this.output[cstIndex].push(
                         new OutputConsoleMessage(
                             SEMANTIC_ANALYSIS, 
@@ -169,6 +171,9 @@ module NightingaleCompiler {
             );
             // Make new ast
             this._current_ast = new AbstractSyntaxTree();
+
+            // Store scope tree in AST
+            this._current_ast.scope_tree = this._current_scope_tree;
 
             // Get program number from CST
             this._current_ast.program = cst.program;
@@ -259,16 +264,16 @@ module NightingaleCompiler {
                 )// OutputConsoleMessage
             );// this.verbose[this.verbose.length - 1].push
 
-            // Add new BLOCK node
-            // SYMBOL_OPEN_BLOCK Token
-            this._current_ast.add_node(cst_current_node.name, NODE_TYPE_BRANCH, false, false, cst_current_node.getToken());
-
-            // Get child node, which should be a statement list
-            let statement_list_node = cst_current_node.children_nodes[1];
-
             // Add a new scope node to the scope tree
             let scope_table: ScopeTableModel = new ScopeTableModel();
             this._current_scope_tree.add_node(NODE_NAME_SCOPE, NODE_TYPE_BRANCH, scope_table);
+
+            // Add new BLOCK node
+            // SYMBOL_OPEN_BLOCK Token
+            this._current_ast.add_node(cst_current_node.name, NODE_TYPE_BRANCH, false, false, cst_current_node.getToken(), scope_table);
+
+            // Get child node, which should be a statement list
+            let statement_list_node = cst_current_node.children_nodes[1];
 
             // Skip the statement list node
             if (cst_current_node.children_nodes.length === 3) {
@@ -770,6 +775,19 @@ module NightingaleCompiler {
                 // Note the type as it will be used to enforce type matching with the right side.
                 let left_expression_type = this._add_expression_subtree(left_expression_node, UNDEFINED);
 
+                // If it was an integer expression climb back up to the parent boolean expression node
+                if (left_expression_node.children_nodes[0].name === NODE_NAME_INT_EXPRESSION) {
+                    while (
+                        (this._current_ast.current_node !== undefined || this._current_ast.current_node !== null)
+                        && this._current_ast.current_node.name !== AST_NODE_NAME_BOOLEAN_EQUALS
+                        && this._current_ast.current_node.name !== AST_NODE_NAME_BOOLEAN_NOT_EQUALS) {
+                        if (this._current_ast.current_node.name !== AST_NODE_NAME_BOOLEAN_EQUALS 
+                            || this._current_ast.current_node.name !== AST_NODE_NAME_BOOLEAN_NOT_EQUALS ) {
+                            this._current_ast.climb_one_level();
+                        }// if
+                    }// while
+                }// if
+
                 // Ensures the correct order of nested operators in the ast.
                 //
                 // Look ahead in the tree on the left side of the 
@@ -781,6 +799,19 @@ module NightingaleCompiler {
                 // Then recursively deal with the right side...
                 // To enforce type matching, use the left sides type as the parent type.
                 let right_expression_type = this._add_expression_subtree(right_expression_node, left_expression_type);
+
+                // If it was an integer expression climb back up to the parent boolean expression node
+                if (right_expression_node.children_nodes[0].name === NODE_NAME_INT_EXPRESSION) {
+                    while (
+                        (this._current_ast.current_node !== undefined || this._current_ast.current_node !== null)
+                        && this._current_ast.current_node.name !== AST_NODE_NAME_BOOLEAN_EQUALS
+                        && this._current_ast.current_node.name !== AST_NODE_NAME_BOOLEAN_NOT_EQUALS) {
+                        if (this._current_ast.current_node.name !== AST_NODE_NAME_BOOLEAN_EQUALS 
+                            || this._current_ast.current_node.name !== AST_NODE_NAME_BOOLEAN_NOT_EQUALS ) {
+                            this._current_ast.climb_one_level();
+                        }// if
+                    }// while
+                }// if
 
                 // Ensures the correct order of nested operators in the ast.
                 //
@@ -932,6 +963,9 @@ module NightingaleCompiler {
             }// while
 
             if (!isDeclared) {
+                if (!this.invalid_semantic_programs.includes(this._current_ast.program)) {
+                    this.invalid_semantic_programs.push(this._current_ast.program);
+                }// if
                 this.output[this.output.length - 1].push(
                     new OutputConsoleMessage(
                         SEMANTIC_ANALYSIS, 
@@ -964,6 +998,9 @@ module NightingaleCompiler {
          */
         private check_type(parent_var_type: string, node: Node, curr_var_type: string): boolean {
             if (parent_var_type !== curr_var_type) {
+                if (!this.invalid_semantic_programs.includes(this._current_ast.program)) {
+                    this.invalid_semantic_programs.push(this._current_ast.program);
+                }// if
                 this.output[this.output.length - 1].push(
                     new OutputConsoleMessage(
                         SEMANTIC_ANALYSIS, 
@@ -1110,11 +1147,11 @@ module NightingaleCompiler {
             }// while
         }// _climb_ast_to_nearest_node
 
-        public getErrorCount(): number {
+        public get_error_count(): number {
             return this._error_count;
         }// getErrorCount
 
-        public getWarningCount(): number {
+        public get_warning_count(): number {
             return this._warning_count;
         }// getWarningCount
     }// class

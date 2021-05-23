@@ -20,6 +20,8 @@ module NightingaleCompiler {
     }// class
 
     export class ScopeTableModel {
+        public id: number;
+        public parent_scope_table: ScopeTableModel;
         private _map: Map<string, VariableMetaData>;
 
         constructor(){

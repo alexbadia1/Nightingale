@@ -25,6 +25,7 @@ module NightingaleCompiler {
             public debugTokens: Array<Array<LexicalToken>>,
             public parserDebug: Array<Array<OutputConsoleMessage>>,
             public semanticVerbose: Array<Array<OutputConsoleMessage>>,
+            public codeGenVerbose: Array<Array<OutputConsoleMessage>>,
         ) {
             this.listDebugTokens();
         }// constuctor
@@ -169,6 +170,7 @@ module NightingaleCompiler {
                 }// for
             }// for
 
+            // Semantic Analysis
             for (var semanticProgramNumber: number = 0; semanticProgramNumber < this.semanticVerbose.length; ++semanticProgramNumber) {
                 // Stops showing the extra last program
                 if (this.semanticVerbose[semanticProgramNumber].length === undefined || this.semanticVerbose[semanticProgramNumber].length === null || this.semanticVerbose[semanticProgramNumber].length === 0) {
@@ -190,6 +192,33 @@ module NightingaleCompiler {
                     listItem.style.margin = "0px 15px 3px 15px";
                     listItem.className = `semantic_message_${indexOfMessage}`;
                     listItem.innerHTML += `<span style = "font-size: 1rem; color: white;">${this.semanticVerbose[semanticProgramNumber][indexOfMessage].message}</span>`;
+
+                    debugConsoleList.appendChild(listItem);
+                }// for
+            }// for
+
+            // Code Generation
+            for (var codegenNumber: number = 0; codegenNumber < this.codeGenVerbose.length; ++codegenNumber) {
+                // Stops showing the extra last program
+                if (this.codeGenVerbose[codegenNumber].length === undefined || this.codeGenVerbose[codegenNumber].length === null || this.codeGenVerbose[codegenNumber].length === 0) {
+                    continue;
+                }// if
+
+                // Show semantic analysis in batches
+                let sematicHeader: HTMLAnchorElement = document.createElement("a");
+                sematicHeader.style.margin = "15px 0px 5px 17px";
+
+                sematicHeader.className = `code_gen_program_${codegenNumber}`;
+                sematicHeader.innerHTML = `<span style = "font-size: 1rem; color: white;">Code Generation ${codegenNumber + 1}</span>`;
+                debugConsoleList.appendChild(sematicHeader);
+
+                // Add All tokens consumed in PARSE and their validity
+                for (let indexOfMessage: number = 0; indexOfMessage < this.codeGenVerbose[codegenNumber].length; ++indexOfMessage) {
+                    let listItem: HTMLAnchorElement = document.createElement("a");
+                    listItem.className = `code_gen_message_${indexOfMessage}`;
+                    listItem.style.margin = "0px 15px 3px 15px";
+                    listItem.className = `code_gen_message_${indexOfMessage}`;
+                    listItem.innerHTML += `<span style = "font-size: 1rem; color: white;">${this.codeGenVerbose[codegenNumber][indexOfMessage].message}</span>`;
 
                     debugConsoleList.appendChild(listItem);
                 }// for

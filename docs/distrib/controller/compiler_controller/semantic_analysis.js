@@ -40,7 +40,7 @@ var NightingaleCompiler;
             this._current_ast = null;
             // Scope Tables
             this._current_scope_tree = null;
-            this.scope_trees = Array();
+            this.scope_trees = [];
             // Messages to Consoles
             this.output = [];
             this.verbose = [];
@@ -51,7 +51,7 @@ var NightingaleCompiler;
         } // constructor 
         main() {
             for (var cstIndex = 0; cstIndex < this.concrete_syntax_trees.length; ++cstIndex) {
-                // Capture messages from lexer for each program
+                // Capture messages from semanntic analysis for each program
                 this.output.push(new Array());
                 this.verbose.push(new Array());
                 // Skips invalid parsed programs
@@ -77,6 +77,8 @@ var NightingaleCompiler;
                 } // if
                 // Tell user, skipped the program
                 else {
+                    this._warning_count++;
+                    this.invalid_semantic_programs.push(this.concrete_syntax_trees[cstIndex].program);
                     this.output[cstIndex].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, WARNING, `Skipping program ${this.concrete_syntax_trees[cstIndex].program + 1} due to parse errors.`));
                     this.verbose[cstIndex].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, WARNING, `Skipping program ${this.concrete_syntax_trees[cstIndex].program + 1} due to parse errors.`));
                 } // else
@@ -101,6 +103,8 @@ var NightingaleCompiler;
             this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, INFO, `Generating Abstract Syntax Tree...`));
             // Make new ast
             this._current_ast = new NightingaleCompiler.AbstractSyntaxTree();
+            // Store scope tree in AST
+            this._current_ast.scope_tree = this._current_scope_tree;
             // Get program number from CST
             this._current_ast.program = cst.program;
             // Begin adding nodes to the ast from the cst, filtering for the key elements
@@ -167,14 +171,14 @@ var NightingaleCompiler;
         _add_block_subtree_to_ast(cst_current_node) {
             this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, INFO, `Adding ${cst_current_node.name} subtree to abstract syntax tree.`) // OutputConsoleMessage
             ); // this.verbose[this.verbose.length - 1].push
-            // Add new BLOCK node
-            // SYMBOL_OPEN_BLOCK Token
-            this._current_ast.add_node(cst_current_node.name, NODE_TYPE_BRANCH, false, false, cst_current_node.getToken());
-            // Get child node, which should be a statement list
-            let statement_list_node = cst_current_node.children_nodes[1];
             // Add a new scope node to the scope tree
             let scope_table = new NightingaleCompiler.ScopeTableModel();
             this._current_scope_tree.add_node(NODE_NAME_SCOPE, NODE_TYPE_BRANCH, scope_table);
+            // Add new BLOCK node
+            // SYMBOL_OPEN_BLOCK Token
+            this._current_ast.add_node(cst_current_node.name, NODE_TYPE_BRANCH, false, false, cst_current_node.getToken(), scope_table);
+            // Get child node, which should be a statement list
+            let statement_list_node = cst_current_node.children_nodes[1];
             // Skip the statement list node
             if (cst_current_node.children_nodes.length === 3) {
                 this._skip_node_for_ast(statement_list_node, scope_table);
@@ -516,6 +520,17 @@ var NightingaleCompiler;
                 // Start by recursively evaluating the left side...
                 // Note the type as it will be used to enforce type matching with the right side.
                 let left_expression_type = this._add_expression_subtree(left_expression_node, UNDEFINED);
+                // If it was an integer expression climb back up to the parent boolean expression node
+                if (left_expression_node.children_nodes[0].name === NODE_NAME_INT_EXPRESSION) {
+                    while ((this._current_ast.current_node !== undefined || this._current_ast.current_node !== null)
+                        && this._current_ast.current_node.name !== AST_NODE_NAME_BOOLEAN_EQUALS
+                        && this._current_ast.current_node.name !== AST_NODE_NAME_BOOLEAN_NOT_EQUALS) {
+                        if (this._current_ast.current_node.name !== AST_NODE_NAME_BOOLEAN_EQUALS
+                            || this._current_ast.current_node.name !== AST_NODE_NAME_BOOLEAN_NOT_EQUALS) {
+                            this._current_ast.climb_one_level();
+                        } // if
+                    } // while
+                } // if
                 // Ensures the correct order of nested operators in the ast.
                 //
                 // Look ahead in the tree on the left side of the 
@@ -526,6 +541,17 @@ var NightingaleCompiler;
                 // Then recursively deal with the right side...
                 // To enforce type matching, use the left sides type as the parent type.
                 let right_expression_type = this._add_expression_subtree(right_expression_node, left_expression_type);
+                // If it was an integer expression climb back up to the parent boolean expression node
+                if (right_expression_node.children_nodes[0].name === NODE_NAME_INT_EXPRESSION) {
+                    while ((this._current_ast.current_node !== undefined || this._current_ast.current_node !== null)
+                        && this._current_ast.current_node.name !== AST_NODE_NAME_BOOLEAN_EQUALS
+                        && this._current_ast.current_node.name !== AST_NODE_NAME_BOOLEAN_NOT_EQUALS) {
+                        if (this._current_ast.current_node.name !== AST_NODE_NAME_BOOLEAN_EQUALS
+                            || this._current_ast.current_node.name !== AST_NODE_NAME_BOOLEAN_NOT_EQUALS) {
+                            this._current_ast.climb_one_level();
+                        } // if
+                    } // while
+                } // if
                 // Ensures the correct order of nested operators in the ast.
                 //
                 // Look ahead in the tree on the right side of the 
@@ -641,6 +667,9 @@ var NightingaleCompiler;
                 } // else
             } // while
             if (!isDeclared) {
+                if (!this.invalid_semantic_programs.includes(this._current_ast.program)) {
+                    this.invalid_semantic_programs.push(this._current_ast.program);
+                } // if
                 this.output[this.output.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, ERROR, `Missing variable declaration [${identifier_node.name}] at ${identifier_node.getToken().lineNumber}:${identifier_node.getToken().linePosition}`) // OutputConsoleMessage
                 ); // this.output[this.output.length - 1].push
                 this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, ERROR, `Missing variable declaration [${identifier_node.name}] at ${identifier_node.getToken().lineNumber}:${identifier_node.getToken().linePosition}`) // OutputConsoleMessage
@@ -661,6 +690,9 @@ var NightingaleCompiler;
          */
         check_type(parent_var_type, node, curr_var_type) {
             if (parent_var_type !== curr_var_type) {
+                if (!this.invalid_semantic_programs.includes(this._current_ast.program)) {
+                    this.invalid_semantic_programs.push(this._current_ast.program);
+                } // if
                 this.output[this.output.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, ERROR, `Type mismatch error: tried to perform an operation on [${curr_var_type}] with [${parent_var_type}] at ${node.getToken().lineNumber}:${node.getToken().linePosition}`) // OutputConsoleMessage
                 ); // this.output[this.output.length - 1].push
                 this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, ERROR, `Type mismatch error: tried to perform an operation on [${curr_var_type}] with [${parent_var_type}] at ${node.getToken().lineNumber}:${node.getToken().linePosition}`) // OutputConsoleMessage
@@ -749,10 +781,10 @@ var NightingaleCompiler;
                 } // if
             } // while
         } // _climb_ast_to_nearest_node
-        getErrorCount() {
+        get_error_count() {
             return this._error_count;
         } // getErrorCount
-        getWarningCount() {
+        get_warning_count() {
             return this._warning_count;
         } // getWarningCount
     } // class

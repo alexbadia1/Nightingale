@@ -44,7 +44,7 @@ var NightingaleCompiler;
             let output_console_model = new NightingaleCompiler.OutputConsoleModel(this.lexer.output, cst_controller, ast_controller, scope_tree_controller, this.parser.output, this.semantic_analysis.output, this.parser.invalid_parsed_programs, this.code_generation.output, this.code_generation.programs, this.code_generation.invalid_programs);
             let debug_console_model = new NightingaleCompiler.DebugConsoleModel(this.lexer.debug_token_stream, this.parser.debug, this.semantic_analysis.verbose, this.code_generation.verbose);
             // let stacktrace_console_model: StacktraceConsoleModel = new StacktraceConsoleModel(this.lexer.stacktrace_stack);
-            let footer_model = new NightingaleCompiler.FooterModel((this.lexer.errors_stream.length + this.parser.getErrorCount() + this.semantic_analysis.getErrorCount()), (this.lexer.warnings_stream.length));
+            let footer_model = new NightingaleCompiler.FooterModel((this.lexer.errors_stream.length + this.parser.get_error_count() + this.semantic_analysis.get_error_count() + this.code_generation.get_error_count()), (this.lexer.warnings_stream.length + this.parser.get_warning_count() + this.semantic_analysis.get_warning_count() + this.code_generation.get_warning_count())); // footer_model
         } // compilerControllerBtnCompile_click
         /**
          * Highlights the current node clicked on and all of the node's descendants

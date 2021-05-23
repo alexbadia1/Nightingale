@@ -405,10 +405,10 @@ var NightingaleCompiler;
             } // for
             return false;
         } // token_is_statement
-        getErrorCount() {
+        get_error_count() {
             return this._error_count;
         } // getErrorCount
-        getWarningCount() {
+        get_warning_count() {
             return this._warning_count;
         } // getWarningCount
     } // class

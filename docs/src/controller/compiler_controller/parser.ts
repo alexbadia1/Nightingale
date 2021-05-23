@@ -519,11 +519,11 @@ module NightingaleCompiler {
             return false;
         }// token_is_statement
 
-        public getErrorCount(): number {
+        public get_error_count(): number {
             return this._error_count;
         }// getErrorCount
 
-        public getWarningCount(): number {
+        public get_warning_count(): number {
             return this._warning_count;
         }// getWarningCount
     }// class

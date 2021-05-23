@@ -19,6 +19,11 @@ var NightingaleCompiler;
             this.main();
         } // constructor
         main() {
+            console.log(this._invalid_abstract_syntax_trees);
+            for (let invalid of this._invalid_abstract_syntax_trees) {
+                this.invalid_programs.push(invalid);
+                this._warning_count++;
+            } // for
             for (var astIndex = 0; astIndex < this._abstract_syntax_trees.length; ++astIndex) {
                 // New output array for each program
                 this.output.push(new Array());
@@ -610,8 +615,6 @@ var NightingaleCompiler;
                     let anonymous_address_static_data = this._get_anonymous_address();
                     this._store_accumulator_to_memory(anonymous_address_static_data.temp_address_leading_hex, anonymous_address_static_data.temp_address_trailing_hex); // store_accumulator_to_memory
                     this._compare_x_register_to_memory(anonymous_address_static_data.temp_address_leading_hex, anonymous_address_static_data.temp_address_trailing_hex); // compare_x_register_to_memory
-                    // Free up anonymous address
-                    anonymous_address_static_data.isUsable = true;
                 } // else if
                 // Child is a boolean false
                 else if (right_child_value === NODE_NAME_FALSE || right_child_value === NODE_NAME_TRUE) {
@@ -624,8 +627,6 @@ var NightingaleCompiler;
                     } // else
                     this._store_accumulator_to_memory(memory_address_of_boolean_result.temp_address_leading_hex, memory_address_of_boolean_result.temp_address_trailing_hex); // _store_accumulator_to_memory
                     this._compare_x_register_to_memory(memory_address_of_boolean_result.temp_address_leading_hex, memory_address_of_boolean_result.temp_address_trailing_hex); // _load_x_register_from_memory
-                    // Won't need this later, free up memory
-                    memory_address_of_boolean_result.isUsable = true;
                 } // else-if
                 // Child is a string expression
                 else if (right_child_value.startsWith("\"")) {
@@ -634,8 +635,6 @@ var NightingaleCompiler;
                         this._load_accumulator_with_constant(str_pointer);
                         this._store_accumulator_to_memory(anonymous_address.temp_address_leading_hex, anonymous_address.temp_address_trailing_hex); // _store_accumulator_to_memory
                         this._compare_x_register_to_memory(anonymous_address.temp_address_leading_hex, anonymous_address.temp_address_trailing_hex); // _compare_x_register_to_memory
-                        // Won't need this later, free up memory
-                        anonymous_address.isUsable = true;
                     }); // _load_register_with_string_pointer
                 } // else-if
                 // Child is a int expression
@@ -643,8 +642,6 @@ var NightingaleCompiler;
                     let memory_address_of_sum = this._code_gen_int_expression(boolean_expression_node.children_nodes[1], null, current_scope_table); // _code_gen_int_expression
                     // Load the X register with the sum of the integer expression
                     this._compare_x_register_to_memory(memory_address_of_sum.temp_address_leading_hex, memory_address_of_sum.temp_address_trailing_hex); // _compare_x_register_to_memory
-                    // Won't need this later, free up memory
-                    memory_address_of_sum.isUsable = true;
                 } // else-if
                 // Throw error
                 else {
@@ -1111,6 +1108,12 @@ var NightingaleCompiler;
             ); // this.verbose[this.output.length - 1].push
             this._current_program.write_to_code("FF");
         } // system_call
+        get_warning_count() {
+            return this._warning_count;
+        } // get_warning_count
+        get_error_count() {
+            return this._error_count;
+        } // get_error_count
     } //class
     NightingaleCompiler.CodeGeneration = CodeGeneration;
 })(NightingaleCompiler || (NightingaleCompiler = {})); // module

@@ -77,6 +77,8 @@ var NightingaleCompiler;
                 } // if
                 // Tell user, skipped the program
                 else {
+                    this._warning_count++;
+                    this.invalid_semantic_programs.push(this.concrete_syntax_trees[cstIndex].program);
                     this.output[cstIndex].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, WARNING, `Skipping program ${this.concrete_syntax_trees[cstIndex].program + 1} due to parse errors.`));
                     this.verbose[cstIndex].push(new NightingaleCompiler.OutputConsoleMessage(SEMANTIC_ANALYSIS, WARNING, `Skipping program ${this.concrete_syntax_trees[cstIndex].program + 1} due to parse errors.`));
                 } // else
@@ -779,10 +781,10 @@ var NightingaleCompiler;
                 } // if
             } // while
         } // _climb_ast_to_nearest_node
-        getErrorCount() {
+        get_error_count() {
             return this._error_count;
         } // getErrorCount
-        getWarningCount() {
+        get_warning_count() {
             return this._warning_count;
         } // getWarningCount
     } // class

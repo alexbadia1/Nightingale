@@ -154,9 +154,24 @@ var NightingaleCompiler;
                         this.scope_tree_controller.add_tree_to_gui(scope_tree_output, program_number);
                     } // if
                 } // if
-                // Code generation output
-                if (this.code_gen_output[program_number] !== undefined && this.code_gen_output[program_number] !== null) {
-                    for (let i = 0; i < this.code_gen_output[program_number].length; ++i) {
+            } // for: each program
+            let u_margin = document.createElement("li");
+            u_margin.style.marginTop = "15px";
+            output_console.appendChild(u_margin);
+            // Code generation output
+            for (let i = 0; i < this.code_gen_invalid_programs.length; ++i) {
+                let listItem = document.createElement("li");
+                listItem.style.overflowWrap = "normal";
+                listItem.style.listStyle = "none";
+                listItem.style.fontSize = "1rem";
+                listItem.style.marginLeft = "15px";
+                listItem.style.color = "white";
+                listItem.innerHTML = `CODE GENERATION <span  style = "color: yellow;">WARNING</span>- Skipping program ${this.code_gen_invalid_programs[i] + 1} due to errors.`;
+                output_console.appendChild(listItem);
+            } // for
+            for (let index = 0; index < this.code_gen_programs.length; ++index) {
+                if (this.code_gen_output[index] !== undefined && this.code_gen_output[index] !== null) {
+                    for (let i = 0; i < this.code_gen_output[index].length; ++i) {
                         let listItem = document.createElement("li");
                         listItem.className = `token_${i}`;
                         listItem.style.listStyle = "none";
@@ -166,29 +181,29 @@ var NightingaleCompiler;
                         if (i == 0) {
                             listItem.style.marginTop = "15px";
                         } // if
-                        if (this.code_gen_output[program_number][i].type == INFO) {
+                        if (this.code_gen_output[index][i].type == INFO) {
                             listItem.innerHTML =
-                                `${this.code_gen_output[program_number][i].source} `
-                                    + `<span  style = "color: white;">${this.code_gen_output[program_number][i].type}</span>`
-                                    + ` - ${this.code_gen_output[program_number][i].message}`;
+                                `${this.code_gen_output[index][i].source} `
+                                    + `<span  style = "color: white;">${this.code_gen_output[index][i].type}</span>`
+                                    + ` - ${this.code_gen_output[index][i].message}`;
                         } // if
-                        else if (this.code_gen_output[program_number][i].type == WARNING) {
+                        else if (this.code_gen_output[index][i].type == WARNING) {
                             listItem.innerHTML =
-                                `${this.code_gen_output[program_number][i].source} `
-                                    + `<span  style = "color: yellow;">${this.code_gen_output[program_number][i].type}</span>`
-                                    + ` - ${this.code_gen_output[program_number][i].message}`;
+                                `${this.code_gen_output[index][i].source} `
+                                    + `<span  style = "color: yellow;">${this.code_gen_output[index][i].type}</span>`
+                                    + ` - ${this.code_gen_output[index][i].message}`;
                         } // else-if
-                        else if (this.code_gen_output[program_number][i].type == ERROR) {
+                        else if (this.code_gen_output[index][i].type == ERROR) {
                             listItem.innerHTML =
-                                `${this.code_gen_output[program_number][i].source} `
-                                    + `<span  style = "color: red;">${this.code_gen_output[program_number][i].type}</span>`
-                                    + ` - ${this.code_gen_output[program_number][i].message}`;
+                                `${this.code_gen_output[index][i].source} `
+                                    + `<span  style = "color: red;">${this.code_gen_output[index][i].type}</span>`
+                                    + ` - ${this.code_gen_output[index][i].message}`;
                         } // else-if
                         output_console.appendChild(listItem);
                     } // for: add new children
                     // Program exectuable images
-                    if (this.code_gen_programs[program_number] !== undefined && this.code_gen_programs[program_number] !== null) {
-                        if (!this.code_gen_invalid_programs.includes(this.code_gen_programs[program_number].get_id())) {
+                    if (this.code_gen_programs[index] !== undefined && this.code_gen_programs[index] !== null) {
+                        if (!this.code_gen_invalid_programs.includes(this.code_gen_programs[index].get_id())) {
                             let header = document.createElement("li");
                             header.style.width = "35%";
                             header.style.overflowWrap = "normal";
@@ -197,7 +212,7 @@ var NightingaleCompiler;
                             header.style.marginTop = "15px";
                             header.style.marginLeft = "15px";
                             header.style.color = "white";
-                            header.innerHTML = `Program ${this.code_gen_programs[program_number].get_id() + 1} Executable Image`;
+                            header.innerHTML = `Program ${this.code_gen_programs[index].get_id() + 1} Executable Image`;
                             output_console.appendChild(header);
                             let divider = document.createElement("li");
                             divider.style.listStyle = "none";
@@ -213,12 +228,12 @@ var NightingaleCompiler;
                             listItem.style.fontSize = "1rem";
                             listItem.style.marginLeft = "15px";
                             listItem.style.color = "white";
-                            listItem.innerHTML = this.code_gen_programs[program_number].memory();
+                            listItem.innerHTML = this.code_gen_programs[index].memory();
                             output_console.appendChild(listItem);
                         } // if
                     } // if
                 } // if
-            } // for: each program
+            } // for
             let bottomMarginOutputConsole = document.createElement("div");
             bottomMarginOutputConsole.id = "bottomMarginOutputConsole";
             // Avoids the bottom banner from overlapping over the list.

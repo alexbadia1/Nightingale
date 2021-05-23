@@ -39,6 +39,12 @@ module NightingaleCompiler {
         }// constructor
 
         private main(): void {
+            console.log( this._invalid_abstract_syntax_trees);
+            for(let invalid of this._invalid_abstract_syntax_trees) {
+                this.invalid_programs.push(invalid);
+                this._warning_count++;
+            }// for
+
             for (var astIndex: number = 0; astIndex < this._abstract_syntax_trees.length; ++astIndex) {
                 // New output array for each program
                 this.output.push(new Array<OutputConsoleMessage>());
@@ -1071,9 +1077,6 @@ module NightingaleCompiler {
                         anonymous_address_static_data.temp_address_leading_hex,
                         anonymous_address_static_data.temp_address_trailing_hex,
                     );// compare_x_register_to_memory
-
-                    // Free up anonymous address
-                    anonymous_address_static_data.isUsable = true;
                 }// else if
 
                 // Child is a boolean false
@@ -1096,9 +1099,6 @@ module NightingaleCompiler {
                         memory_address_of_boolean_result.temp_address_leading_hex,
                         memory_address_of_boolean_result.temp_address_trailing_hex
                     );// _load_x_register_from_memory
-
-                    // Won't need this later, free up memory
-                    memory_address_of_boolean_result.isUsable = true;
                 }// else-if
 
                 // Child is a string expression
@@ -1118,9 +1118,6 @@ module NightingaleCompiler {
                                 anonymous_address.temp_address_leading_hex,
                                 anonymous_address.temp_address_trailing_hex
                             );// _compare_x_register_to_memory
-
-                            // Won't need this later, free up memory
-                            anonymous_address.isUsable = true;
                         }
                     );// _load_register_with_string_pointer
                 }// else-if
@@ -1138,9 +1135,6 @@ module NightingaleCompiler {
                         memory_address_of_sum.temp_address_leading_hex,
                         memory_address_of_sum.temp_address_trailing_hex
                     );// _compare_x_register_to_memory
-
-                    // Won't need this later, free up memory
-                    memory_address_of_sum.isUsable = true;
                 }// else-if
 
                 // Throw error
@@ -1816,5 +1810,13 @@ module NightingaleCompiler {
             );// this.verbose[this.output.length - 1].push
             this._current_program.write_to_code("FF");
         }// system_call
+
+        public get_warning_count(): number {
+            return this._warning_count;
+        }// get_warning_count
+
+        public get_error_count(): number {
+            return this._error_count;
+        }// get_error_count
     }//class
 }// module

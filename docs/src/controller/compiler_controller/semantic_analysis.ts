@@ -104,6 +104,8 @@ module NightingaleCompiler {
 
                 // Tell user, skipped the program
                 else {
+                    this._warning_count++;
+                    this.invalid_semantic_programs.push(this.concrete_syntax_trees[cstIndex].program);
                     this.output[cstIndex].push(
                         new OutputConsoleMessage(
                             SEMANTIC_ANALYSIS, 
@@ -1145,11 +1147,11 @@ module NightingaleCompiler {
             }// while
         }// _climb_ast_to_nearest_node
 
-        public getErrorCount(): number {
+        public get_error_count(): number {
             return this._error_count;
         }// getErrorCount
 
-        public getWarningCount(): number {
+        public get_warning_count(): number {
             return this._warning_count;
         }// getWarningCount
     }// class

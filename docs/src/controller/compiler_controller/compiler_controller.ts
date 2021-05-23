@@ -104,8 +104,9 @@ module NightingaleCompiler {
             );
             // let stacktrace_console_model: StacktraceConsoleModel = new StacktraceConsoleModel(this.lexer.stacktrace_stack);
             let footer_model: FooterModel = new FooterModel(
-                (this.lexer.errors_stream.length + this.parser.getErrorCount() + this.semantic_analysis.getErrorCount()),
-                (this.lexer.warnings_stream.length));
+                (this.lexer.errors_stream.length + this.parser.get_error_count() + this.semantic_analysis.get_error_count() + this.code_generation.get_error_count()),
+                (this.lexer.warnings_stream.length + this.parser.get_warning_count() + this.semantic_analysis.get_warning_count() + this.code_generation.get_warning_count())
+            );// footer_model
         }// compilerControllerBtnCompile_click
 
         /**

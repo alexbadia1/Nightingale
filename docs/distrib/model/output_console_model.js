@@ -77,7 +77,7 @@ var NightingaleCompiler;
                     output_console.appendChild(listItem);
                 } // for: add new children
                 // Add Parser output
-                if (this.parser_output[program_number] !== null || this.parser_output[program_number] !== null) {
+                if (this.parser_output[program_number] !== undefined && this.parser_output[program_number] !== null) {
                     for (let i = 0; i < this.parser_output[program_number].length; ++i) {
                         let listItem = document.createElement("li");
                         listItem.className = `token_${i}`;
@@ -114,7 +114,7 @@ var NightingaleCompiler;
                     } // if
                 } // if
                 // Semantic Analysis Output
-                if (this.semantic_output[program_number] !== null || this.semantic_output[program_number] !== null) {
+                if (this.semantic_output[program_number] !== undefined && this.semantic_output[program_number] !== null) {
                     for (let i = 0; i < this.semantic_output[program_number].length; ++i) {
                         let listItem = document.createElement("li");
                         listItem.className = `token_${i}`;
@@ -155,7 +155,7 @@ var NightingaleCompiler;
                     } // if
                 } // if
                 // Code generation output
-                if (this.code_gen_output[program_number] !== null || this.code_gen_output[program_number] !== null) {
+                if (this.code_gen_output[program_number] !== undefined && this.code_gen_output[program_number] !== null) {
                     for (let i = 0; i < this.code_gen_output[program_number].length; ++i) {
                         let listItem = document.createElement("li");
                         listItem.className = `token_${i}`;

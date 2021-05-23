@@ -178,15 +178,15 @@ var NightingaleCompiler;
                 // Show semantic analysis in batches
                 let sematicHeader = document.createElement("a");
                 sematicHeader.style.margin = "15px 0px 5px 17px";
-                sematicHeader.className = `semantic_program_${codegenNumber}`;
-                sematicHeader.innerHTML = `<span style = "font-size: 1rem; color: white;">Semantic Analysis ${codegenNumber + 1}</span>`;
+                sematicHeader.className = `code_gen_program_${codegenNumber}`;
+                sematicHeader.innerHTML = `<span style = "font-size: 1rem; color: white;">Code Generation ${codegenNumber + 1}</span>`;
                 debugConsoleList.appendChild(sematicHeader);
                 // Add All tokens consumed in PARSE and their validity
                 for (let indexOfMessage = 0; indexOfMessage < this.codeGenVerbose[codegenNumber].length; ++indexOfMessage) {
                     let listItem = document.createElement("a");
-                    listItem.className = `semantic_message_${indexOfMessage}`;
+                    listItem.className = `code_gen_message_${indexOfMessage}`;
                     listItem.style.margin = "0px 15px 3px 15px";
-                    listItem.className = `semantic_message_${indexOfMessage}`;
+                    listItem.className = `code_gen_message_${indexOfMessage}`;
                     listItem.innerHTML += `<span style = "font-size: 1rem; color: white;">${this.codeGenVerbose[codegenNumber][indexOfMessage].message}</span>`;
                     debugConsoleList.appendChild(listItem);
                 } // for

@@ -54,7 +54,6 @@ var NightingaleCompiler;
                             this.invalid_programs.push(this._current_program.get_id());
                         } // if
                     } // catch
-                    this.programs.push(this._current_program);
                     this.output[this.output.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(CODE_GENERATION, INFO, `Finished code generation on program ${astIndex + 1}.`) // OutputConsoleMessage
                     ); // this.output[this.output.length - 1].push
                     this.verbose[this.verbose.length - 1].push(new NightingaleCompiler.OutputConsoleMessage(CODE_GENERATION, INFO, `Finished code generation on program ${astIndex + 1}.`) // OutputConsoleMessage

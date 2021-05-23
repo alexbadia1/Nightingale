@@ -99,8 +99,6 @@ module NightingaleCompiler {
                         }// if
                     }// catch
 
-                    this.programs.push(this._current_program);
-
                     this.output[this.output.length - 1].push(
                         new OutputConsoleMessage(
                             CODE_GENERATION,

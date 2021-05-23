@@ -408,18 +408,46 @@ $`;
 
 const CODE_GEN_IF_TEST = `/* If statement tests */
 {
-	/* Output: 4 4
+	/* Output: a equals b showing a 4 a not equals b showing b 5 */
 	int a
 	a = 3
 	int b
 	b = 4
 	a = b
-	print(a)
+
 	if (a== b) {
-		print(" ")
+		print("a equals b showing a ")
 		print(a)
 	}
-}$`;
+
+	b = 1 + a
+
+	if (a != b) {
+		print(" a not equals b showing b ")
+		print(b)
+	}
+}$
+
+/* Advanced Case */
+{
+	/* Output: 2 alan */
+	int a
+	a = 1
+	{
+		int a
+		a = 2
+		print(a)
+	}
+		string b
+		b = "alan"
+	if (a == 1) {
+		print(" ")
+		print(b)
+	}
+}$
+
+
+`;
 
 /**
  * Edge cases

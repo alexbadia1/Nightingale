@@ -487,7 +487,7 @@ const CODE_GEN_IF_TEST = `{
 	print(b)
 	print(" ")
 	print(c)
-   }$`;
+}$`;
 
 /**
  * Edge cases

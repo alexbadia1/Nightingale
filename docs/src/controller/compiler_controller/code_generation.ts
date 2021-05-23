@@ -33,6 +33,8 @@ module NightingaleCompiler {
             // Keep track of each programs static tables
             this.static_tables = new Array<StaticTableModel>();
 
+            this._error_count = 0;
+            this._warning_count = 0;
             this.main();
         }// constructor
 
@@ -44,7 +46,6 @@ module NightingaleCompiler {
 
                 // Skips invalid semantic analyzed programs
                 if (!this._invalid_abstract_syntax_trees.includes(this._abstract_syntax_trees[astIndex].program)) {
-                    console.log(`Performing code generation for: ${this._abstract_syntax_trees[astIndex].program + 1}`);
                     this.output[astIndex].push(
                         new OutputConsoleMessage(
                             CODE_GENERATION,
@@ -113,31 +114,24 @@ module NightingaleCompiler {
                             `Finished code generation on program ${astIndex + 1}.`
                         )// OutputConsoleMessage
                     );// this.verbose[this.output.length - 1].push
-
-                    console.log(`Finished code generation on program ${astIndex + 1}.`);
-                    console.log(this._current_program);
-                    console.log(this._current_program.memory());
-                    console.log(`Showing static table for program ${astIndex + 1}`);
-                    console.log(this._current_static_table);
                 }// if
 
                 // Tell user: skipped the program
                 else {
-                    console.log(`Skipping code generation for: ${this._abstract_syntax_trees[astIndex].program + 1}`);
                     this.output[astIndex].push(
                         new OutputConsoleMessage(
                             CODE_GENERATION,
                             WARNING,
                             `Skipping program ${this._abstract_syntax_trees[astIndex].program + 1} due to semantic analysis errors.`
                         )
-                    );
+                    );// this.output[astIndex].push
                     this.verbose[astIndex].push(
                         new OutputConsoleMessage(
                             CODE_GENERATION,
                             WARNING,
                             `Skipping program ${this._abstract_syntax_trees[astIndex].program + 1} due to semantic analysis errors.`
                         )
-                    );
+                    );// this.verbose[astIndex].push
                 }// else
             }// for
             if (this.output.length === 0) {
@@ -644,7 +638,15 @@ module NightingaleCompiler {
                         `Code generation for if statement true`
                     )// OutputConsoleMessage
                 );// this.verbose[this.output.length - 1].push
-                memory_address_of_boolean_result = new StaticDataMetadata("00", this._current_program.get_true_address().toString(16).toUpperCase(), -1);
+
+                memory_address_of_boolean_result = this._get_anonymous_address();
+
+                this._load_accumulator_with_constant(this._current_program.get_true_address().toString(16).toUpperCase());
+
+                this._store_accumulator_to_memory(
+                    memory_address_of_boolean_result.temp_address_leading_hex,
+                    memory_address_of_boolean_result.temp_address_trailing_hex
+                );// _store_accumulator_to_memory
             }// if
 
             // false
@@ -656,7 +658,15 @@ module NightingaleCompiler {
                         `Code generation for if statement false`
                     )// OutputConsoleMessage
                 );// this.verbose[this.output.length - 1].push
-                memory_address_of_boolean_result = new StaticDataMetadata("00", this._current_program.get_false_address().toString(16).toUpperCase(), -1);
+                
+                memory_address_of_boolean_result = this._get_anonymous_address();
+
+                this._load_accumulator_with_constant(this._current_program.get_false_address().toString(16).toUpperCase());
+
+                this._store_accumulator_to_memory(
+                    memory_address_of_boolean_result.temp_address_leading_hex,
+                    memory_address_of_boolean_result.temp_address_trailing_hex
+                );// _store_accumulator_to_memory
             }// else if
 
             else {
@@ -670,6 +680,9 @@ module NightingaleCompiler {
                 memory_address_of_boolean_result.temp_address_leading_hex,
                 memory_address_of_boolean_result.temp_address_trailing_hex
             );// _compare_x_register_to_memory
+
+            // Free up memory
+            memory_address_of_boolean_result.isUsable = true;
 
             // Branch distance is currently unknown
             if (this._current_static_table.get_jump_table_size() > 15) {
@@ -721,7 +734,15 @@ module NightingaleCompiler {
                         `Code generation for while statement true`
                     )// OutputConsoleMessage
                 );// this.verbose[this.output.length - 1].push
-                memory_address_of_boolean_result = new StaticDataMetadata("00", this._current_program.get_true_address().toString(16).toUpperCase(), -1);
+                memory_address_of_boolean_result = this._get_anonymous_address();
+
+                this._load_accumulator_with_constant(this._current_program.get_true_address().toString(16).toUpperCase());
+
+                this._store_accumulator_to_memory(
+                    memory_address_of_boolean_result.temp_address_leading_hex,
+                    memory_address_of_boolean_result.temp_address_trailing_hex
+                );// _store_accumulator_to_memory
+
             }// if
 
             // false
@@ -733,7 +754,14 @@ module NightingaleCompiler {
                         `Code generation for while statement false`
                     )// OutputConsoleMessage
                 );// this.verbose[this.output.length - 1].push
-                memory_address_of_boolean_result = new StaticDataMetadata("00", this._current_program.get_false_address().toString(16).toUpperCase(), -1);
+                memory_address_of_boolean_result = this._get_anonymous_address();
+
+                this._load_accumulator_with_constant(this._current_program.get_false_address().toString(16).toUpperCase());
+
+                this._store_accumulator_to_memory(
+                    memory_address_of_boolean_result.temp_address_leading_hex,
+                    memory_address_of_boolean_result.temp_address_trailing_hex
+                );// _store_accumulator_to_memory
             }// else if
 
             else {
@@ -747,6 +775,9 @@ module NightingaleCompiler {
                 memory_address_of_boolean_result.temp_address_leading_hex,
                 memory_address_of_boolean_result.temp_address_trailing_hex
             );// _compare_x_register_to_memory
+
+            // Free up memory
+            memory_address_of_boolean_result.isUsable = true;
 
             // Branch distance is currently unknown
             if (this._current_static_table.get_jump_table_size() > 15) {
@@ -964,12 +995,12 @@ module NightingaleCompiler {
 
                 // Child is a boolean false
                 else if (left_child_value === NODE_NAME_FALSE) {
-                    this._load_x_register_from_memory("00", this._current_program.get_false_address().toString(16).toUpperCase());
+                    this._load_x_register_with_constant(this._current_program.get_false_address().toString(16).toUpperCase());
                 }// else-if
 
                 // Child is boolean true
                 else if (left_child_value === NODE_NAME_TRUE) {
-                    this._load_x_register_from_memory("00", this._current_program.get_true_address().toString(16).toUpperCase());
+                    this._load_x_register_with_constant( this._current_program.get_true_address().toString(16).toUpperCase());
                 }// else-if
 
                 // Child is a string expression
@@ -1046,19 +1077,28 @@ module NightingaleCompiler {
                 }// else if
 
                 // Child is a boolean false
-                else if (right_child_value === NODE_NAME_FALSE) {
-                    this._compare_x_register_to_memory(
-                        "00",
-                        this._current_program.get_false_address().toString(16).toUpperCase(),
-                    );// _load_x_register_from_memory
-                }// else-if
+                else if (right_child_value === NODE_NAME_FALSE || right_child_value === NODE_NAME_TRUE) {
+                    let memory_address_of_boolean_result = this._get_anonymous_address();
 
-                // Child is boolean true
-                else if (right_child_value === NODE_NAME_TRUE) {
+                    if (right_child_value === NODE_NAME_FALSE) {
+                        this._load_accumulator_with_constant(this._current_program.get_false_address().toString(16).toUpperCase());
+                    }// if
+                    else {
+                        this._load_accumulator_with_constant(this._current_program.get_true_address().toString(16).toUpperCase());
+                    }// else
+
+                    this._store_accumulator_to_memory(
+                        memory_address_of_boolean_result.temp_address_leading_hex,
+                        memory_address_of_boolean_result.temp_address_trailing_hex
+                    );// _store_accumulator_to_memory
+
                     this._compare_x_register_to_memory(
-                        "00",
-                        this._current_program.get_true_address().toString(16).toUpperCase(),
+                        memory_address_of_boolean_result.temp_address_leading_hex,
+                        memory_address_of_boolean_result.temp_address_trailing_hex
                     );// _load_x_register_from_memory
+
+                    // Won't need this later, free up memory
+                    memory_address_of_boolean_result.isUsable = true;
                 }// else-if
 
                 // Child is a string expression
@@ -1210,15 +1250,22 @@ module NightingaleCompiler {
 
                     return anonymous_address_static_data;
                 }// else if
+                else if (value === NODE_NAME_FALSE || value === NODE_NAME_TRUE) {
+                    let memory_address_of_boolean_result = this._get_anonymous_address();
 
-                // Child is a boolean false
-                else if (value === NODE_NAME_FALSE) {
-                    return new StaticDataMetadata("00", this._current_program.get_false_address().toString(16).toUpperCase(), -1);
-                }// else-if
+                    if (value === NODE_NAME_FALSE) {
+                        this._load_accumulator_with_constant(this._current_program.get_false_address().toString(16).toUpperCase());
+                    }// if
+                    else {
+                        this._load_accumulator_with_constant(this._current_program.get_true_address().toString(16).toUpperCase());
+                    }// else
 
-                // Child is boolean true
-                else if (value === NODE_NAME_TRUE) {
-                    return new StaticDataMetadata("00", this._current_program.get_true_address().toString(16).toUpperCase(), -1);
+                    this._store_accumulator_to_memory(
+                        memory_address_of_boolean_result.temp_address_leading_hex,
+                        memory_address_of_boolean_result.temp_address_trailing_hex
+                    );// _store_accumulator_to_memory
+
+                    return memory_address_of_boolean_result;
                 }// else-if
 
                 // Child is a string expression

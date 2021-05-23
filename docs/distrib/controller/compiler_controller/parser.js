@@ -41,8 +41,6 @@ var NightingaleCompiler;
             this.concrete_syntax_trees = [];
             this._error_count = 0;
             this._warning_count = 0;
-            console.log("invalid lex programs");
-            console.log(this._lexically_invalid_programs);
             for (let invalid_lex_program of this._lexically_invalid_programs) {
                 this.invalid_parsed_programs.push(invalid_lex_program);
             } // for

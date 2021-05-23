@@ -2,19 +2,14 @@
  * Boolean Comparison tests
  */
 const CODE_GEN_BOOLEAN_VALUE_TEST = `/**
-* Ouput: false true true false true false
+* Ouput: falsetruetruefalsetruefalse
 */
 {
 	print((true == false))
-	print(" ")
 	print((true != false))
-	print(" ")
 	print((true == true))
-	print(" ")
 	print((true != true))
-	print(" ")
 	print((false == false))
-	print(" ")
 	print((false != false))
 }$`;
 
@@ -489,6 +484,58 @@ const CODE_GEN_IF_TEST = `{
 	print(c)
 }$`;
 
+const CODE_GEN_WHILE_TEST = `/**
+ * Integer expression test 
+ *
+ * Output: 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 done 
+ */
+{
+	int a
+	int b
+
+	b = 1
+	while (8 + 9 + b != 1 + a) {
+		a = 1 + a
+		print(a)
+		print(" ")
+	}
+
+	print("done")
+}$
+
+/**
+ * Integer Value test
+ */
+{
+	int a
+	a = a
+
+	while(a != 5) {
+		a = 1 + a
+		print(" ")
+		print(a)
+	}
+}$
+
+/* String expression test */
+{
+	int a
+	string b
+
+	while (b == "null") {
+		while (a != 9 + 1) {
+			a = 2 + a
+
+			if (a == 9 + 1) {
+				b = "hello world"
+			}
+		}
+	}
+
+	/* Ouput "hello world" */
+	print(b)
+}$`;
+
 /**
  * Edge cases
  */
@@ -540,25 +587,81 @@ $`;
     string y
     
     string z
-}$`;
+}$
 
-const CODE_GEN_BOOLEAN_HELL_TEST = `/* Should print out... */
+{print("hello world")}$
+
 {
-	/* Declare variables */
-	int a
+	string a 
+    a = "static area should collide into heap filling up the heap with more data tp cause a collision at z"
 	string b
 	string c
+	string d
+	string e
+    
+	string f
+	string g
+	string h
+	string i
+    string j
+    
+    string k
+    string l
+    string m
+    string n
+    string o
+    
+    string p
+    string q
+    string r 
+    string s
+    string t
+    
+    string u
+    string v
+    string w
+    string x
+    string y
+    
+    string z
+}$
 
-	c = "hmm"
+{print("hello world")}$`;
 
-	/* Boolean Hell */
-	print((((a!=9) == ("test" != "alan")) == ((5==5) != (b == c))))
+const CODE_GEN_BOOLEAN_HELL_TEST = `/* Should print out... */
+/* 0done */
+{
+	int a
 
-	/* More Tests */
-	boolean d
-	boolean e
+	if(((a!=9) == true) == ((5==5) != (false == true))) {
+		print(a)
+	}
+	print("done")
+}$
 
-	d = true
-	e = true
-	print((((1 + 2 + 3 != 9) == ("wow" != "wow")) == ((5==5) != (d == e))))
+/* 12345678done */
+{
+	int a
+
+	while(((a!=9) == false) == ((5==5) != (false != true))) {
+		print(a)
+		a = 1 + a
+	}
+
+	print("done")
+}$
+
+/* wow */
+{
+	int a
+	int b
+	string c
+
+	while((( a != 3 + b) == true) == (c == "null")) {
+		a = 1 + a
+	}
+
+	if (a == 3) {
+		print("wow")
+	}
 }$`;

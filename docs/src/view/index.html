@@ -137,7 +137,7 @@
         </div>
 
         <!-- lists all test files -->
-        <div id="side-nav" style="overflow: visible;">
+        <div id="side-nav" style="overflow-x: scroll; overflow-y: visible;">
             <div class="d-flex flex-column mt-3">
                 <div class="treeview-animated w-20 mx-4 my-4">
                     <h6 class="pt-3 pl-3" style="color: white;">Tests</h6>
@@ -477,6 +477,13 @@
                                                 onclick="myCodeMirror.setValue(CODE_GEN_IF_TEST)"><a
                                                     id="sidebar__link--tests"
                                                     onclick="myCodeMirror.setValue(CODE_GEN_IF_TEST)">if_statements.gle</a>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <div class="treeview-animated-element"
+                                                onclick="myCodeMirror.setValue(CODE_GEN_WHILE_TEST)"><a
+                                                    id="sidebar__link--tests"
+                                                    onclick="myCodeMirror.setValue(CODE_GEN_WHILE_TEST)">while_statements.gle</a>
                                             </div>
                                         </li>
                                     </ul>

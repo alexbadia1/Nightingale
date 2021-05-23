@@ -185,14 +185,14 @@ var NightingaleCompiler;
         } // write_to_heap
         write_string_to_heap(str) {
             str = str.split("\"").join("");
-            console.log(`Writing the string [${str}] to the heap...`);
+            // console.log(`Writing the string [${str}] to the heap...`);
             // Null termination for string
             this.write_to_heap("00");
             for (let i = str.length - 1; i >= 0; --i) {
                 let ascii_value_in_hex = str[i].charCodeAt(0).toString(16).toUpperCase();
                 this.write_to_heap(ascii_value_in_hex);
             } // for
-            console.log(`[${str}] starts at P${this._heap_limit}[${this._heap_limit.toString(16).toUpperCase().padStart(2, "0")}]`);
+            // console.log(`[${str}] starts at P${this._heap_limit}[${this._heap_limit.toString(16).toUpperCase().padStart(2, "0")}]`);
             return this._heap_limit.toString(16).toUpperCase().padStart(2, "0");
         } // write_string_to_heap
         _is_valid_hex_pair(hex_pair) {

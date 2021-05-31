@@ -9,37 +9,28 @@ Instructions to run the project on your local machine.
 
 ### Prerequisites
 
-First you'll need to setup typescript
+I recommend downloading npm with typescript.
 
-1. Install the [npm](https://www.npmjs.org/) package manager if you don't already have it.
-2. Run `npm install -g typescript` to get the TypeScript Compiler. (You may need to do this as root.)
-
-#### IDE SUPPORT
-
-IDE's like Visual Studio Code, IntelliJ and probably others already support TypeScript-to-JavaScript compilation.
-Make sure you have the necessary plugins installed for your IDE.
-
-#### NO IDE SUPPORT
-
-You'll need to automate the compilation process with something like Gulp.
-
-- Setup Gulp
-1. `npm install -g gulp` to get the Gulp Task Runner.
-1. `npm install -g gulp-tsc` to get the Gulp TypeScript plugin.
-
-Run `gulp` at the command line in the root directory of this project.
-Edit your TypeScript files in the source/scripts directory.
+Install the [npm](https://www.npmjs.org/) package manager if you don't already have it.
+Be sure a path variable is set to the npm /bin to make it easier running npm commands from th command line.
 
 ### Installing
 
-Installing with Gitbash is easy!
+You can use npm to install TypeScript globally, 
+this means you can use the tsc command anywhere in your terminal.
+
+Run `npm install -g typescript` to get the TypeScript Compiler. (You may need root privileges.)
+
+### Compiling Typescipt
+
+I recommend Gitbash!
 
 1. Clone the remote branch to your local machine by typing `git clone [paste url here]`.
 
 The c.bat file and tsconfig.json are already defined in the Nightingale/ folder.
 Note: /docs allows this project to be hosted with github.
 
-2. Open a terminal and navigate to the Nightingale/ floder.
+2. Open a terminal and navigate to the Nightingale /folder.
 
 The `tsc` command will compile all typescript files *only* located in Nightingale/docs/src.
 The resulting javascript will be outputted in Nightingale/docs/distrib.
@@ -81,36 +72,12 @@ So, as follows
   - semantic analysis (creates and shows AST)
   - etc.
 
-## Running the tests
+## Tests
 
-All tests are located in the Nightingale/docs/test and are implemented in index.html as javascript scripts.
+All tests are located in the Nightingale/docs/test/ and are added in index.html from javascript test files.
 
-### How to run a test
-
-To enable a test:
-
-### Creating your own test
-
-```
-function Test() {
-  this.version 2112;
-
-  /// Greet the user
-  ///
-  /// This init() function is called immediately on start up as this test is called in index.html
-  /// and describes what this test actually, well, tests.
-  this.init = function () {
-  alert('[Insert your message here. Try to make this message describe what the test is doing]')
-  }// init
-
-
-  /// Tests are performed here
-  this.afterStartup = function() {}// afterstartup
-}// Test
-
-```
-
-### Sample test
+Since this is a compiler, all tests are strings, that will be lexed, parsed and semantically analyzed. 
+If the string is valid 6502a op codes are generated for it.
 
 TBD
 
@@ -128,4 +95,4 @@ TBD
   Each branch will be for each specific iProject1, iProject2, iProject3, etc.
 
   As you can see, I've been creating pull requests and merging the specific branches into the main branch.
-  The main branch should be up to date with the latest branch, but if there are any glaring issues it probably means I forgot to create merge the branch.
+  The main branch should be up to date with the latest branch, but if there are any glaring issues it probably means I forgot to merge the branch.

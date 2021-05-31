@@ -1,5 +1,5 @@
 # Nightingale
-Nightingale- a browser based Compiler in Typescript published at:
+Nightingale- a browser based Compiler in Typescript published at: https://alexbadia1.github.io/Nightingale/
 
 Nightingale will compile predefined code grammar to 6502a Op Codes, providing well defined compilation feedback.
 
